@@ -4,7 +4,7 @@ package com.dodream.notifucations.entity;
 import com.dodream.bookcomment.entity.BookComment;
 import com.dodream.quecomment.entity.QueComment;
 import com.dodream.study.entity.Study;
-import com.dodream.studymember.entity.studyMember;
+import com.dodream.studymember.entity.StudyMember;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,7 +53,7 @@ public class Notifications {
 
     @JoinColumn(name = "study_user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private studyMember studyMemberId; // 스터디 멤버 ID
+    private StudyMember studyMemberId; // 스터디 멤버 ID
 
     @JoinColumn(name = "study_id")
     @ManyToOne(fetch = FetchType.LAZY)
