@@ -1,7 +1,6 @@
-package com.dodream.studyanswer.entity;
+package com.dodream.study.entity;
 
-import com.dodream.question.entity.Question;
-import com.dodream.study.entity.Study;
+import com.dodream.book.entity.Question;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -27,7 +26,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudyAnswer {
+public class StudyUserAnswer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,11 +35,11 @@ public class StudyAnswer {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
-    private Question questionId;
+    private Question question;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id", nullable = false)
-    private Study studyId;
+    private Study study;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)
