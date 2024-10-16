@@ -1,4 +1,4 @@
-package com.dodream.question.entity;
+package com.dodream.book.entity;
 
 import com.dodream.book.entity.Book;
 import jakarta.persistence.Column;
@@ -42,7 +42,7 @@ public class Question {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
-    private Book bookId;
+    private Book book;
 
     @CreatedDate
     @Column(name = "created_at")
