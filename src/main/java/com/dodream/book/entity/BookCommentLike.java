@@ -1,6 +1,6 @@
-package com.dodream.bookcommentlike.entity;
+package com.dodream.book.entity;
 
-import com.dodream.bookcomment.entity.BookComment;
+import com.dodream.book.entity.BookComment;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,7 +38,7 @@ public class BookCommentLike {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
