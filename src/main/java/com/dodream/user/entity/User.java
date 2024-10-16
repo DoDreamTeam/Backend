@@ -39,7 +39,7 @@ public class User {
     @Column(nullable = false, length = 10)
     private String provider;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 5000)
     private String providerId;
 
     @CreatedDate
