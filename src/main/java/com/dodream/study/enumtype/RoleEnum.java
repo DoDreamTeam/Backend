@@ -1,4 +1,4 @@
-package com.dodream.studymember.enumtype;
+package com.dodream.study.enumtype;
 
 import lombok.Getter;
 
