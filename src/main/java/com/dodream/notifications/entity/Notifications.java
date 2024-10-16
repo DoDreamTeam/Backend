@@ -1,10 +1,10 @@
-package com.dodream.notifucations.entity;
+package com.dodream.notifications.entity;
 
 
-import com.dodream.bookcomment.entity.BookComment;
-import com.dodream.quecomment.entity.QueComment;
+import com.dodream.book.entity.BookComment;
+import com.dodream.study.entity.QueComment;
 import com.dodream.study.entity.Study;
-import com.dodream.studymember.entity.StudyMember;
+import com.dodream.study.entity.StudyMember;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,23 +41,23 @@ public class Notifications {
 
     @JoinColumn(name = "user_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private User userId; // 알림을 받을 유저 ID
+    private User user; // 알림을 받을 유저 ID
 
     @JoinColumn(name = "book_comment_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private BookComment bookCommentId; // 문제집에 달린 댓글 ID
+    private BookComment bookComment; // 문제집에 달린 댓글 ID
 
     @JoinColumn(name = "question_comment_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private QueComment queCommentId; // 문제에 달린 댓글 ID
+    private QueComment queComment; // 문제에 달린 댓글 ID
 
     @JoinColumn(name = "study_user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private StudyMember studyMemberId; // 스터디 멤버 ID
+    private StudyMember studyMember; // 스터디 멤버 ID
 
     @JoinColumn(name = "study_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private Study studyId; // 스터디 ID
+    private Study study; // 스터디 ID
 
     @Column(nullable = false)
     private boolean is_read = false; // 읽음 여부
