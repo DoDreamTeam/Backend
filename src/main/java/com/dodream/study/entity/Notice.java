@@ -1,4 +1,4 @@
-package com.dodream.notice.entity;
+package com.dodream.study.entity;
 
 import com.dodream.study.entity.Study;
 import jakarta.persistence.Column;
@@ -39,7 +39,7 @@ public class Notice {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id", referencedColumnName = "id", nullable = false)
-    private Study studyId;
+    private Study study;
 
     @CreatedDate
     @Column(name = "created_at")
