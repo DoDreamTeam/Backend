@@ -1,6 +1,6 @@
-package com.dodream.noticommlike.entity;
+package com.dodream.study.entity;
 
-import com.dodream.noticomment.entity.NotiComment;
+import com.dodream.study.entity.NotiComment;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,11 +34,11 @@ public class NotiCommLike {
     private boolean is_deleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id", referencedColumnName = "id", nullable = false)
-    private NotiComment commentId;
+    @JoinColumn(name = "noti_comment_id", referencedColumnName = "id", nullable = false)
+    private NotiComment notiComment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private User userId;
+    private User user;
 
 }
