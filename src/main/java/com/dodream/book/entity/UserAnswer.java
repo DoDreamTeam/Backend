@@ -1,8 +1,7 @@
-package com.dodream.useranswer.entity;
+package com.dodream.book.entity;
 
-import com.dodream.question.entity.Question;
 import com.dodream.user.entity.User;
-import com.dodream.useranswer.enumtype.Evaluation;
+import com.dodream.book.enumtype.Evaluation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -44,11 +43,11 @@ public class UserAnswer {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
-    private Question questionId;
+    private Question question;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     @CreatedDate
     @Column(name = "created_at")
