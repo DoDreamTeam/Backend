@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost/dodream
+    username: root
+    password: Minsung1234
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    open-in-view: false
+  sql:
+    init:
+      mode: never
