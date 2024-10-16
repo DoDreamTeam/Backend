@@ -1,4 +1,4 @@
-package com.dodream.bookcomment.entity;
+package com.dodream.book.entity;
 
 import com.dodream.book.entity.Book;
 import com.dodream.user.entity.User;
@@ -40,11 +40,11 @@ public class BookComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
-    private Book bookId;
+    private Book book;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)
