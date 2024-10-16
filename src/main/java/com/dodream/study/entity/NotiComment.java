@@ -1,6 +1,6 @@
-package com.dodream.noticomment.entity;
+package com.dodream.study.entity;
 
-import com.dodream.notice.entity.Notice;
+import com.dodream.study.entity.Notice;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,11 +37,11 @@ public class NotiComment {
 
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-   private User userId;
+   private User user;
 
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "notice_id", referencedColumnName = "id", nullable = false)
-   private Notice noticeId;
+   private Notice notice;
 
    @Column(nullable = false)
    private String content;
