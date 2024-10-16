@@ -1,4 +1,4 @@
-package com.dodream.bookmark.entity;
+package com.dodream.book.entity;
 
 import com.dodream.book.entity.Book;
 import com.dodream.user.entity.User;
@@ -38,9 +38,9 @@ public class Bookmark {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userId;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
-    private Book bookId;
+    private Book book;
 }
