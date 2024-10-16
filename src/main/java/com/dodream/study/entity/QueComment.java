@@ -1,6 +1,6 @@
-package com.dodream.quecomment.entity;
+package com.dodream.study.entity;
 
-import com.dodream.studyanswer.entity.StudyAnswer;
+import com.dodream.study.entity.StudyUserAnswer;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,11 +36,11 @@ public class QueComment {
 
     @JoinColumn(name = "user_id",nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private User userId; // 댓글을 작성한 사용자 ID
+    private User user; // 댓글을 작성한 사용자 ID
 
     @JoinColumn(name = "study_answer_id",nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    private StudyAnswer studyAnswerId; // 스터디에 추가한 문제 ID
+    private StudyUserAnswer studyAnswer; // 스터디에 추가한 문제 ID
 
     @Column(nullable = false)
     private String content; // 댓글 내용
