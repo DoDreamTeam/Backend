@@ -1,7 +1,6 @@
-package com.dodream.studymember.entity;
+package com.dodream.study.entity;
 
-import com.dodream.study.entity.Study;
-import com.dodream.studymember.enumtype.RoleEnum;
+import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,11 +37,11 @@ public class StudyMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
-    private Study studyId;
+    private Study study;
 
     @Column(name = "join_date")
     private LocalDateTime joinDate;
