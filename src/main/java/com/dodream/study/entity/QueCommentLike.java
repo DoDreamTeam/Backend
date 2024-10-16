@@ -1,7 +1,6 @@
-package com.dodream.quecommentlike.entity;
+package com.dodream.study.entity;
 
 
-import com.dodream.quecomment.entity.QueComment;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,9 +34,9 @@ public class QueCommentLike {
 
     @JoinColumn(name = "quecomment_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private QueComment queCommentId;            // 좋아요를 한 댓글 ID
+    private QueComment quecomment;            // 좋아요를 한 댓글 ID
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private User userId;                        // 좋아요를 누른 사용자 ID
+    private User user;                        // 좋아요를 누른 사용자 ID
 }
