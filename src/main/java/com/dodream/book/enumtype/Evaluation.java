@@ -1,4 +1,4 @@
-package com.dodream.useranswer.enumtype;
+package com.dodream.book.enumtype;
 
 public enum Evaluation {
 
