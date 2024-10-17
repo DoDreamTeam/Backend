@@ -50,4 +50,9 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // 테스트 코드
+    public User(Long id) {
+        this.id = id;
+    }
+
 }
