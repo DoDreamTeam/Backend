@@ -15,4 +15,5 @@ public class StudyResponse {
     private String description;     // 스터디에 대한 아주 간단한 설명
     private String category;        // 자격증
     private String status;          // 신청, 승인대기중, 참여중
+    private Long userCount;         // 멤버 수 -> StudyMember Id row 개수 (Member, Leader 포함)
 }
