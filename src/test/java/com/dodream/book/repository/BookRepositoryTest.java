@@ -9,6 +9,7 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,62 +27,96 @@ class BookRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
+    private User user;
+    private List<Book> books;
 
-    @DisplayName("전체 문제집 조회 테스트")
-    @Transactional
+    @BeforeEach
+    public void setUp() {
+        // 전체 문제집 조회에 필요한 문제집 리스트 미리 생성하기
+        user = User.builder().username("hello").provider("provider1").providerId("1").build();
+        userRepository.save(user); // 사용자 저장
+
+        books = List.of(
+            Book
+                .builder()
+                .title("Test Book1")
+                .user(user)
+                .category(Category.CATEGORY_CS)
+                .secret(false)
+                .build(),
+            Book
+                .builder()
+                .title("Test Book2")
+                .user(user)
+                .category(Category.CATEGORY_ETC)
+                .secret(false)
+                .build(),
+            Book
+                .builder()
+                .title("Test Book3")
+                .user(user)
+                .category(Category.CATEGORY_CS)
+                .secret(false)
+                .build(),
+            Book
+                .builder()
+                .title("Test Book4")
+                .user(user)
+                .category(Category.CATEGORY_CERT)
+                .secret(false)
+                .build(),
+            Book
+                .builder()
+                .title("Test Book5")
+                .user(user)
+                .category(Category.CATEGORY_ETC)
+                .secret(true)
+                .build(), // 비공개 문제집
+            Book
+                .builder()
+                .title("Test Book6")
+                .user(user)
+                .category(Category.CATEGORY_CERT)
+                .secret(false)
+                .build()
+        );
+
+        books.forEach(bookRepository::save); // 모든 책 저장
+    }
+
+
+    @DisplayName("전체 문제집 조회")
     @Test
     public void getAllBooksTest() {
         // given (사전 준비)
-        User user1 = User.builder().id(1L).username("hello").provider("provider1").providerId("1").build();
-        userRepository.save(user1); // 사용자 저장
+        // setUp() 참고
 
-        Book book1 = Book.builder()
-            .title("Test Book1")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .build(); // 공개 문제집
-        bookRepository.save(book1);
+        // when
+        List<Book> resultBooks = bookRepository.findAllBySecretFalse();
 
-        Book book2 = Book.builder()
-            .title("Test Book1")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .build(); // 공개 문제집
-        bookRepository.save(book2);
+        // then
+        assertThat(resultBooks).isNotNull(); // null 이 아닌가?
+        assertThat(resultBooks).isNotEmpty(); // 비어있는가?
+        assertThat(
+            resultBooks.stream().anyMatch(book -> book.getTitle().equals("Test Book2"))).isTrue(); // Test Book2 문제집이 존재하는가?
+        assertThat(resultBooks).hasSize(5); // 공개 문제집 5개
+    }
 
-        Book book3 = Book.builder()
-            .title("Test Book3")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .build(); // 공개 문제집
-        bookRepository.save(book3);
-
-        Book book4 = Book.builder()
-            .title("Test Book4")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .build(); // 공개 문제집
-        bookRepository.save(book4);
-
-        Book book5 = Book.builder()
-            .title("Test Book5")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(true)
-            .build(); // 비공개 문제집
-        bookRepository.save(book5);
-
+    @DisplayName("특정 카테고리별로 문제집 전체 조회")
+    @Test
+    public void getCategoryBooksTest() {
+        // given (사전 준비)
+        // setUp() 참고
 
         // when (테스트 진행할 범위)
-        List<Book> books = bookRepository.findAllBySecretFalse();
+        List<Book> resultBooks = bookRepository.findAllByCategoryAndSecretFalse(Category.CATEGORY_ETC);
 
         // then (범위에 대한 결과 검증)
-        assertThat(books).hasSize(4); // 공개 문제집 4개
-        assertThat(books.get(0).getTitle()).isEqualTo("Test Book1"); // 첫 번째 제목 검증
+        assertThat(resultBooks).isNotNull(); // null 이 아닌가?
+        assertThat(resultBooks).isNotEmpty(); // 비어있는가?
+        assertThat(
+            resultBooks.stream().anyMatch(book -> book.getTitle().equals("Test Book2"))).isTrue(); // Test Book2 문제집이 존재하는가?
+        assertThat(resultBooks).hasSize(1); // ETC 인 문제집 조회 (하나는 비공개이므로 하나만 조회된다)
     }
 
 }
