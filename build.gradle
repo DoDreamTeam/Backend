@@ -31,6 +31,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // 테스트 진행 시 Lombok 사용
+    testImplementation 'org.projectlombok:lombok:1.18.28'
+
     // jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
