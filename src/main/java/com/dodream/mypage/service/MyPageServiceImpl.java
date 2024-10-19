@@ -46,4 +46,21 @@ public class MyPageServiceImpl implements MyPageService {
 
         return UserInfoResponse.toDTO(user, books);
     }
+    // 사용자 프로필 수정
+    @Override
+    public UserInfoResponse updateUserProfile(Long userId, String newUserName, String newProfileImage) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
+
+        // 유저네임과 프로필 이미미 수정
+        if(newUserName != null) user.setUsername(newUserName);
+        if(newProfileImage != null) user.setProfileImage(newProfileImage);
+
+        userRepository.save(user);
+
+        return UserInfoResponse.toDTO(user);
+    }
+
+
+
 }
