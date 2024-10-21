@@ -10,4 +10,6 @@ public interface BookService {
     List<BookResponse> getBookList();
 
     List<BookResponse> getBookListByCategory(String category);
+
+    List<BookResponse> searchBooksByKeyword(String keyword);
 }

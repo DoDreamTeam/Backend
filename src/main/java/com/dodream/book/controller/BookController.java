@@ -22,4 +22,10 @@ public class BookController {
         return ResponseEntity.ok(bookList);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> searchBooks(@RequestParam(value = "keyword", required = false) String keyword) {
+        List<BookResponse> bookList = bookService.searchBooksByKeyword(keyword);
+        return ResponseEntity.ok(bookList);
+    }
+
 }

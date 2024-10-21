@@ -63,4 +63,25 @@ public class BookServiceImpl implements BookService {
                 .build())
             .toList();
     }
+
+    @Override
+    public List<BookResponse> searchBooksByKeyword(String keyword) {
+        List<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalse(keyword);
+
+        // 해당 검색어와 일치하는 문제집이 없는 경우 예외처리
+//        if(bookList.isEmpty()) {
+//            throw new BaseException(ErrorCode.BOOK_SEARCH_NOT_FOUND);
+//        }
+
+        return bookList.stream()
+            .map(book -> BookResponse.builder()
+                .id(book.getId())
+                .title(book.getTitle())
+                .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book)) // 북마크 수 카운트
+                .category(book.getCategory().name())
+                .createdAt(book.getCreatedAt())
+                .build())
+            .toList();
+    }
 }
