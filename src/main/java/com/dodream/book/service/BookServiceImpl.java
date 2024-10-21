@@ -5,6 +5,8 @@ import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
+import com.dodream.common.exception.BaseException;
+import com.dodream.common.exception.ErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,6 @@ public class BookServiceImpl implements BookService {
 
         // 해당 검색어와 일치하는 문제집이 없는 경우 예외처리
         if(bookList.isEmpty()) {
-            log.warn("No books found for keyword: {}", keyword);
             throw new BaseException(ErrorCode.BOOK_SEARCH_NOT_FOUND);
         }
 
