@@ -18,12 +18,19 @@ public class UserInfoResponse {
 
     // 사용자 정보 조회
     public static UserInfoResponse toDTO(User user, List<BookResponse> userBooks) {
-        return UserInfoResponse.builder().userId(user.getId()).userName(user.getUsername())
-                .profileImage(user.getProfileImage()).userBooks(userBooks).build();
+        return UserInfoResponse.builder()
+            .userId(user.getId())
+            .userName(user.getUsername())
+            .profileImage(user.getProfileImage())
+            .userBooks(userBooks)
+            .build();
     }
     // 프로필 수정
     public static UserInfoResponse toDTO(User user) {
-        return UserInfoResponse.builder().userId(user.getId()).userName(user.getUsername())
-                .profileImage(user.getProfileImage()).build();
+        return UserInfoResponse.builder()
+            .userId(user.getId())
+            .userName(user.getUsername())
+            .profileImage(user.getProfileImage())
+            .build();
     }
 }
