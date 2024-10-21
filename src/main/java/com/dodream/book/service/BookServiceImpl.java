@@ -1,5 +1,6 @@
 package com.dodream.book.service;
 
+import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
@@ -7,6 +8,7 @@ import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,21 @@ public class BookServiceImpl implements BookService {
         }
 
         return convertToBookResponseList(bookList);
+    }
+
+    @Override
+    public BookResponse addBook(User user, BookRequest bookRequest) {
+        Book book = bookRequest.toEntity(user);
+        Book savedBook = bookRepository.save(book);
+
+        return BookResponse.builder()
+            .id(savedBook.getId())
+            .title(savedBook.getTitle())
+            .username(user.getUsername())  // 현재 로그인한 사용자 이름
+            .bookmarkCount(0L)             // 초기 북마크 수
+            .category(savedBook.getCategory().name())
+            .createdAt(savedBook.getCreatedAt()) // 실제 생성된 날짜 사용
+            .build();
     }
 
     private List<BookResponse> convertToBookResponseList(List<Book> bookList) {
