@@ -1,18 +1,22 @@
 package com.dodream.mypage.controller;
 
 
+import com.dodream.mypage.domain.BookUpdateRequest;
+import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.service.MyPageBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/mypage/book")
+@RequestMapping("/api/mypage/book")
 public class MyPageBookController {
 
     private final MyPageBookService myPageBookService;
@@ -22,5 +26,14 @@ public class MyPageBookController {
     public ResponseEntity<UserInfoResponse> getUserInfoAll(@PathVariable("id") Long id) {
         UserInfoResponse userInfo = myPageBookService.getUserInfoAll(id);
         return ResponseEntity.ok(userInfo);
+    }
+    
+    // 문제집 제목 수정하기
+    @PatchMapping("/{id}")
+    public ResponseEntity<BookUpdateResponse> updateBook(@PathVariable("id") Long id,
+        @RequestBody BookUpdateRequest bookUpdateRequest) {
+
+        BookUpdateResponse updateBookTitle = myPageBookService.updateBook(id, bookUpdateRequest);
+        return ResponseEntity.ok(updateBookTitle);
     }
 }
