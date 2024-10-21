@@ -119,4 +119,19 @@ class BookRepositoryTest {
         assertThat(resultBooks).hasSize(1); // ETC 인 문제집 조회 (하나는 비공개이므로 하나만 조회된다)
     }
 
+    @DisplayName("문제집 제목으로 검색")
+    @Test
+    public void searchByBookTitleTest() {
+        // given (사전 준비)
+        // setUp() 참고
+
+        // when (테스트 진행할 범위)
+        List<Book> resultBooks = bookRepository.findAllByTitleContainingAndSecretFalse("Book6");
+
+        // then (범위에 대한 결과 검증)
+        assertThat(resultBooks).isNotNull(); // null 이 아닌가?
+        assertThat(resultBooks).isNotEmpty(); // 비어있는가?
+        assertThat(resultBooks.size()).isEqualTo(1); // Book6 제목 가진 문제집 1개
+    }
+
 }
