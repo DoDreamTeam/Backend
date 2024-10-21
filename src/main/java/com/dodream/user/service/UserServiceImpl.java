@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -50,8 +51,10 @@ public class UserServiceImpl implements UserService {
         // DB에 기록(refresh)
         user.setRefreshToken(tokenMap.get("refreshToken"));
         userRepository.save(user);
+
         // HEADER에 추가(refresh)
         tokenUtils.setRefreshTokenCookie(res, tokenMap.get("refreshToken"));
+
         // BODY에 추가(access)
         return tokenMap.get("accessToken");
     }
@@ -80,7 +83,8 @@ public class UserServiceImpl implements UserService {
 
         RestTemplate rt = new RestTemplate();
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-        ResponseEntity<Map> responseEntity = rt.postForEntity(client.getTokenUri(), requestEntity, Map.class);
+        ResponseEntity<Map> responseEntity = rt.postForEntity(client.getTokenUri(), requestEntity,
+            Map.class);
 
         if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자 정보를 가져올 수 없음");
@@ -97,7 +101,8 @@ public class UserServiceImpl implements UserService {
         headers.add("Authorization", "Bearer " + accessToken);
 
         RestTemplate rt = new RestTemplate();
-        ResponseEntity<JsonNode> responseEntity = rt.exchange(client.getUserInfoRequestUri(), HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
+        ResponseEntity<JsonNode> responseEntity = rt.exchange(client.getUserInfoRequestUri(),
+            HttpMethod.GET, new HttpEntity<>(headers), JsonNode.class);
 
         if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자 정보를 가져올 수 없음");
@@ -127,11 +132,25 @@ public class UserServiceImpl implements UserService {
             profileImage = oAuthUserNode.get("picture").asText();
         }
 
-        return User.builder()
-            .providerId(providerId)
-            .provider(provider.getAuth())
-            .profileImage(profileImage)
-            .username(username)
-            .build();
+        Optional<User> optionalUser = userRepository.findByProviderId(providerId);
+
+        if (optionalUser.isEmpty()) {
+            long num = 1L;
+            String new_username = username;
+
+            // Check if the username already exists and iterate until a unique one is found
+            while (userRepository.findByUsername(new_username).isPresent()) {
+                new_username = username + num;
+                num++;
+            }
+            return User.builder()
+                .providerId(providerId)
+                .provider(provider.getAuth())
+                .profileImage(profileImage)
+                .username(new_username)
+                .build();
+        } else {
+            return optionalUser.get();
+        }
     }
 }
