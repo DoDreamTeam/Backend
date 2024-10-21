@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MyPageServiceImpl implements MyPageService {
+public class MyPageBookServiceImpl implements MyPageBookService {
 
     private final UserRepository userRepository;
     private final UserBookRepository userBookRepository;
@@ -21,7 +21,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     // 사용자 정보 가져오기 (userName , profileImage , userBooks )
     @Override
-    public UserInfoResponse getUserInfo(Long userId) {
+    public UserInfoResponse getUserInfoAll(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
 
@@ -33,7 +33,6 @@ public class MyPageServiceImpl implements MyPageService {
         // 사용자 문제집의 정보 리스트
         List<BookResponse> books = userBooks.stream()
             .map(UserBook::getBook)
-            .filter(book -> !book.isSecret())
             .distinct()
             .map(book -> BookResponse.builder()
                 .id(book.getId()).title(book.getTitle())
@@ -46,21 +45,4 @@ public class MyPageServiceImpl implements MyPageService {
 
         return UserInfoResponse.toDTO(user, books);
     }
-    // 사용자 프로필 수정
-    @Override
-    public UserInfoResponse updateUserProfile(Long userId, String newUserName, String newProfileImage) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
-
-        // 유저네임과 프로필 이미지 수정
-        if(newUserName != null) user.setUsername(newUserName);
-        if(newProfileImage != null) user.setProfileImage(newProfileImage);
-
-        userRepository.save(user);
-
-        return UserInfoResponse.toDTO(user);
-    }
-
-
-
 }
