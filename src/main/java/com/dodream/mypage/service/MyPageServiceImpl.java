@@ -9,6 +9,7 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,11 +51,23 @@ public class MyPageServiceImpl implements MyPageService {
     @Override
     public UserInfoResponse updateUserProfile(Long userId, String newUserName, String newProfileImage) {
         User user = userRepository.findById(userId)
+
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
 
+        User loginuser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long loginUserId = loginuser.getId();
+
+        if(userId.equals(loginUserId)) {
+            throw new SecurityException("수정 권한이 없습니다");
+        }
+
         // 유저네임과 프로필 이미지 수정
-        if(newUserName != null) user.setUsername(newUserName);
-        if(newProfileImage != null) user.setProfileImage(newProfileImage);
+        if(newUserName != null) {
+        user.setUsername(newUserName);
+        }
+        if(newProfileImage != null) {
+        user.setProfileImage(newProfileImage);
+        }
 
         userRepository.save(user);
 
