@@ -16,6 +16,15 @@ public class BookServiceImpl implements BookService {
     private final BookmarkRepository bookmarkRepository;
 
     @Override
+    public List<BookResponse> getBooks(String category) {
+        if (category != null) {
+            return getBookListByCategory(category);
+        } else {
+            return getBookList();
+        }
+    }
+
+    @Override
     public List<BookResponse> getBookList() {
         List<Book> bookList = bookRepository.findAllBySecretFalse();
 

@@ -5,6 +5,8 @@ import java.util.List;
 
 public interface BookService {
 
+    List<BookResponse> getBooks(String category);
+
     List<BookResponse> getBookList();
 
     List<BookResponse> getBookListByCategory(String category);
