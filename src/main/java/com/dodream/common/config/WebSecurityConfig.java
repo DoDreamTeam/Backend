@@ -65,7 +65,12 @@ public class WebSecurityConfig {
                     new AntPathRequestMatcher("/api/notice/*/comments", "GET"),
 
                     // 특정 스터디의 문제 조회
-                    new AntPathRequestMatcher("/api/study/*/question/*", "GET")
+                    new AntPathRequestMatcher("/api/study/*/question/*", "GET"),
+
+                    // 마이페이지 관련 기능
+                    new AntPathRequestMatcher("/api/mypage/**", "PATCH"),
+                    new AntPathRequestMatcher("/api/mypage/**", "GET")
+
                 ).permitAll()
                 // 그 밖의 다른 요청들은 인증을 통과한(로그인한) 사용자라면 모두 접근할 수 있도록 한다.
                 .anyRequest().authenticated()
