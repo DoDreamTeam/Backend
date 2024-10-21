@@ -1,6 +1,8 @@
 package com.dodream.book.service;
 
+import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
+import com.dodream.user.entity.User;
 import java.util.List;
 
 public interface BookService {
@@ -12,4 +14,7 @@ public interface BookService {
     List<BookResponse> getBookListByCategory(String category);
 
     List<BookResponse> searchBooksByKeyword(String keyword);
+
+    BookResponse addBook(User user, BookRequest bookRequest);
 }
+

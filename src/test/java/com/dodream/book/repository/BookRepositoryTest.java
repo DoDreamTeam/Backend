@@ -134,4 +134,30 @@ class BookRepositoryTest {
         assertThat(resultBooks.size()).isEqualTo(1); // Book6 제목 가진 문제집 1개
     }
 
+    @DisplayName("문제집 생성하기")
+    @Test
+    public void addBookTest() {
+        // given (사전 준비)
+        user = User.builder().username("hello").provider("provider1").providerId("1").build();
+        userRepository.save(user); // 사용자 저장
+
+        Book book = Book
+            .builder()
+            .title("add test book")
+            .user(user)
+            .category(Category.CATEGORY_CERT)
+            .secret(false)
+            .build();
+
+        // when (테스트 진행할 범위)
+        Book savedBook = bookRepository.save(book);
+
+        // then (범위에 대한 결과 검증)
+        assertThat(savedBook).isNotNull(); // null 이 아닌가?
+        assertThat(savedBook.getId()).isNotNull();
+        assertThat(savedBook.getTitle()).isEqualTo("add test book");
+        assertThat(savedBook.getUser().getUsername()).isEqualTo("hello");
+        assertThat(savedBook.getCategory()).isEqualTo(Category.CATEGORY_CERT);
+    }
+
 }
