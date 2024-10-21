@@ -72,7 +72,9 @@ public class WebSecurityConfig {
 
                     // 마이페이지 관련 기능
                     new AntPathRequestMatcher("/api/mypage/**", "PATCH"),
-                    new AntPathRequestMatcher("/api/mypage/**", "GET")
+                    new AntPathRequestMatcher("/api/mypage/**", "GET"),
+                    new AntPathRequestMatcher("/api/mypage/book/**", "PATCH"),
+                    new AntPathRequestMatcher("/api/mypage/book/**", "GET")
 
                 ).permitAll()
                 // 그 밖의 다른 요청들은 인증을 통과한(로그인한) 사용자라면 모두 접근할 수 있도록 한다.
