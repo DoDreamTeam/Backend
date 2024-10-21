@@ -18,14 +18,13 @@ public class BookController {
 
     @GetMapping("")
     public ResponseEntity<List<BookResponse>> getAllBooks(@RequestParam(value = "category", required = false) String category) {
-        List<BookResponse> bookList = null;
-        if (category != null) {
-            // 카테고리별 조회
-            bookList = bookService.getBookListByCategory(category);
-        } else {
-            // 전체 문제집 조회
-            bookList = bookService.getBookList();
-        }
+        List<BookResponse> bookList = bookService.getBooks(category);
+        return ResponseEntity.ok(bookList);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<BookResponse>> searchBooks(@RequestParam(value = "keyword", required = false) String keyword) {
+        List<BookResponse> bookList = bookService.searchBooksByKeyword(keyword);
         return ResponseEntity.ok(bookList);
     }
 

@@ -46,6 +46,9 @@ public class WebSecurityConfig {
                     // 모든 문제집 조회 (최신순)
                     new AntPathRequestMatcher("/api/books", "GET"),
 
+                    // 문제집 제목으로 검색
+                    new AntPathRequestMatcher("/api/books/search", "GET"),
+
                     // 특정 문제집의 전체 문제 조회
                     new AntPathRequestMatcher("/api/books/**/questions", "GET"),
 
