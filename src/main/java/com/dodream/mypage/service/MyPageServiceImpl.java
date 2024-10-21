@@ -52,7 +52,7 @@ public class MyPageServiceImpl implements MyPageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
 
-        // 유저네임과 프로필 이미미 수정
+        // 유저네임과 프로필 이미지 수정
         if(newUserName != null) user.setUsername(newUserName);
         if(newProfileImage != null) user.setProfileImage(newProfileImage);
 
