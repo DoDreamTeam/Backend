@@ -78,6 +78,6 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return providerId;
+        return username;
     }
 }
