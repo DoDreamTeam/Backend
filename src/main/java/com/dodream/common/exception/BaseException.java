@@ -13,6 +13,7 @@ public class BaseException extends RuntimeException {
     public static final BaseException BOOK_CATEGORY_NOT_FOUND = new BaseException(ErrorCode.BOOK_CATEGORY_NOT_FOUND);
     public static final BaseException BOOK_SEARCH_NOT_FOUND = new BaseException(ErrorCode.BOOK_SEARCH_NOT_FOUND);
     public static final BaseException INTERNAL_SERVER_ERROR = new BaseException(ErrorCode.INTERNAL_SERVER_ERROR);
+    public static final BaseException INVALID_TOKEN = new BaseException(ErrorCode.INVALID_TOKEN);
 
     private final ErrorCode errorCode;
 
