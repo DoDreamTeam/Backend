@@ -9,4 +9,5 @@ public class BookUpdateResponse {
     private Long id;
     private String title; // 문제집 제목
     private String category; // 문제집 카테고리
+    private boolean secret; // 문제집 공개,비공개
 }

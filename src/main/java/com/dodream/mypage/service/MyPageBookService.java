@@ -17,4 +17,7 @@ public interface MyPageBookService {
 
     // 문제집 삭제
     BookResponse deleteBook(Long bookId);
+
+    // 문제집 공개 비공개 설정
+    BookUpdateResponse updateSecret(Long bookId);
 }

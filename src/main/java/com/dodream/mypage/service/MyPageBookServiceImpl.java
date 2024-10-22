@@ -112,4 +112,28 @@ public class MyPageBookServiceImpl implements MyPageBookService {
             .id(book.getId())
             .build();
     }
+
+    // 문제집 공개 비공개 설정
+    @Override
+    public BookUpdateResponse updateSecret(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+            .orElseThrow(() -> new IllegalArgumentException("문제집이 없습니다"));
+
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long loginUserId = user.getId();
+
+        if (!book.getUser().getId().equals(loginUserId)) {
+            throw new SecurityException("삭제 권한이 없습니다");
+        }
+
+        book.setSecret(!book.isSecret());
+
+        bookRepository.save(book);
+
+        return BookUpdateResponse.builder()
+            .id(book.getId())
+            .secret(book.isSecret())
+            .build();
+    }
+
 }
