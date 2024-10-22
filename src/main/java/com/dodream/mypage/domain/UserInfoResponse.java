@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Builder
 public class UserInfoResponse {
+
     private Long userId; // 유저 ID
     private String userName; // 유저 이름
     private String profileImage; // 유저 프로필사진
@@ -25,6 +26,7 @@ public class UserInfoResponse {
             .userBooks(userBooks)
             .build();
     }
+
     // 프로필 수정
     public static UserInfoResponse toDTO(User user) {
         return UserInfoResponse.builder()
