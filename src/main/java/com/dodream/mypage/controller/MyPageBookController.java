@@ -2,8 +2,8 @@ package com.dodream.mypage.controller;
 
 
 import com.dodream.book.domain.BookResponse;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.service.MyPageBookService;
 import lombok.RequiredArgsConstructor;
@@ -28,22 +28,6 @@ public class MyPageBookController {
     public ResponseEntity<UserInfoResponse> getUserInfoAll(@PathVariable("id") Long id) {
         UserInfoResponse userInfo = myPageBookService.getUserInfoAll(id);
         return ResponseEntity.ok(userInfo);
-    }
-
-    // 문제집 제목 수정하기
-    @PatchMapping("/{id}")
-    public ResponseEntity<BookUpdateResponse> updateBook(@PathVariable("id") Long id,
-        @RequestBody BookUpdateRequest bookUpdateRequest) {
-
-        BookUpdateResponse updateBookTitle = myPageBookService.updateBook(id, bookUpdateRequest);
-        return ResponseEntity.ok(updateBookTitle);
-    }
-
-    // 문제집 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<BookResponse> deleteBook(@PathVariable("id") Long id) {
-        BookResponse deleteBook = myPageBookService.deleteBook(id);
-        return ResponseEntity.ok(deleteBook);
     }
 
     // 문제집 공개 비공개 설정
