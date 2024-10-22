@@ -2,14 +2,14 @@ package com.dodream.book.service;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
-import com.dodream.book.domain.BookUpdateRequest;
-import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.mypage.domain.BookUpdateRequest;
+import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

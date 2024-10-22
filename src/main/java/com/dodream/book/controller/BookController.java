@@ -2,9 +2,9 @@ package com.dodream.book.controller;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
-import com.dodream.book.domain.BookUpdateRequest;
-import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.service.BookService;
+import com.dodream.mypage.domain.BookUpdateRequest;
+import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
