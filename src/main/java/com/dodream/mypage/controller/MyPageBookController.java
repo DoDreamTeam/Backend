@@ -1,12 +1,14 @@
 package com.dodream.mypage.controller;
 
 
+import com.dodream.book.domain.BookResponse;
 import com.dodream.mypage.domain.BookUpdateRequest;
 import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.service.MyPageBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,5 +37,12 @@ public class MyPageBookController {
 
         BookUpdateResponse updateBookTitle = myPageBookService.updateBook(id, bookUpdateRequest);
         return ResponseEntity.ok(updateBookTitle);
+    }
+
+    // 문제집 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<BookResponse> deleteBook(@PathVariable("id") Long id) {
+        BookResponse deleteBook = myPageBookService.deleteBook(id);
+        return ResponseEntity.ok(deleteBook);
     }
 }
