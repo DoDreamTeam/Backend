@@ -1,5 +1,7 @@
 package com.dodream.security;
 
+import com.dodream.common.exception.BaseException;
+import com.dodream.common.exception.ErrorCode;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -47,8 +49,7 @@ public class JwtProvider {
             .issuer(jwtProperties.getIssuer()) // 발행자 정보 설정
             .issuedAt(new Date()) // 발행일시 설정
             .expiration(expiredDate) // 만료 시간 설정
-            .subject(user.getUsername()) // 토큰의 주제(Subject) 설정 _ 사용자 이메일
-            .claim("username", user.getUsername())
+            .subject(String.valueOf(user.getId())) // 토큰의 주제(Subject) 설정 - 사용자 id
             .signWith(getSecretKey(), Jwts.SIG.HS256) // 비밀키와 해시 알고리즘 사용하여 토큰 설명값 설정
             .compact(); // 토큰 정보들을 최종적으로 압축해서 문자열로 반환
         log.info("[makeToken] 완성된 토큰 : {}", token);
@@ -71,10 +72,8 @@ public class JwtProvider {
             log.info("토큰 검증 통과");
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new BaseException(ErrorCode.INVALID_TOKEN);
         }
-        log.info("토큰 검증 실패");
-        return false;
     }
 
     // 토큰에서 정보(Claim) 추출 메소드
@@ -89,16 +88,16 @@ public class JwtProvider {
     // 토큰에서 인증 정보 반환하는 메소드
     public Authentication getAuthenticationByToken(String token) {
         log.info("[getAuthenticationByToken] 토큰 인증 정보 조회");
-        String username = getUsernameByToken(token);
-        User user = userRepository.findByUsername(username).get();
+        String userId = getUserIdByToken(token);
+        User user = userRepository.findById(Long.valueOf(userId)).get();
         return new UsernamePasswordAuthenticationToken(
             user, token, user.getAuthorities()
         );
     }
 
     // 토큰에서 사용자 이름만 추출하는 메소드
-    public String getUsernameByToken(String token) {
-        log.info("[getUsernameByToken] 토큰 기반 회원 식별 정보 추출");
+    public String getUserIdByToken(String token) {
+        log.info("[getUserIdByToken] 토큰 기반 회원 식별 정보 추출");
         Claims claims = getClaims(token);
         return claims.get("sub", String.class);
     }
