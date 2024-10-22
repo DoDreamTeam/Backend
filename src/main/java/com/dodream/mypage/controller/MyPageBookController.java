@@ -29,7 +29,7 @@ public class MyPageBookController {
         UserInfoResponse userInfo = myPageBookService.getUserInfoAll(id);
         return ResponseEntity.ok(userInfo);
     }
-    
+
     // 문제집 제목 수정하기
     @PatchMapping("/{id}")
     public ResponseEntity<BookUpdateResponse> updateBook(@PathVariable("id") Long id,
@@ -44,5 +44,12 @@ public class MyPageBookController {
     public ResponseEntity<BookResponse> deleteBook(@PathVariable("id") Long id) {
         BookResponse deleteBook = myPageBookService.deleteBook(id);
         return ResponseEntity.ok(deleteBook);
+    }
+
+    // 문제집 공개 비공개 설정
+    @PatchMapping("/{id}/secret")
+    public ResponseEntity<BookUpdateResponse> updateSecret(@PathVariable("id") Long id) {
+        BookUpdateResponse updateSecret = myPageBookService.updateSecret(id);
+        return ResponseEntity.ok(updateSecret);
     }
 }
