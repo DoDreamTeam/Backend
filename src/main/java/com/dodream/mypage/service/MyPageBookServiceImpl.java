@@ -15,7 +15,6 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
