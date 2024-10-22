@@ -35,42 +35,42 @@ public class MyPageBookServiceImpl implements MyPageBookService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        access(userId);
+        User loginUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!userId.equals(loginUser.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
 
         // 사용자의 문제집 리스트
         List<UserBook> userBooks = userBookRepository.findByUserId(userId);
+        // 사용자 북마크 리스트
         List<Bookmark> userBookMarks = bookmarkRepository.findByUserId(userId);
 
-        List<BookResponse> bookResponses = getBookResponse(userBooks, userBookMarks);
+        // 사용자 문제집 정보 리스트
+        List<BookResponse> userBookResponses = userBooks.stream()
+            .map(UserBook::getBook)
+            .distinct()
+            .map(this::createBookResponse)
+            .collect(Collectors.toList());
 
-        return UserInfoResponse.toDTO(user, bookResponses);
+        // 사용자 북마크 문제집 정보 리스트
+        List<BookResponse> bookmarkResponses = userBookMarks.stream()
+            .map(Bookmark::getBook)
+            .distinct()
+            .map(this::createBookResponse)
+            .collect(Collectors.toList());
 
+        return UserInfoResponse.toDTO(user, userBookResponses, bookmarkResponses);
     }
 
-    private void access(Long userId) {
-        User loginuser = (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
-        if (!userId.equals(loginuser.getId())) {
-            throw new BaseException(ErrorCode.ACCESS_DENIED);
-        }
-    }
-
-    private List<BookResponse> getBookResponse(List<UserBook> userBooks, List<Bookmark> bookmarks) {
-        return Stream.concat(
-            getBookStream(userBooks.stream().map(UserBook::getBook)),
-            getBookStream(bookmarks.stream().map(Bookmark::getBook))
-        ).distinct().collect(Collectors.toList());
-    }
-
-    private Stream<BookResponse> getBookStream(Stream<Book> books) {
-        return books.filter(book -> !book.isSecret())
-            .map(book -> BookResponse.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                .category(book.getCategory().name())
-                .createdAt(book.getCreatedAt())
-                .build());
+    private BookResponse createBookResponse(Book book) {
+        return BookResponse.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .username(book.getUser() != null ? book.getUser().getUsername() : null)
+            .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+            .category(book.getCategory().name())
+            .createdAt(book.getCreatedAt())
+            .build();
     }
 
     // 문제집 공개 비공개 설정
@@ -95,7 +95,6 @@ public class MyPageBookServiceImpl implements MyPageBookService {
             .secret(book.isSecret())
             .build();
     }
-
     private void bookOwner(Book book, User user) {
         if (!book.getUser().getId().equals(user.getId())) {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
