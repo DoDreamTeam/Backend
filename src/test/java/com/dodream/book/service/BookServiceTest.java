@@ -3,10 +3,13 @@ package com.dodream.book.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
@@ -17,6 +20,7 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +49,13 @@ class BookServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = User.builder().username("hello").provider("provider1").providerId("1").build();
+        user = User
+            .builder()
+            .id(1L)
+            .username("hello")
+            .provider("provider1")
+            .providerId("1")
+            .build();
 
         bookRequest = new BookRequest();
         bookRequest.setTitle("title");
@@ -162,5 +172,99 @@ class BookServiceTest {
         assertThat(response.getTitle()).isEqualTo("Test Book"); // 제목이 맞는가?
         assertThat(response.getUsername()).isEqualTo("hello"); // 사용자 이름이 맞는가?
         assertThat(response.getCategory()).isEqualTo("CATEGORY_CS"); // 카테고리가 맞는가?
+    }
+
+    @DisplayName("문제집 수정 성공")
+    @Test
+    public void testUpdateBook() {
+        // given (사전 준비)
+        Book existingBook = Book.builder()
+            .id(1L)
+            .title("Old Title")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        BookUpdateRequest updateRequest = new BookUpdateRequest();
+        updateRequest.setTitle("New Title");
+        updateRequest.setCategory("CATEGORY_CS");
+
+        // when (테스트 진행할 범위)
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+        when(bookRepository.save(any(Book.class))).thenReturn(existingBook);
+
+        BookUpdateResponse response = bookService.updateBook(user, 1L, updateRequest);
+
+        // then (범위에 대한 결과 검증)
+        assertThat(response).isNotNull(); // null이 아닌가?
+        assertThat(response.getTitle()).isEqualTo("New Title"); // 수정된 제목이 맞는가?
+        assertThat(response.getCategory()).isEqualTo("CATEGORY_CS"); // 수정된 카테고리가 맞는가?
+    }
+
+    @DisplayName("문제집 수정 시 소유자 확인 실패")
+    @Test
+    public void testUpdateBook_AccessDenied() {
+        // given (사전 준비)
+        Book existingBook = Book.builder()
+            .id(1L)
+            .title("Old Title")
+            .user(User.builder().id(2L).build())
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        BookUpdateRequest updateRequest = new BookUpdateRequest();
+        updateRequest.setTitle("New Title");
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+
+        // when & then (예외가 발생하는지 확인)
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookService.updateBook(user, 1L, updateRequest);
+        });
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ACCESS_DENIED);
+    }
+
+    @DisplayName("문제집 삭제 성공")
+    @Test
+    public void testDeleteBook() {
+        // given (사전 준비)
+        Book existingBook = Book.builder()
+            .id(1L)
+            .title("Book to be deleted")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+
+        // when (테스트 진행할 범위)
+        bookService.deleteBook(1L, user);
+
+        // then (범위에 대한 결과 검증)
+        verify(bookRepository).delete(existingBook); // 삭제 메서드가 호출되었는지 검증
+    }
+
+    @DisplayName("문제집 삭제 시 소유자 확인 실패")
+    @Test
+    public void testDeleteBook_AccessDenied() {
+        // given (사전 준비)
+        Book existingBook = Book.builder()
+            .id(1L)
+            .title("Book to be deleted")
+            .user(User.builder().id(2L).build())
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
+
+        // when & then (예외가 발생하는지 확인)
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookService.deleteBook(1L, user);
+        });
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ACCESS_DENIED);
     }
 }
