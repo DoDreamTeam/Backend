@@ -57,7 +57,7 @@ public class MyPageServiceImpl implements MyPageService {
         User loginuser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long loginUserId = loginuser.getId();
 
-        if(userId.equals(loginUserId)) {
+        if(!userId.equals(loginUserId)) {
             throw new SecurityException("수정 권한이 없습니다");
         }
 
