@@ -1,9 +1,7 @@
 package com.dodream.mypage.controller;
 
 
-import com.dodream.book.domain.BookResponse;
-import com.dodream.book.domain.BookUpdateRequest;
-import com.dodream.book.domain.BookUpdateResponse;
+import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.service.MyPageBookService;
 import lombok.RequiredArgsConstructor;

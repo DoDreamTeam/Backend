@@ -6,7 +6,7 @@ import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
-import com.dodream.book.domain.BookUpdateResponse;
+import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
