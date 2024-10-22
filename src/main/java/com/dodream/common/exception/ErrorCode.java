@@ -11,6 +11,10 @@ public enum ErrorCode {
     /* 400 */
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
+    BOOK_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOK_NOT_FOUND", "해당 id를 가진 문제집이 없습니다."),
+
+    /* 403 */
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
 
     /* 404 */
     BOOK_CATEGORY_ERROR(HttpStatus.NOT_FOUND, "BOOK_CATEGORY_ERROR", "해당 카테고리는 존재하지 않습니다"),
