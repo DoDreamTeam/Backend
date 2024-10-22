@@ -90,12 +90,12 @@ class JwtProviderTest {
         // given (사전 준비)
         String username = "codesche";
         String token = JwtFactory.builder()
-                    .claims(Map.of("username", username))
+                    .claims(Map.of("codesche", username))
                     .build()
                     .createToken(jwtProperties);
 
         // when (테스트 진행할 행위)
-        String usernameByToken = jwtProvider.getUsernameByToken(token);
+        String usernameByToken = jwtProvider.getUserIdByToken(token);
 
         // then (행위에 대한 결과 검증)
         assertThat(usernameByToken).isEqualTo(username);
