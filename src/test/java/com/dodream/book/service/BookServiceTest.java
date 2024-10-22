@@ -66,7 +66,7 @@ class BookServiceTest {
             .build();
 
         // when (테스트 진행할 범위)
-        when(bookRepository.findAllBySecretFalse()).thenReturn(Collections.singletonList(book));
+        when(bookRepository.findAllBySecretFalseOrderByCreatedAtDesc()).thenReturn(Collections.singletonList(book));
         List<BookResponse> responses = bookService.getBookList();
 
         // then (범위에 대한 결과 검증)
@@ -89,7 +89,7 @@ class BookServiceTest {
             .build();
 
         // when (테스트 진행할 범위)
-        when(bookRepository.findAllByCategoryAndSecretFalse(Category.CATEGORY_CS)).thenReturn(
+        when(bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(Category.CATEGORY_CS)).thenReturn(
             Collections.singletonList(book));
         List<BookResponse> responses = bookService.getBookListByCategory("CATEGORY_CS");
 
@@ -119,7 +119,7 @@ class BookServiceTest {
             .build();
 
         // when (테스트 진행할 범위)
-        when(bookRepository.findAllByTitleContainingAndSecretFalse("Test")).thenReturn(
+        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("Test")).thenReturn(
             Collections.singletonList(book));
 
         List<BookResponse> responses = bookService.searchBooksByKeyword("Test");
@@ -134,7 +134,7 @@ class BookServiceTest {
     @DisplayName("제목으로 문제집 검색 결과가 없을 경우 예외 처리")
     @Test
     public void testSearchBooksByTitle_NoBooksFound() {
-        when(bookRepository.findAllByTitleContainingAndSecretFalse("NonExistent")).thenReturn(Collections.emptyList());
+        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("NonExistent")).thenReturn(Collections.emptyList());
 
         BaseException exception = assertThrows(BaseException.class, () -> bookService.searchBooksByKeyword("NonExistent"));
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.BOOK_SEARCH_NOT_FOUND);

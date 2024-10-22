@@ -30,7 +30,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookResponse> getBookList() {
-        List<Book> bookList = bookRepository.findAllBySecretFalse();
+        List<Book> bookList = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc();
 
         return convertToBookResponseList(bookList);
     }
@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
             throw new BaseException(ErrorCode.BOOK_CATEGORY_ERROR);
         }
 
-        List<Book> bookList = bookRepository.findAllByCategoryAndSecretFalse(categoryEnum);
+        List<Book> bookList = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(categoryEnum);
 
         // 해당 카테고리에 문제집이 없는 경우 예외처리
         if (bookList.isEmpty()) {
@@ -56,7 +56,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookResponse> searchBooksByKeyword(String keyword) {
-        List<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalse(keyword);
+        List<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(keyword);
 
         // 해당 검색어와 일치하는 문제집이 없는 경우 예외처리
         if(bookList.isEmpty()) {

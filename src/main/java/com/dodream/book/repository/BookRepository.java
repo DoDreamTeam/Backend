@@ -9,12 +9,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    // 공개인 경우에만 문제집 전체 조회 가능
-    List<Book> findAllBySecretFalse();
+    // 공개인 경우에만 문제집 전체 최신순 조회
+    List<Book> findAllBySecretFalseOrderByCreatedAtDesc();
 
-    // 카테고리별로 문제집 전체 조회 (공개인 경우)
-    List<Book> findAllByCategoryAndSecretFalse(Category category);
+    // 카테고리별로 문제집 전체 최신순 조회 (공개인 경우)
+    List<Book> findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(Category category);
 
-    // 문제집 제목으로 검색 (공개 문제집만 검색 가능)
-    List<Book> findAllByTitleContainingAndSecretFalse(String title);
+    // 문제집 제목으로 검색 (공개 문제집만 검색 가능) 최신순으로 정렬
+    List<Book> findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(String title);
 }
