@@ -1,15 +1,12 @@
 package com.dodream.mypage.service;
 
-import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
-import com.dodream.common.enumtype.Category;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
@@ -60,57 +57,6 @@ public class MyPageBookServiceImpl implements MyPageBookService {
             .toList();
 
         return UserInfoResponse.toDTO(user, books);
-    }
-
-    // 문제집 수정
-    @Override
-    public BookUpdateResponse updateBook(Long bookId, BookUpdateRequest request) {
-        Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new IllegalArgumentException("문제집이 없습니다"));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long loginUserId = user.getId();
-
-        if (!book.getUser().getId().equals(loginUserId)) {
-            throw new SecurityException("수정 권한이 없습니다");
-        }
-
-        if (request.getTitle() != null) {
-            book.setTitle(request.getTitle());
-        }
-        if (request.getCategory() != null) {
-            book.setCategory(Category.valueOf(request.getCategory()));
-        }
-
-        bookRepository.save(book);
-
-        return BookUpdateResponse
-            .builder()
-            .id(book.getId())
-            .title(book.getTitle())
-            .category(book.getCategory().name())
-            .build();
-    }
-
-    // 문제집 삭제
-    @Override
-    public BookResponse deleteBook(Long bookId) {
-        Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new IllegalArgumentException("문제집이 없습니다"));
-
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long loginUserId = user.getId();
-
-        if (!book.getUser().getId().equals(loginUserId)) {
-            throw new SecurityException("삭제 권한이 없습니다");
-        }
-
-        bookRepository.delete(book);
-
-        return BookResponse
-            .builder()
-            .id(book.getId())
-            .build();
     }
 
     // 문제집 공개 비공개 설정

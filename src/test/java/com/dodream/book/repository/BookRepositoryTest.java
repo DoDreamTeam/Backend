@@ -10,6 +10,8 @@ import com.dodream.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -165,6 +167,22 @@ class BookRepositoryTest {
         assertThat(savedBook.getTitle()).isEqualTo("add test book");
         assertThat(savedBook.getUser().getUsername()).isEqualTo("hello");
         assertThat(savedBook.getCategory()).isEqualTo(Category.CATEGORY_CERT);
+    }
+
+    @DisplayName("문제집 삭제하기")
+    @Test
+    public void deleteBookTest() {
+        // given (사전 준비)
+        // setUp() 참고
+        Long bookId = 1L;
+
+        // when (테스트 진행할 범위)
+        bookRepository.deleteById(bookId);
+
+        // then (범위에 대한 결과 검증)
+        Optional<Book> findBook = bookRepository.findById(bookId);
+        Assertions.assertThat(findBook).isNotPresent();
+
     }
 
 }
