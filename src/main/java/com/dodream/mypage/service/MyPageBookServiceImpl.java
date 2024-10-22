@@ -2,15 +2,20 @@ package com.dodream.mypage.service;
 
 import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.Book;
+import com.dodream.book.entity.Bookmark;
 import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
+import com.dodream.common.exception.BaseException;
+import com.dodream.common.exception.ErrorCode;
 import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,52 +33,61 @@ public class MyPageBookServiceImpl implements MyPageBookService {
     @Override
     public UserInfoResponse getUserInfoAll(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+
+        access(userId);
 
         // 사용자의 문제집 리스트
         List<UserBook> userBooks = userBookRepository.findByUserId(userId);
+        List<Bookmark> userBookMarks = bookmarkRepository.findByUserId(userId);
 
-        userBooks.forEach(userBook -> System.out.println(userBook.getBook().getTitle()));
+        List<BookResponse> bookResponses = getBookResponse(userBooks, userBookMarks);
 
+        return UserInfoResponse.toDTO(user, bookResponses);
+
+    }
+
+    private void access(Long userId) {
         User loginuser = (User) SecurityContextHolder.getContext().getAuthentication()
             .getPrincipal();
-        Long loginUserId = loginuser.getId();
-
-        if (!userId.equals(loginUserId)) {
-            throw new SecurityException("조회 권한이 없습니다");
+        if (!userId.equals(loginuser.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
+    }
 
-        // 사용자 문제집의 정보 리스트
-        List<BookResponse> books = userBooks.stream()
-            .map(UserBook::getBook)
-            .distinct()
+    private List<BookResponse> getBookResponse(List<UserBook> userBooks, List<Bookmark> bookmarks) {
+        return Stream.concat(
+            getBookStream(userBooks.stream().map(UserBook::getBook)),
+            getBookStream(bookmarks.stream().map(Bookmark::getBook))
+        ).distinct().collect(Collectors.toList());
+    }
+
+    private Stream<BookResponse> getBookStream(Stream<Book> books) {
+        return books.filter(book -> !book.isSecret())
             .map(book -> BookResponse.builder()
-                .id(book.getId()).title(book.getTitle())
+                .id(book.getId())
+                .title(book.getTitle())
                 .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
                 .category(book.getCategory().name())
                 .createdAt(book.getCreatedAt())
-                .build())
-            .toList();
-
-        return UserInfoResponse.toDTO(user, books);
+                .build());
     }
 
     // 문제집 공개 비공개 설정
     @Override
     public BookUpdateResponse updateSecret(Long bookId) {
         Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new IllegalArgumentException("문제집이 없습니다"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
 
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long loginUserId = user.getId();
+        bookOwner(book, user);
 
-        if (!book.getUser().getId().equals(loginUserId)) {
-            throw new SecurityException("삭제 권한이 없습니다");
+        // 문제집 소유자 확인
+        if (!book.getUser().getId().equals(user.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
         book.setSecret(!book.isSecret());
-
         bookRepository.save(book);
 
         return BookUpdateResponse.builder()
@@ -82,4 +96,9 @@ public class MyPageBookServiceImpl implements MyPageBookService {
             .build();
     }
 
+    private void bookOwner(Book book, User user) {
+        if (!book.getUser().getId().equals(user.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+    }
 }

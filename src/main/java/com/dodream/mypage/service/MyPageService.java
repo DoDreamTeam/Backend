@@ -9,6 +9,6 @@ public interface MyPageService {
     UserInfoResponse getUserInfo(Long userId);
 
     // 사용자 프로필 수정하기
-    UserInfoResponse updateUserProfile(Long userId, String newUserName, String newProfileImage);
+    UserInfoResponse updateUserProfile(String newUserName, String newProfileImage);
 
 }

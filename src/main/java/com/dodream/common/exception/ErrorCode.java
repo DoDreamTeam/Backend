@@ -20,6 +20,7 @@ public enum ErrorCode {
     BOOK_CATEGORY_ERROR(HttpStatus.NOT_FOUND, "BOOK_CATEGORY_ERROR", "해당 카테고리는 존재하지 않습니다"),
     BOOK_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_CATEGORY_NOT_FOUND", "해당 카테고리에 포함된 문제집이 없습니다."),
     BOOK_SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_SEARCH_NOT_FOUND", "검색어와 일치하는 문제집이 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찿을 수 없습니다."),
 
     /* 500 */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예상치 못한 서버 에러가 발생했습니다.");

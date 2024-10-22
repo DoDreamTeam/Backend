@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/mypage")
 public class MyPageController {
+
     private final MyPageService myPageService;
 
     // 사용자 정보 가져오기 (userName , profileImage , userBooks)
@@ -22,11 +23,12 @@ public class MyPageController {
     }
 
     // 사용자 프로필 수정 (userName , profileImage)
-    @PatchMapping("/{id}")
-    public ResponseEntity<UserInfoResponse> updateUserInfo(@PathVariable("id") Long id,
-                                                           @RequestBody UserUpdateRequest userUpdateRequest) {
-        UserInfoResponse updateUserProfile = myPageService.updateUserProfile(id, userUpdateRequest.getUsername(),
-                userUpdateRequest.getProfileImage());
+    @PatchMapping("/")
+    public ResponseEntity<UserInfoResponse> updateUserInfo(
+        @RequestBody UserUpdateRequest userUpdateRequest) {
+        UserInfoResponse updateUserProfile = myPageService.updateUserProfile(
+            userUpdateRequest.getUsername(),
+            userUpdateRequest.getProfileImage());
         return ResponseEntity.ok(updateUserProfile);
     }
 
