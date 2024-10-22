@@ -4,6 +4,8 @@ import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
+import com.dodream.common.exception.BaseException;
+import com.dodream.common.exception.ErrorCode;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
@@ -24,7 +26,7 @@ public class MyPageServiceImpl implements MyPageService {
     @Override
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         // 사용자의 문제집 리스트
         List<UserBook> userBooks = userBookRepository.findByUserId(userId);
@@ -44,36 +46,27 @@ public class MyPageServiceImpl implements MyPageService {
                 .createdAt(book.getCreatedAt())
                 .build())
             .toList();
-
         return UserInfoResponse.toDTO(user, books);
     }
+
     // 사용자 프로필 수정
     @Override
-    public UserInfoResponse updateUserProfile(Long userId, String newUserName, String newProfileImage) {
-        User user = userRepository.findById(userId)
-
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다"));
-
-        User loginuser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public UserInfoResponse updateUserProfile(String newUserName, String newProfileImage) {
+        User loginuser = (User) SecurityContextHolder.getContext().getAuthentication()
+            .getPrincipal();
         Long loginUserId = loginuser.getId();
 
-        if(!userId.equals(loginUserId)) {
-            throw new SecurityException("수정 권한이 없습니다");
-        }
+        User user = userRepository.findById(loginUserId)
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         // 유저네임과 프로필 이미지 수정
-        if(newUserName != null) {
-        user.setUsername(newUserName);
+        if (newUserName != null) {
+            user.setUsername(newUserName);
         }
-        if(newProfileImage != null) {
-        user.setProfileImage(newProfileImage);
+        if (newProfileImage != null) {
+            user.setProfileImage(newProfileImage);
         }
-
         userRepository.save(user);
-
         return UserInfoResponse.toDTO(user);
     }
-
-
-
 }
