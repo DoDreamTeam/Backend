@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,5 +50,11 @@ public class BookCommentController {
     }
 
     // 댓글 삭제
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId
+        , @AuthenticationPrincipal User user) {
+        bookCommentService.deleteComment(commentId, user);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
 
 }
