@@ -23,7 +23,7 @@ public class MyPageController {
     }
 
     // 사용자 프로필 수정 (userName , profileImage)
-    @PatchMapping("/")
+    @PatchMapping("")
     public ResponseEntity<UserInfoResponse> updateUserInfo(
         @RequestBody UserUpdateRequest userUpdateRequest) {
         UserInfoResponse updateUserProfile = myPageService.updateUserProfile(
