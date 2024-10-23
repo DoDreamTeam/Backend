@@ -1,0 +1,14 @@
+package com.dodream.book.repository;
+
+import com.dodream.book.entity.BookComment;
+import com.dodream.book.entity.BookCommentLike;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike, Long> {
+
+    // 좋아요 수 계산
+    long countByCommentId(BookComment commentId);
+
+}
