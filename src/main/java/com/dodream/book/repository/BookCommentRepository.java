@@ -7,7 +7,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookCommentRepository extends JpaRepository<BookComment, Long> {
+  
+    // 최신순 댓글 전체 조회
+    List<BookComment> findByBookIdOrderByCreatedAtDesc(Long bookId);
 
     // 유저 ID 로 찿기
     List<BookComment> findByUserId(Long userId);
+
 }

@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     BOOK_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOK_NOT_FOUND", "해당 id를 가진 문제집이 없습니다."),
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
+    BOOK_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_COMMENT_NOT_FOUND", "해당 id를 가진 문제집 댓글이 없습니다"),
 
     /* 403 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
@@ -25,6 +26,7 @@ public enum ErrorCode {
     STUDY_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_CATEGORY_NOT_FOUND", "해당 카테고리에 포함된 스터디가 없습니다."),
     STUDY_SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_SEARCH_NOT_FOUND", "검색어와 일치하는 스터디가 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찿을 수 없습니다."),
+    BOOK_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_ID_NOT_FOUND", "해당 id를 가진 문제집이 존재하지 않습니다."),
     BOOK_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_COMMENT_NOT_FOUND", "댓글이 존재하지 않습니다"),
     BOOK_COMMENT_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_COMMENT_NOT_FOUND", "좋아요 한 댓글이 존재하지 않습니다"),
 

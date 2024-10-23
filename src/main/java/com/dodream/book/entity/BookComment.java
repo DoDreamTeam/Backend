@@ -54,4 +54,7 @@ public class BookComment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public void updateComment(String comment) {
+        this.comment = comment;
+    }
 }
