@@ -14,4 +14,6 @@ public interface BookCommentService {
     BookCommentResponse addComment(Long id, User user, BookCommentRequest bookCommentRequest);
 
     BookCommentUpdateResponse updateComment(Long commentId, User user, BookCommentUpdateRequest bookCommentUpdateRequest);
+
+    void deleteComment(Long commentId, User user);
 }

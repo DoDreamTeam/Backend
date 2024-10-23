@@ -103,4 +103,21 @@ public class BookCommentServiceImpl implements BookCommentService {
             .comment(comment.getComment()) // 수정된 댓글 내용 반환
             .build();
     }
+
+    // 문제집 댓글 삭제
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId, User user) {
+        // 댓글 정보 조회
+        BookComment comment = bookCommentRepository.findById(commentId)
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOK_COMMENT_NOT_FOUND));
+
+        // 댓글 작성자 확인
+        if (!comment.getUser().getId().equals(user.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 댓글 삭제
+        bookCommentRepository.delete(comment);
+    }
 }
