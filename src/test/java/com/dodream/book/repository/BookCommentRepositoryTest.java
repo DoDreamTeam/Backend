@@ -137,4 +137,49 @@ class BookCommentRepositoryTest {
         assertThat(savedComment.getUser().getUsername()).isEqualTo("hello");
     }
 
+    @Test
+    @DisplayName("문제집 댓글 수정")
+    public void testUpdateBookComment() {
+        // given (사전 준비)
+        User user1 = User
+            .builder()
+            .username("hello")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+
+        userRepository.save(user1);
+
+        Book book = Book
+            .builder()
+            .id(1L)
+            .title("Test Book1")
+            .user(user1)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        bookRepository.save(book);
+
+        // 댓글 객체 생성 및 저장
+        BookComment comment = BookComment.builder()
+            .comment("원래 댓글")
+            .user(user1)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+        bookCommentRepository.save(comment);
+
+        // when (테스트 진행할 범위)
+        comment.updateComment("수정된 댓글"); // 댓글 수정
+        bookCommentRepository.save(comment); // 수정된 댓글 저장
+
+        // then (범위에 대한 결과 검증)
+        BookComment updatedComment = bookCommentRepository.findById(comment.getId())
+            .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+
+        assertThat(updatedComment.getComment()).isEqualTo("수정된 댓글");
+    }
+
 }
