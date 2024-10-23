@@ -2,13 +2,16 @@ package com.dodream.book.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.repository.BookCommentLikeRepository;
 import com.dodream.book.repository.BookCommentRepository;
+import com.dodream.book.repository.BookRepository;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
@@ -16,6 +19,7 @@ import com.dodream.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,9 @@ class BookCommentServiceTest {
 
     @Mock
     private BookCommentLikeRepository bookCommentLikeRepository;
+
+    @Mock
+    private BookRepository bookRepository;
 
     @BeforeEach
     void setUp() {
@@ -113,5 +120,75 @@ class BookCommentServiceTest {
         });
 
         assertEquals(ErrorCode.BOOK_ID_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("문제집에 댓글 생성 성공")
+    @Test
+    void addComment_ShouldReturnBookCommentResponse() {
+        // Given
+        User user1 = User
+            .builder()
+            .username("hello")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+
+        Book book = Book
+            .builder()
+            .id(1L)
+            .title("Test Book1")
+            .user(user1)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        BookCommentRequest commentRequest = new BookCommentRequest();
+        commentRequest.setComment("This is a comment.");
+
+        when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
+        when(bookCommentRepository.save(any(BookComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        BookCommentResponse response = bookCommentService.addComment(book.getId(), user1, commentRequest);
+
+        // Then
+        assertEquals("This is a comment.", response.getComment());
+        assertEquals("hello", response.getUsername());
+        assertEquals(book.getId(), response.getBookId());
+        assertEquals(0L, response.getLikeCount()); // 초기 좋아요 수
+    }
+
+    @DisplayName("존재하지 않는 문제집에 댓글 추가 시 예외 발생")
+    @Test
+    void addComment_WhenBookNotFound_ShouldThrowException() {
+        // Given
+        User user1 = User
+            .builder()
+            .username("hello")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+
+        Book book = Book
+            .builder()
+            .id(1L)
+            .title("Test Book1")
+            .user(user1)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        BookCommentRequest commentRequest = new BookCommentRequest();
+        commentRequest.setComment("This is a comment.");
+
+        when(bookRepository.findById(book.getId())).thenReturn(Optional.empty());
+
+        // When & Then
+        BaseException exception = assertThrows(BaseException.class, () ->
+            bookCommentService.addComment(book.getId(), user1, commentRequest));
+
+        assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
     }
 }
