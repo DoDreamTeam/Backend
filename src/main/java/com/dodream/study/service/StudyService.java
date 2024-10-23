@@ -1,11 +1,19 @@
 package com.dodream.study.service;
 
+import com.dodream.study.domain.StudyRequest;
 import com.dodream.study.domain.StudyResponse;
+import com.dodream.study.domain.StudyUpdateRequest;
+import com.dodream.study.domain.StudyUpdateResponse;
+import com.dodream.user.entity.User;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface StudyService {
-
-//    List<StudyResponse> getStudyList(Authentication authentication);
-    List<StudyResponse> getStudyList();
+    Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category);
+    Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, String keyword);
+    StudyResponse addStudy(User user, StudyRequest studyRequest);
+    void deleteStudy(User user, Long id);
+    StudyUpdateResponse updateStudy(User user, Long id, StudyUpdateRequest studyUpdateRequest);
 
 }
