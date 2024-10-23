@@ -2,6 +2,8 @@ package com.dodream.book.service;
 
 import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
+import com.dodream.book.domain.BookCommentUpdateRequest;
+import com.dodream.book.domain.BookCommentUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.repository.BookCommentLikeRepository;
@@ -77,6 +79,28 @@ public class BookCommentServiceImpl implements BookCommentService {
             .bookId(savedComment.getBook().getId())
             .likeCount(0L) // 초기 좋아요 수 0
             .createdAt(savedComment.getCreatedAt())
+            .build();
+    }
+
+    // 문제집 댓글 수정
+    @Override
+    @Transactional
+    public BookCommentUpdateResponse updateComment(Long commentId, User user, BookCommentUpdateRequest bookCommentUpdateRequest) {
+        // 댓글 정보 조회
+        BookComment comment = bookCommentRepository.findById(commentId)
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOK_COMMENT_NOT_FOUND));
+
+        // 댓글 작성자 확인
+        if (!comment.getUser().getId().equals(user.getId())) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 댓글 수정
+        comment.updateComment(bookCommentUpdateRequest.getComment()); // 댓글 내용과 updatedAt 갱신
+
+        // 응답 객체 생성
+        return BookCommentUpdateResponse.builder()
+            .comment(comment.getComment()) // 수정된 댓글 내용 반환
             .build();
     }
 }
