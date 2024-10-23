@@ -1,7 +1,9 @@
 package com.dodream.book.controller;
 
+import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
 import com.dodream.book.service.BookCommentService;
+import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
 public class BookCommentController {
+
     private final BookCommentService bookCommentService;
 
     // 댓글 조회
@@ -27,6 +30,12 @@ public class BookCommentController {
     }
 
     // 댓글 생성
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<BookCommentResponse> createComment(@PathVariable("id") Long id,
+        @AuthenticationPrincipal User user, @RequestBody BookCommentRequest bookCommentRequest) {
+        BookCommentResponse savedComment = bookCommentService.addComment(id, user, bookCommentRequest);
+        return ResponseEntity.ok(savedComment);
+    }
 
     // 댓글 수정
 
