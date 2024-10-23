@@ -290,4 +290,101 @@ class BookCommentServiceTest {
 
         assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
     }
+
+    @DisplayName("문제집 댓글 삭제 성공")
+    @Test
+    void deleteComment_ShouldSucceed() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        Book book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .build();
+
+        BookComment existingComment = BookComment.builder()
+            .id(1L)
+            .comment("Existing comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.of(existingComment));
+
+        // When
+        bookCommentService.deleteComment(1L, user);
+
+        // Then
+        verify(bookCommentRepository).delete(existingComment);
+    }
+
+    @DisplayName("댓글 삭제 시 댓글이 존재하지 않을 때 예외 발생")
+    @Test
+    void deleteComment_WhenCommentNotFound_ShouldThrowException() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        Book book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .build();
+
+        BookComment existingComment = BookComment.builder()
+            .id(1L)
+            .comment("Existing comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookCommentService.deleteComment(1L, user);
+        });
+
+        assertEquals(ErrorCode.BOOK_COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("댓글 삭제 시 작성자가 다를 때 예외 발생")
+    @Test
+    void deleteComment_WhenUserIsNotAuthor_ShouldThrowException() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        Book book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .build();
+
+
+        User differentUser = User.builder().id(2L).username("differentUser").build();
+        BookComment existingComment = BookComment.builder()
+            .id(1L)
+            .comment("Existing comment")
+            .user(differentUser)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.of(existingComment));
+
+        // When & Then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookCommentService.deleteComment(1L, user);
+        });
+
+        assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
+    }
 }
