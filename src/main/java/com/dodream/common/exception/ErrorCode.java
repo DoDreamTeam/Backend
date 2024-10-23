@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     BOOK_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOK_NOT_FOUND", "해당 id를 가진 문제집이 없습니다."),
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
+    BOOK_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_COMMENT_NOT_FOUND", "해당 id를 가진 문제집 댓글이 없습니다"),
 
     /* 403 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
