@@ -10,6 +10,8 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,6 +182,20 @@ class BookCommentRepositoryTest {
             .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
 
         assertThat(updatedComment.getComment()).isEqualTo("수정된 댓글");
+    }
+
+    @DisplayName("문제집 댓글 삭제")
+    @Test
+    public void deleteCommentTest() {
+        // given (사전 준비)
+        Long bookId = 4L;
+
+        // when (테스트 진행할 범위)
+        bookCommentRepository.deleteById(bookId);
+
+        // then (범위에 대한 결과 검증)
+        Optional<BookComment> findBookComment = bookCommentRepository.findById(bookId);
+        Assertions.assertThat(findBookComment).isNotPresent();
     }
 
 }
