@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,6 +49,15 @@ public class StudyController {
             direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(value = "keyword", required = false) String keyword) {
         Page<StudyResponse> response = studyService.searchStudiesByKeyword(pageable, keyword);
+        return ResponseEntity.ok(response);
+    }
+
+    // 내가 참여중인 스터디 조회 (나의 스터디 멤버 상태가 Member or Leader 인 경우)
+    @GetMapping("/my")
+    public ResponseEntity<Page<StudyResponse>> getMyStudy(
+        @PageableDefault(page = 0, size = 5, sort = "joinDate",
+            direction = Direction.DESC) Pageable pageable, @AuthenticationPrincipal User user) {
+        Page<StudyResponse> response = studyService.getMyStudyList(pageable, user);
         return ResponseEntity.ok(response);
     }
 
