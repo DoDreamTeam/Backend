@@ -3,10 +3,14 @@ package com.dodream.book.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
+import com.dodream.book.domain.BookCommentUpdateRequest;
+import com.dodream.book.domain.BookCommentUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.repository.BookCommentLikeRepository;
@@ -190,5 +194,100 @@ class BookCommentServiceTest {
             bookCommentService.addComment(book.getId(), user1, commentRequest));
 
         assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("문제집 댓글 수정 성공")
+    @Test
+    void updateComment_ShouldReturnUpdatedResponse() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        Book book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .build();
+
+        BookComment existingComment = BookComment.builder()
+            .id(1L)
+            .comment("Existing comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        BookCommentUpdateRequest updateRequest = new BookCommentUpdateRequest();
+        updateRequest.setComment("Updated comment");
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.of(existingComment));
+
+        // When
+        BookCommentUpdateResponse response = bookCommentService.updateComment(1L, user, updateRequest);
+
+        // Then
+        assertEquals("Updated comment", response.getComment());
+        assertEquals("Updated comment", existingComment.getComment());
+        verify(bookCommentRepository).findById(1L);
+    }
+
+    @DisplayName("댓글 수정 시 댓글이 존재하지 않을 때 예외 발생")
+    @Test
+    void updateComment_WhenCommentNotFound_ShouldThrowException() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        BookCommentUpdateRequest updateRequest = new BookCommentUpdateRequest();
+        updateRequest.setComment("Updated comment");
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookCommentService.updateComment(1L, user, updateRequest);
+        });
+
+        assertEquals(ErrorCode.BOOK_COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("댓글 수정 시 작성자가 다를 때 예외 발생")
+    @Test
+    void updateComment_WhenUserIsNotAuthor_ShouldThrowException() {
+        // Given
+        User user = User.builder()
+            .id(1L)
+            .username("testUser")
+            .build();
+
+        Book book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .build();
+
+        User differentUser = User.builder().id(2L).username("differentUser").build();
+
+        BookComment existingComment = BookComment.builder()
+            .id(1L)
+            .comment("Existing comment")
+            .user(differentUser)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        BookCommentUpdateRequest updateRequest = new BookCommentUpdateRequest();
+        updateRequest.setComment("Updated comment");
+
+        when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.of(existingComment));
+
+        // When & Then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookCommentService.updateComment(1L, user, updateRequest);
+        });
+
+        assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
     }
 }
