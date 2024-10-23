@@ -2,6 +2,8 @@ package com.dodream.book.controller;
 
 import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
+import com.dodream.book.domain.BookCommentUpdateRequest;
+import com.dodream.book.domain.BookCommentUpdateResponse;
 import com.dodream.book.service.BookCommentService;
 import com.dodream.user.entity.User;
 import java.util.List;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,6 +41,12 @@ public class BookCommentController {
     }
 
     // 댓글 수정
+    @PatchMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<?> updateComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId,
+        @RequestBody BookCommentUpdateRequest bookCommentUpdateRequest, @AuthenticationPrincipal User user) {
+        BookCommentUpdateResponse updatedComment = bookCommentService.updateComment(commentId, user, bookCommentUpdateRequest);
+        return ResponseEntity.ok(updatedComment);
+    }
 
     // 댓글 삭제
 
