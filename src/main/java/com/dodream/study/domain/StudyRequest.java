@@ -3,9 +3,11 @@ package com.dodream.study.domain;
 import com.dodream.common.enumtype.Category;
 import com.dodream.study.entity.Study;
 import com.dodream.user.entity.User;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class StudyRequest {
     private String title;
     private String username;
