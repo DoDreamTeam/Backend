@@ -1,5 +1,6 @@
 package com.dodream.book.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dodream.book.entity.Book;
@@ -91,6 +92,49 @@ class BookCommentRepositoryTest {
         assertEquals("comment 2", comments.get(0).getComment());
         assertEquals("comment 1", comments.get(1).getComment());
 
+    }
+
+    @DisplayName("문제집 댓글 생성")
+    @Test
+    public void addCommentTest() {
+        // given (사전 준비)
+        User user1 = User
+            .builder()
+            .username("hello")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+
+        userRepository.save(user1);
+
+        Book book = Book
+            .builder()
+            .id(1L)
+            .title("Test Book1")
+            .user(user1)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        bookRepository.save(book);
+
+        BookComment comment1 = BookComment
+            .builder()
+            .comment("comment 1")
+            .user(user1)
+            .book(book)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        // when (테스트 진행할 범위)
+        BookComment savedComment = bookCommentRepository.save(comment1);
+
+        // then (범위에 대한 결과 검증)
+        assertThat(savedComment).isNotNull(); // null 이 아닌가?
+        assertThat(savedComment.getId()).isNotNull();
+        assertThat(savedComment.getComment()).isEqualTo("comment 1");
+        assertThat(savedComment.getUser().getUsername()).isEqualTo("hello");
     }
 
 }
