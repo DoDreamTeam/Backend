@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class StudyRequest {
     private String title;
+    private String username;
     private Category category;
     private String description;
 
