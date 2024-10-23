@@ -1,6 +1,7 @@
 package com.dodream.study.domain;
 
 import com.dodream.common.enumtype.Category;
+import com.dodream.study.entity.Study;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -35,5 +36,15 @@ public class StudyResponse {
     private LocalDateTime createdAt;
 
     private Long userCount;             // 멤버 수 -> StudyMember Id row 개수 (Member, Leader 포함)
+
+    public StudyResponse(Study study) {
+        this.id = study.getId();
+        this.title = study.getTitle();
+        this.username = study.getUser().getUsername();
+        this.description = study.getDescription();
+        this.category = study.getCategory();
+        this.updatedAt = study.getUpdatedAt();
+        this.createdAt = study.getCreatedAt();
+    }
 
 }

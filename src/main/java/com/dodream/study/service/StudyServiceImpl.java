@@ -12,6 +12,7 @@ import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.study.repository.StudyMemberRepository;
 import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -134,6 +135,17 @@ public class StudyServiceImpl implements StudyService {
             .title(study.getTitle())
             .description(study.getDescription())
             .build();
+    }
+
+    // 내가 참여중인 스터디 조회
+    // StudyMemberRepository를 통해 ROLE_MEMBER 또는 ROLE_LEADER에 해당하는 스터디 조회
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "myStudy")
+    public Page<StudyResponse> getMyStudyList(Pageable pageable, User user) {
+        return studyMemberRepository.findByUserAndRoleIn(pageable, user,
+                List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER))
+            .map(studyMember -> new StudyResponse(studyMember.getStudy()));
     }
 
 }

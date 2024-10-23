@@ -10,5 +10,8 @@ public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike
 
     // 좋아요 수 계산
     long countByCommentId(BookComment commentId);
+  
+    // 유저 ID 로 찿기
+    List<BookCommentLike> findByUserId(Long userId);
 
 }

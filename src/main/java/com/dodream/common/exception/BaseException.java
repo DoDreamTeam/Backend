@@ -21,7 +21,7 @@ public class BaseException extends RuntimeException {
     public static final BaseException INVALID_TOKEN = new BaseException(ErrorCode.INVALID_TOKEN);
     public static final BaseException USER_NOT_FOUND = new BaseException(ErrorCode.USER_NOT_FOUND);
     public static final BaseException BOOK_ID_NOT_FOUND = new BaseException(ErrorCode.BOOK_ID_NOT_FOUND);
-    public static final BaseException BOOK_COMMENT_NOT_FOUND = new BaseException(ErrorCode.BOOK_COMMENT_NOT_FOUND);
+    public static final BaseException BOOK_COMMENT_LIKE_NOT_FOUND = new BaseException(ErrorCode.BOOK_COMMENT_LIKE_NOT_FOUND);
 
     private final ErrorCode errorCode;
 
