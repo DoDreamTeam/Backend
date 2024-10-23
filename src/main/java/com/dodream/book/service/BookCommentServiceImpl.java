@@ -1,11 +1,16 @@
 package com.dodream.book.service;
 
+import com.dodream.book.domain.BookCommentRequest;
 import com.dodream.book.domain.BookCommentResponse;
+import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.repository.BookCommentLikeRepository;
 import com.dodream.book.repository.BookCommentRepository;
+import com.dodream.book.repository.BookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.user.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +23,7 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     private final BookCommentRepository bookCommentRepository;
     private final BookCommentLikeRepository bookCommentLikeRepository;
+    private final BookRepository bookRepository;
 
 
     @Override
@@ -42,5 +48,35 @@ public class BookCommentServiceImpl implements BookCommentService {
                     .build();
             })
             .collect(Collectors.toList());
+    }
+
+    // 문제집 댓글 생성
+    @Override
+    @Transactional
+    public BookCommentResponse addComment(Long id, User user,
+        BookCommentRequest bookCommentRequest) {
+        // 책 정보 조회
+        Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
+
+        BookComment comment = BookComment.builder()
+            .comment(bookCommentRequest.getComment())
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        // 댓글 저장
+        BookComment savedComment = bookCommentRepository.save(comment);
+
+        // 응답 객체 생성
+        return BookCommentResponse.builder()
+            .id(savedComment.getId())
+            .comment(savedComment.getComment())
+            .username(user.getUsername())
+            .bookId(savedComment.getBook().getId())
+            .likeCount(0L) // 초기 좋아요 수 0
+            .createdAt(savedComment.getCreatedAt())
+            .build();
     }
 }
