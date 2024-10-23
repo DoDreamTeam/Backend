@@ -2,6 +2,7 @@ package com.dodream.book.repository;
 
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.entity.BookCommentLike;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
