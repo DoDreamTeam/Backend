@@ -1,6 +1,7 @@
 package com.dodream.mypage.service;
 
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
 import com.dodream.book.entity.BookCommentLike;
@@ -15,7 +16,6 @@ import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.mypage.domain.BookCommentLikeResponse;
 import com.dodream.mypage.domain.BookCommentResponse;
-import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;

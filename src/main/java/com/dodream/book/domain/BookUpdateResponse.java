@@ -1,4 +1,4 @@
-package com.dodream.mypage.domain;
+package com.dodream.book.domain;
 
 import lombok.Builder;
 import lombok.Data;

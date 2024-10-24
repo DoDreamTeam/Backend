@@ -1,9 +1,9 @@
 package com.dodream.mypage.service;
 
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.BookComment;
 import com.dodream.mypage.domain.BookCommentLikeResponse;
 import com.dodream.mypage.domain.BookCommentResponse;
-import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import java.util.List;
 
