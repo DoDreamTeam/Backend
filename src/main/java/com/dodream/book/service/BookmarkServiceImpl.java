@@ -31,7 +31,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         BookmarkResponse bookmarkResponse;
 
         if (existingBookmark.isPresent()) {
-            // 기존 북마크가 존재하는 경우
+            // 기존 북마크가 존재하는 경우 (북마크 취소)
             Bookmark bookmark = existingBookmark.get();
             boolean newIsDeleted = !bookmark.isDeleted(); // 새로운 isDeleted 값 계산
 
@@ -50,6 +50,7 @@ public class BookmarkServiceImpl implements BookmarkService {
                 .userId(user.getId())
                 .bookId(book.getId())
                 .build();
+
         } else {
             // 새로운 북마크 생성
             Bookmark newBookmark = Bookmark.builder()
@@ -61,6 +62,7 @@ public class BookmarkServiceImpl implements BookmarkService {
             // 새로운 북마크 저장
             bookmarkRepository.save(newBookmark);
 
+            // 응답 객체 생성
             bookmarkResponse = BookmarkResponse.builder()
                 .id(newBookmark.getId())
                 .isDeleted(false)
@@ -71,4 +73,5 @@ public class BookmarkServiceImpl implements BookmarkService {
 
         return bookmarkResponse;
     }
+
 }
