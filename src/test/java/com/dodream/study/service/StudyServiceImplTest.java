@@ -1,9 +1,7 @@
 package com.dodream.study.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,6 +26,7 @@ import com.dodream.user.entity.User;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -115,8 +114,8 @@ class StudyServiceImplTest {
     public void testDeleteStudyAccessDenied() {
         // given (사전 준비)
         User invalidUser = User.builder()
-                .id(2L)
-                .build();
+            .id(2L)
+            .build();
 
         when(studyRepository.findById(anyLong())).thenReturn(Optional.of(testStudy));
 
@@ -134,13 +133,12 @@ class StudyServiceImplTest {
     public void testGetMyStudy() {
         // given (사전 준비)
         PageRequest pageable = PageRequest.of(0, 12);
-        StudyMember studyMember = StudyMember.builder()
-            .user(testUser)
-            .study(testStudy)
-            .role(RoleEnum.ROLE_MEMBER)
-            .build();
 
-        Page<StudyMember> page = new PageImpl<>(List.of(studyMember));
+        Page<StudyResponse> page = new PageImpl<>(List.of(
+            new StudyResponse(testStudy.getId(), testStudy.getTitle(), testUser.getUsername(),
+                testStudy.getDescription(), testStudy.getCategory(), 5L, // example user count
+                testStudy.getUpdatedAt(), testStudy.getCreatedAt())
+        ));
         when(studyMemberRepository.findByUserAndRoleIn(pageable, testUser,
             List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER)))
             .thenReturn(page);
@@ -283,7 +281,7 @@ class StudyServiceImplTest {
         StudyUpdateResponse response = studyService.updateStudy(testUser, 1L, updateRequest);
 
         // then (행위에 대한 결과 검증)
-        assertEquals("새로운 제목으로 수정", response.getTitle());
+        assertThat(response.getTitle()).isEqualTo("새로운 제목으로 수정");
         verify(studyRepository).findById(1L);
     }
 
@@ -292,8 +290,8 @@ class StudyServiceImplTest {
     public void testUpdateStudyAccessDenied() {
         // given (사전 준비)
         User otherUser = User.builder()
-                .id(2L)
-                .build();
+            .id(2L)
+            .build();
 
         StudyUpdateRequest updateRequest = new StudyUpdateRequest();
         updateRequest.setTitle("새로운 제목");
