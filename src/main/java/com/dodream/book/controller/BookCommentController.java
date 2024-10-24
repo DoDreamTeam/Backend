@@ -8,6 +8,10 @@ import com.dodream.book.service.BookCommentService;
 import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,10 +31,14 @@ public class BookCommentController {
 
     private final BookCommentService bookCommentService;
 
-    // 댓글 조회
+    // 댓글 조회 (최신순 / 좋아요 순으로 정렬 가능)
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<BookCommentResponse>> getAllComments(@PathVariable("id") Long id) {
-        List<BookCommentResponse> bookCommentList = bookCommentService.getCommentList(id);
+    public ResponseEntity<Page<BookCommentResponse>> getAllComments(
+        @PageableDefault(page = 0, size = 5, sort = "createdAt",
+            direction = Sort.Direction.DESC) Pageable pageable,
+        @PathVariable("id") Long id,
+        @RequestParam(value = "sortByLikes", required = false) boolean isSortByLikes) {
+        Page<BookCommentResponse> bookCommentList = bookCommentService.getCommentList(pageable, id, isSortByLikes);
         return ResponseEntity.ok(bookCommentList);
     }
 

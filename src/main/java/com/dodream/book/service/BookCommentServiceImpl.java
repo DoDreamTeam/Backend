@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,26 +33,34 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookCommentResponse> getCommentList(Long id) {
-        List<BookComment> comments = bookCommentRepository.findByBookIdOrderByCreatedAtDesc(id);
-
-        // 문제집 id가 존재하지 않는 경우 예외 처리
-        if (comments.isEmpty()) {
+    public Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes) {
+        // 문제집 ID가 존재하지 않는 경우 예외 처리
+        if (!bookRepository.existsById(id)) {
             throw new BaseException(ErrorCode.BOOK_ID_NOT_FOUND);
         }
 
-        return comments.stream()
-            .map(comment -> {
-                return BookCommentResponse.builder()
-                    .id(comment.getId())
-                    .comment(comment.getComment())
-                    .username(comment.getUser().getUsername() != null ? comment.getUser().getUsername() : null)
-                    .likeCount(bookCommentLikeRepository.countByCommentId(comment)) // 좋아요 수 카운트
-                    .bookId(comment.getBook().getId())
-                    .createdAt(comment.getCreatedAt())
-                    .build();
-            })
+        Page<BookComment> comments;
+
+        // 좋아요 순으로 정렬할 경우
+        if (isSortByLikes) {
+            comments = bookCommentRepository.findByBookIdOrderByLikeCountDesc(pageable, id);
+        } else {
+            comments = bookCommentRepository.findByBookIdOrderByCreatedAtDesc(pageable, id);
+        }
+
+        // 응답 객체 생성
+        List<BookCommentResponse> responses = comments.stream()
+            .map(comment -> BookCommentResponse.builder()
+                .id(comment.getId())
+                .comment(comment.getComment())
+                .username(comment.getUser().getUsername() != null ? comment.getUser().getUsername() : null)
+                .likeCount(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment)) // 좋아요 수 카운트
+                .bookId(comment.getBook().getId())
+                .createdAt(comment.getCreatedAt())
+                .build())
             .collect(Collectors.toList());
+
+        return new PageImpl<>(responses, pageable, comments.getTotalElements());
     }
 
     // 문제집 댓글 생성

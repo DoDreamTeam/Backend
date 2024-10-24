@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+@ExtendWith(MockitoExtension.class)
 class BookCommentServiceTest {
 
     @InjectMocks
@@ -47,80 +53,76 @@ class BookCommentServiceTest {
     @Mock
     private BookRepository bookRepository;
 
+    private User user;
+    private Book book;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    @DisplayName("문제집 전체 댓글 조회 성공")
-    @Test
-    void getCommentList_ShouldReturnListOfBookCommentResponse() {
-        // Given
-        User user1 = User
-            .builder()
-            .username("hello")
-            .provider("provider1")
-            .providerId("1")
-            .build();
-
-        User user2 = User
-            .builder()
-            .username("hello2")
-            .provider("provider1")
-            .providerId("2")
-            .build();
-
-        Book book = Book
-            .builder()
+        user = User.builder()
             .id(1L)
-            .title("Test Book1")
-            .user(user1)
+            .username("testUser")
+            .build();
+
+        book = Book.builder()
+            .id(1L)
+            .title("Test Book")
+            .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
             .createdAt(LocalDateTime.now().minusDays(1))
             .build();
+    }
 
-        BookComment comment1 = BookComment
-            .builder()
+    @DisplayName("문제집 전체 댓글 조회 성공")
+    @Test
+    void getCommentList_ShouldReturnPageOfBookCommentResponse() {
+        // Given
+        BookComment comment1 = BookComment.builder()
+            .id(1L)
             .comment("comment 1")
-            .user(user1)
+            .user(user)
             .book(book)
-            .createdAt(LocalDateTime.now().minusDays(1))
+            .createdAt(LocalDateTime.now().minusDays(2))
             .build();
 
-        BookComment comment2 = BookComment
-            .builder()
+        BookComment comment2 = BookComment.builder()
+            .id(2L)
             .comment("comment 2")
-            .user(user2)
+            .user(user)
             .book(book)
             .createdAt(LocalDateTime.now())
             .build();
 
+        // Mocking the repository responses
+        when(bookRepository.existsById(book.getId())).thenReturn(true);
+        when(bookCommentRepository.findByBookIdOrderByCreatedAtDesc(any(Pageable.class), eq(book.getId())))
+            .thenReturn(new PageImpl<>(Arrays.asList(comment1, comment2))); // Ensure both comments are returned
+        when(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment1)).thenReturn(5L);
+        when(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment2)).thenReturn(10L);
 
-        when(bookCommentRepository.findByBookIdOrderByCreatedAtDesc(book.getId())).thenReturn(Arrays.asList(comment1, comment2));
-        when(bookCommentLikeRepository.countByCommentId(comment1)).thenReturn(5L);
-        when(bookCommentLikeRepository.countByCommentId(comment2)).thenReturn(10L);
+        Pageable pageable = PageRequest.of(0, 5);
+        boolean isSortByLikes = false;
 
         // When
-        List<BookCommentResponse> comments = bookCommentService.getCommentList(book.getId());
+        Page<BookCommentResponse> commentsPage = bookCommentService.getCommentList(pageable, book.getId(), isSortByLikes);
 
         // Then
-        assertEquals(2, comments.size());
-        // 최신 댓글이 첫 번째로 오도록 검증
-        assertEquals(comment2.getId(), comments.get(0).getId());
-        assertEquals(comment1.getId(), comments.get(1).getId());
+        assertEquals(2, commentsPage.getTotalElements()); // Check total number of elements
+        assertEquals(2, commentsPage.getContent().size()); // Check content size
+        assertEquals(comment1.getId(), commentsPage.getContent().get(0).getId()); // Check for latest comment
+        assertEquals(comment2.getId(), commentsPage.getContent().get(1).getId()); // Ensure first comment is correct
     }
 
     @DisplayName("문제집 ID가 존재하지 않을 때")
     @Test
     void getCommentList_ShouldThrowBaseException_WhenBookIdNotFound() {
         // Given
-        Long nonExistentBookId = 999L; // 존재하지 않는 ID
-        when(bookCommentRepository.findByBookIdOrderByCreatedAtDesc(nonExistentBookId)).thenReturn(List.of());
+        Long nonExistentBookId = 999L;
+        when(bookRepository.existsById(nonExistentBookId)).thenReturn(false);
 
         // When & Then
         BaseException exception = assertThrows(BaseException.class, () -> {
-            bookCommentService.getCommentList(nonExistentBookId);
+            bookCommentService.getCommentList(PageRequest.of(0, 5), nonExistentBookId, false);
         });
 
         assertEquals(ErrorCode.BOOK_ID_NOT_FOUND, exception.getErrorCode());
@@ -130,23 +132,6 @@ class BookCommentServiceTest {
     @Test
     void addComment_ShouldReturnBookCommentResponse() {
         // Given
-        User user1 = User
-            .builder()
-            .username("hello")
-            .provider("provider1")
-            .providerId("1")
-            .build();
-
-        Book book = Book
-            .builder()
-            .id(1L)
-            .title("Test Book1")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
-
         BookCommentRequest commentRequest = new BookCommentRequest();
         commentRequest.setComment("This is a comment.");
 
@@ -154,36 +139,19 @@ class BookCommentServiceTest {
         when(bookCommentRepository.save(any(BookComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        BookCommentResponse response = bookCommentService.addComment(book.getId(), user1, commentRequest);
+        BookCommentResponse response = bookCommentService.addComment(book.getId(), user, commentRequest);
 
         // Then
         assertEquals("This is a comment.", response.getComment());
-        assertEquals("hello", response.getUsername());
+        assertEquals("testUser", response.getUsername());
         assertEquals(book.getId(), response.getBookId());
-        assertEquals(0L, response.getLikeCount()); // 초기 좋아요 수
+        assertEquals(0L, response.getLikeCount());
     }
 
     @DisplayName("존재하지 않는 문제집에 댓글 추가 시 예외 발생")
     @Test
     void addComment_WhenBookNotFound_ShouldThrowException() {
         // Given
-        User user1 = User
-            .builder()
-            .username("hello")
-            .provider("provider1")
-            .providerId("1")
-            .build();
-
-        Book book = Book
-            .builder()
-            .id(1L)
-            .title("Test Book1")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
-
         BookCommentRequest commentRequest = new BookCommentRequest();
         commentRequest.setComment("This is a comment.");
 
@@ -191,7 +159,7 @@ class BookCommentServiceTest {
 
         // When & Then
         BaseException exception = assertThrows(BaseException.class, () ->
-            bookCommentService.addComment(book.getId(), user1, commentRequest));
+            bookCommentService.addComment(book.getId(), user, commentRequest));
 
         assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
     }
@@ -200,16 +168,6 @@ class BookCommentServiceTest {
     @Test
     void updateComment_ShouldReturnUpdatedResponse() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
-        Book book = Book.builder()
-            .id(1L)
-            .title("Test Book")
-            .build();
-
         BookComment existingComment = BookComment.builder()
             .id(1L)
             .comment("Existing comment")
@@ -228,7 +186,7 @@ class BookCommentServiceTest {
 
         // Then
         assertEquals("Updated comment", response.getComment());
-        assertEquals("Updated comment", existingComment.getComment());
+        assertEquals("Updated comment", existingComment.getComment()); // Ensure the comment is updated
         verify(bookCommentRepository).findById(1L);
     }
 
@@ -236,11 +194,6 @@ class BookCommentServiceTest {
     @Test
     void updateComment_WhenCommentNotFound_ShouldThrowException() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
         BookCommentUpdateRequest updateRequest = new BookCommentUpdateRequest();
         updateRequest.setComment("Updated comment");
 
@@ -258,18 +211,7 @@ class BookCommentServiceTest {
     @Test
     void updateComment_WhenUserIsNotAuthor_ShouldThrowException() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
-        Book book = Book.builder()
-            .id(1L)
-            .title("Test Book")
-            .build();
-
         User differentUser = User.builder().id(2L).username("differentUser").build();
-
         BookComment existingComment = BookComment.builder()
             .id(1L)
             .comment("Existing comment")
@@ -295,16 +237,6 @@ class BookCommentServiceTest {
     @Test
     void deleteComment_ShouldSucceed() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
-        Book book = Book.builder()
-            .id(1L)
-            .title("Test Book")
-            .build();
-
         BookComment existingComment = BookComment.builder()
             .id(1L)
             .comment("Existing comment")
@@ -326,24 +258,6 @@ class BookCommentServiceTest {
     @Test
     void deleteComment_WhenCommentNotFound_ShouldThrowException() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
-        Book book = Book.builder()
-            .id(1L)
-            .title("Test Book")
-            .build();
-
-        BookComment existingComment = BookComment.builder()
-            .id(1L)
-            .comment("Existing comment")
-            .user(user)
-            .book(book)
-            .createdAt(LocalDateTime.now())
-            .build();
-
         when(bookCommentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // When & Then
@@ -358,17 +272,6 @@ class BookCommentServiceTest {
     @Test
     void deleteComment_WhenUserIsNotAuthor_ShouldThrowException() {
         // Given
-        User user = User.builder()
-            .id(1L)
-            .username("testUser")
-            .build();
-
-        Book book = Book.builder()
-            .id(1L)
-            .title("Test Book")
-            .build();
-
-
         User differentUser = User.builder().id(2L).username("differentUser").build();
         BookComment existingComment = BookComment.builder()
             .id(1L)
@@ -388,3 +291,5 @@ class BookCommentServiceTest {
         assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
     }
 }
+
+

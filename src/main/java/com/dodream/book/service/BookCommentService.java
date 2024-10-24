@@ -6,10 +6,12 @@ import com.dodream.book.domain.BookCommentUpdateRequest;
 import com.dodream.book.domain.BookCommentUpdateResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BookCommentService {
 
-    List<BookCommentResponse> getCommentList(Long id);
+    Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes);
 
     BookCommentResponse addComment(Long id, User user, BookCommentRequest bookCommentRequest);
 
