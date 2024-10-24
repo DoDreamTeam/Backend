@@ -98,8 +98,8 @@ class BookCommentServiceTest {
 
 
         when(bookCommentRepository.findByBookIdOrderByCreatedAtDesc(book.getId())).thenReturn(Arrays.asList(comment1, comment2));
-        when(bookCommentLikeRepository.countByCommentId(comment1)).thenReturn(5L);
-        when(bookCommentLikeRepository.countByCommentId(comment2)).thenReturn(10L);
+        when(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment1)).thenReturn(5L);
+        when(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment2)).thenReturn(10L);
 
         // When
         List<BookCommentResponse> comments = bookCommentService.getCommentList(book.getId());
@@ -388,3 +388,4 @@ class BookCommentServiceTest {
         assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
     }
 }
+

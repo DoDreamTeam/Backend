@@ -44,7 +44,7 @@ public class BookCommentServiceImpl implements BookCommentService {
                     .id(comment.getId())
                     .comment(comment.getComment())
                     .username(comment.getUser().getUsername() != null ? comment.getUser().getUsername() : null)
-                    .likeCount(bookCommentLikeRepository.countByCommentId(comment)) // 좋아요 수 카운트
+                    .likeCount(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment)) // 좋아요 수 카운트
                     .bookId(comment.getBook().getId())
                     .createdAt(comment.getCreatedAt())
                     .build();
