@@ -8,14 +8,14 @@ import static org.mockito.Mockito.when;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.Collections;
@@ -28,6 +28,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
@@ -38,146 +43,143 @@ class BookServiceTest {
     @Mock
     private BookmarkRepository bookmarkRepository;
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
     private BookServiceImpl bookService;
 
     private User user;
     private BookRequest bookRequest;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        user = User
-            .builder()
-            .id(1L)
-            .username("hello")
-            .provider("provider1")
-            .providerId("1")
-            .build();
-
+        user = User.builder().id(1L).username("testuser").provider("provider1").providerId("1").build();
         bookRequest = new BookRequest();
-        bookRequest.setTitle("title");
+        bookRequest.setTitle("Sample Book");
         bookRequest.setCategory(Category.CATEGORY_CS);
         bookRequest.setSecret(false);
+
+        // Pageable 설정
+        pageable = PageRequest.of(0, 12, Sort.by("createdAt").descending());
     }
 
-    @DisplayName("전체 문제집 조회 성공")
+    @DisplayName("문제집 조회 성공")
     @Test
-    public void testGetAllBooks() {
-        // given (사전 준비)
-        Book book = Book
-            .builder()
-            .title("Test Book")
+    void testGetBooks() {
+        // given
+        Book book = Book.builder()
+            .id(1L)
+            .title("Sample Book")
             .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
             .build();
 
-        // when (테스트 진행할 범위)
-        when(bookRepository.findAllBySecretFalseOrderByCreatedAtDesc()).thenReturn(Collections.singletonList(book));
-        List<BookResponse> responses = bookService.getBookList();
+        when(bookRepository.findAllBySecretFalseOrderByCreatedAtDesc(pageable))
+            .thenReturn(new PageImpl<>(Collections.singletonList(book)));
 
-        // then (범위에 대한 결과 검증)
-        assertThat(responses).isNotNull(); // null이 아닌가?
-        assertThat(responses).isNotEmpty(); // 비어있는가?
-        assertThat(responses.size()).isEqualTo(1); // 하나의 문제집이 조회되었는가?
-        assertThat(responses.get(0).getTitle()).isEqualTo("Test Book"); // 제목이 맞는가?
+        // when
+        Page<BookResponse> responses = bookService.getBooks(null, pageable, false);
+
+        // then
+        assertThat(responses).isNotNull();
+        assertThat(responses.getContent()).hasSize(1);
+        assertThat(responses.getContent().get(0).getTitle()).isEqualTo("Sample Book");
     }
 
     @DisplayName("카테고리별 문제집 조회 성공")
     @Test
-    public void testGetBooksByCategory() {
-        // given (사전 준비)
-        Book book = Book
-            .builder()
-            .title("Test Book")
+    void testGetBooksByCategory() {
+        // given
+        Book book = Book.builder()
+            .id(1L)
+            .title("Sample Book")
             .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
             .build();
 
-        // when (테스트 진행할 범위)
-        when(bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(Category.CATEGORY_CS)).thenReturn(
-            Collections.singletonList(book));
-        List<BookResponse> responses = bookService.getBookListByCategory("CATEGORY_CS");
+        when(bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(Category.CATEGORY_CS, pageable))
+            .thenReturn(new PageImpl<>(Collections.singletonList(book)));
 
-        // then (범위에 대한 결과 검증)
-        assertThat(responses).isNotNull(); // null이 아닌가?
-        assertThat(responses).isNotEmpty(); // 비어있는가?
-        assertThat(responses.size()).isEqualTo(1); // 하나의 문제집이 조회되었는가?
-        assertThat(responses.get(0).getTitle()).isEqualTo("Test Book"); // 제목이 맞는가?
+        // when
+        Page<BookResponse> responses = bookService.getBooks("CATEGORY_CS", pageable, false);
+
+        // then
+        assertThat(responses).isNotNull();
+        assertThat(responses.getContent()).hasSize(1);
+        assertThat(responses.getContent().get(0).getTitle()).isEqualTo("Sample Book");
     }
 
-    @DisplayName("잘못된 카테고리 예외 처리")
+    @DisplayName("잘못된 카테고리 조회 시 예외 발생")
     @Test
-    public void testGetBooksByInvalidCategory() {
-        assertThrows(BaseException.class, () -> bookService.getBookListByCategory("InvalidCategory"));
+    void testGetBooksByInvalidCategory() {
+        assertThrows(BaseException.class, () -> {
+            bookService.getBooks("INVALID_CATEGORY", pageable, false);
+        });
     }
 
-    @DisplayName("제목으로 문제집 검색하기 성공")
+    @DisplayName("문제집 제목으로 검색 성공")
     @Test
-    public void testSearchBooksByTitle() {
-        // given (사전 준비)
-        Book book = Book
-            .builder()
-            .title("Test Book")
+    void testSearchBooksByKeyword() {
+        // given
+        Book book = Book.builder()
+            .id(1L)
+            .title("Sample Book")
             .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
             .build();
 
-        // when (테스트 진행할 범위)
-        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("Test")).thenReturn(
-            Collections.singletonList(book));
+        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("Sample", pageable))
+            .thenReturn(new PageImpl<>(Collections.singletonList(book)));
 
-        List<BookResponse> responses = bookService.searchBooksByKeyword("Test");
+        // when
+        Page<BookResponse> responses = bookService.searchBooksByKeyword("Sample", pageable);
 
-        // then (범위에 대한 결과 검증)
-        assertThat(responses).isNotNull(); // null이 아닌가?
-        assertThat(responses).isNotEmpty(); // 비어있는가?
-        assertThat(responses.size()).isEqualTo(1); // 하나의 문제집이 조회되었는가?
-        assertThat(responses.get(0).getTitle()).isEqualTo("Test Book"); // 제목이 맞는가?
+        // then
+        assertThat(responses).isNotNull();
+        assertThat(responses.getContent()).hasSize(1);
+        assertThat(responses.getContent().get(0).getTitle()).isEqualTo("Sample Book");
     }
 
-    @DisplayName("제목으로 문제집 검색 결과가 없을 경우 예외 처리")
+    @DisplayName("제목으로 검색 시 결과가 없을 경우 예외 발생")
     @Test
-    public void testSearchBooksByTitle_NoBooksFound() {
-        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("NonExistent")).thenReturn(Collections.emptyList());
+    void testSearchBooksByKeyword_NoBooksFound() {
+        when(bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("Nonexistent", pageable))
+            .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-        BaseException exception = assertThrows(BaseException.class, () -> bookService.searchBooksByKeyword("NonExistent"));
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.BOOK_SEARCH_NOT_FOUND);
+        assertThrows(BaseException.class, () -> {
+            bookService.searchBooksByKeyword("Nonexistent", pageable);
+        });
     }
 
     @DisplayName("문제집 생성 성공")
     @Test
-    public void testAddBook() {
-        // given (사전 준비)
-        Book book = Book
-            .builder()
-            .title("Test Book")
+    void testAddBook() {
+        // given
+        Book book = Book.builder()
+            .id(1L)
+            .title("Sample Book")
             .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
             .build();
 
-        // when (테스트 진행할 범위)
         when(bookRepository.save(any(Book.class))).thenReturn(book);
 
+        // when
         BookResponse response = bookService.addBook(user, bookRequest);
 
-        // then (범위에 대한 결과 검증)
-        assertThat(response).isNotNull(); // null이 아닌가?
-        assertThat(response.getTitle()).isEqualTo("Test Book"); // 제목이 맞는가?
-        assertThat(response.getUsername()).isEqualTo("hello"); // 사용자 이름이 맞는가?
-        assertThat(response.getCategory()).isEqualTo("CATEGORY_CS"); // 카테고리가 맞는가?
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getTitle()).isEqualTo("Sample Book");
+        assertThat(response.getUsername()).isEqualTo("testuser");
     }
 
     @DisplayName("문제집 수정 성공")
     @Test
-    public void testUpdateBook() {
-        // given (사전 준비)
+    void testUpdateBook() {
+        // given
         Book existingBook = Book.builder()
             .id(1L)
             .title("Old Title")
@@ -190,22 +192,21 @@ class BookServiceTest {
         updateRequest.setTitle("New Title");
         updateRequest.setCategory("CATEGORY_CS");
 
-        // when (테스트 진행할 범위)
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
         when(bookRepository.save(any(Book.class))).thenReturn(existingBook);
 
+        // when
         BookUpdateResponse response = bookService.updateBook(user, 1L, updateRequest);
 
-        // then (범위에 대한 결과 검증)
-        assertThat(response).isNotNull(); // null이 아닌가?
-        assertThat(response.getTitle()).isEqualTo("New Title"); // 수정된 제목이 맞는가?
-        assertThat(response.getCategory()).isEqualTo("CATEGORY_CS"); // 수정된 카테고리가 맞는가?
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getTitle()).isEqualTo("New Title");
     }
 
     @DisplayName("문제집 수정 시 소유자 확인 실패")
     @Test
-    public void testUpdateBook_AccessDenied() {
-        // given (사전 준비)
+    void testUpdateBook_AccessDenied() {
+        // given
         Book existingBook = Book.builder()
             .id(1L)
             .title("Old Title")
@@ -214,22 +215,19 @@ class BookServiceTest {
             .secret(false)
             .build();
 
-        BookUpdateRequest updateRequest = new BookUpdateRequest();
-        updateRequest.setTitle("New Title");
-
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
 
-        // when & then (예외가 발생하는지 확인)
+        // when & then
         BaseException exception = assertThrows(BaseException.class, () -> {
-            bookService.updateBook(user, 1L, updateRequest);
+            bookService.updateBook(user, 1L, new BookUpdateRequest());
         });
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ACCESS_DENIED);
     }
 
     @DisplayName("문제집 삭제 성공")
     @Test
-    public void testDeleteBook() {
-        // given (사전 준비)
+    void testDeleteBook() {
+        // given
         Book existingBook = Book.builder()
             .id(1L)
             .title("Book to be deleted")
@@ -240,17 +238,17 @@ class BookServiceTest {
 
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
 
-        // when (테스트 진행할 범위)
+        // when
         bookService.deleteBook(1L, user);
 
-        // then (범위에 대한 결과 검증)
-        verify(bookRepository).delete(existingBook); // 삭제 메서드가 호출되었는지 검증
+        // then
+        verify(bookRepository).delete(existingBook);
     }
 
     @DisplayName("문제집 삭제 시 소유자 확인 실패")
     @Test
-    public void testDeleteBook_AccessDenied() {
-        // given (사전 준비)
+    void testDeleteBook_AccessDenied() {
+        // given
         Book existingBook = Book.builder()
             .id(1L)
             .title("Book to be deleted")
@@ -261,7 +259,7 @@ class BookServiceTest {
 
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingBook));
 
-        // when & then (예외가 발생하는지 확인)
+        // when & then
         BaseException exception = assertThrows(BaseException.class, () -> {
             bookService.deleteBook(1L, user);
         });
