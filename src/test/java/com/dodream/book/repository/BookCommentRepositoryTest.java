@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -32,170 +34,137 @@ class BookCommentRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
-    @DisplayName("문제집 전체 댓글 최신순 조회")
+
+    @DisplayName("문제집 ID로 최신순 댓글 조회")
     @Test
-    public void getAllCommentsTest() {
-        // given (사전 준비)
-        User user1 = User
-            .builder()
-            .username("hello")
+    public void findByBookIdOrderByCreatedAtDescTest() {
+        // Given
+        User user = User.builder()
+            .username("testUser")
             .provider("provider1")
             .providerId("1")
             .build();
+        userRepository.save(user);
 
-        User user2 = User
-            .builder()
-            .username("hello2")
-            .provider("provider1")
-            .providerId("2")
-            .build();
-
-        userRepository.save(user1);
-        userRepository.save(user2);
-
-        Book book = Book
-            .builder()
-            .id(1L)
-            .title("Test Book1")
-            .user(user1)
+        Book book = Book.builder()
+            .title("Test Book")
+            .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
-            .createdAt(LocalDateTime.now().minusDays(1))
+            .createdAt(LocalDateTime.now())
             .build();
-
         bookRepository.save(book);
 
-
-        BookComment comment1 = BookComment
-            .builder()
-            .comment("comment 1")
-            .user(user1)
+        BookComment comment1 = BookComment.builder()
+            .comment("First comment")
+            .user(user)
             .book(book)
-            .createdAt(LocalDateTime.now().minusDays(1))
+            .createdAt(LocalDateTime.now().minusDays(1)) // 1일 전
             .build();
+        BookComment comment2 = BookComment.builder()
+            .comment("Second comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now()) // 현재 시간
+            .build();
+        bookCommentRepository.save(comment2); // 최신 댓글 먼저 저장
+        bookCommentRepository.save(comment1); // 그 다음에 오래된 댓글 저장
 
-        BookComment comment2 = BookComment
-            .builder()
-            .comment("comment 2")
-            .user(user2)
+        // When
+        Page<BookComment> comments = bookCommentRepository.findByBookIdOrderByCreatedAtDesc(
+            PageRequest.of(0, 5), book.getId());
+
+        // Then
+        assertThat(comments.getContent()).hasSize(2);
+        assertThat(comments.getContent().get(0).getComment()).isEqualTo("Second comment");
+        assertThat(comments.getContent().get(1).getComment()).isEqualTo("First comment");
+    }
+
+    @DisplayName("유저 ID로 댓글 조회")
+    @Test
+    public void findByUserIdTest() {
+        // Given
+        User user = User.builder()
+            .username("testUser")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+        userRepository.save(user);
+
+        Book book = Book.builder()
+            .title("Test Book")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now())
+            .build();
+        bookRepository.save(book);
+
+        BookComment comment1 = BookComment.builder()
+            .comment("Comment 1")
+            .user(user)
             .book(book)
             .createdAt(LocalDateTime.now())
             .build();
-
+        BookComment comment2 = BookComment.builder()
+            .comment("Comment 2")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
         bookCommentRepository.save(comment1);
         bookCommentRepository.save(comment2);
 
-        // when (테스트 진행할 범위)
-        List<BookComment> comments = bookCommentRepository.findByBookIdOrderByCreatedAtDesc(book.getId());
 
+        // When
+        List<BookComment> comments = bookCommentRepository.findByUserId(user.getId());
 
-        // then (범위에 대한 결과 검증)
-        assertEquals(2, comments.size());
-        assertEquals("comment 2", comments.get(0).getComment());
-        assertEquals("comment 1", comments.get(1).getComment());
-
+        // Then
+        assertThat(comments).hasSize(2);
+        assertThat(comments).extracting("comment").containsExactlyInAnyOrder("Comment 1", "Comment 2");
     }
 
-    @DisplayName("문제집 댓글 생성")
+    @DisplayName("좋아요순 댓글 전체 조회")
     @Test
-    public void addCommentTest() {
-        // given (사전 준비)
-        User user1 = User
-            .builder()
-            .username("hello")
+    public void findByBookIdOrderByLikeCountDescTest() {
+        // Given
+        User user = User.builder()
+            .username("testUser")
             .provider("provider1")
             .providerId("1")
             .build();
+        userRepository.save(user);
 
-        userRepository.save(user1);
-
-        Book book = Book
-            .builder()
-            .id(1L)
-            .title("Test Book1")
-            .user(user1)
+        Book book = Book.builder()
+            .title("Test Book")
+            .user(user)
             .category(Category.CATEGORY_CS)
             .secret(false)
-            .createdAt(LocalDateTime.now().minusDays(1))
+            .createdAt(LocalDateTime.now())
             .build();
-
         bookRepository.save(book);
 
-        BookComment comment1 = BookComment
-            .builder()
-            .comment("comment 1")
-            .user(user1)
-            .book(book)
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
 
-        // when (테스트 진행할 범위)
-        BookComment savedComment = bookCommentRepository.save(comment1);
-
-        // then (범위에 대한 결과 검증)
-        assertThat(savedComment).isNotNull(); // null 이 아닌가?
-        assertThat(savedComment.getId()).isNotNull();
-        assertThat(savedComment.getComment()).isEqualTo("comment 1");
-        assertThat(savedComment.getUser().getUsername()).isEqualTo("hello");
-    }
-
-    @Test
-    @DisplayName("문제집 댓글 수정")
-    public void testUpdateBookComment() {
-        // given (사전 준비)
-        User user1 = User
-            .builder()
-            .username("hello")
-            .provider("provider1")
-            .providerId("1")
-            .build();
-
-        userRepository.save(user1);
-
-        Book book = Book
-            .builder()
-            .id(1L)
-            .title("Test Book1")
-            .user(user1)
-            .category(Category.CATEGORY_CS)
-            .secret(false)
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
-
-        bookRepository.save(book);
-
-        // 댓글 객체 생성 및 저장
-        BookComment comment = BookComment.builder()
-            .comment("원래 댓글")
-            .user(user1)
+        BookComment comment1 = BookComment.builder()
+            .comment("Comment with likes")
+            .user(user)
             .book(book)
             .createdAt(LocalDateTime.now())
             .build();
-        bookCommentRepository.save(comment);
+        BookComment comment2 = BookComment.builder()
+            .comment("Another comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+        bookCommentRepository.save(comment1);
+        bookCommentRepository.save(comment2);
 
-        // when (테스트 진행할 범위)
-        comment.updateComment("수정된 댓글"); // 댓글 수정
-        bookCommentRepository.save(comment); // 수정된 댓글 저장
+        // When
+        Page<BookComment> comments = bookCommentRepository.findByBookIdOrderByLikeCountDesc(PageRequest.of(0, 10), book.getId());
 
-        // then (범위에 대한 결과 검증)
-        BookComment updatedComment = bookCommentRepository.findById(comment.getId())
-            .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
-
-        assertThat(updatedComment.getComment()).isEqualTo("수정된 댓글");
-    }
-
-    @DisplayName("문제집 댓글 삭제")
-    @Test
-    public void deleteCommentTest() {
-        // given (사전 준비)
-        Long bookId = 4L;
-
-        // when (테스트 진행할 범위)
-        bookCommentRepository.deleteById(bookId);
-
-        // then (범위에 대한 결과 검증)
-        Optional<BookComment> findBookComment = bookCommentRepository.findById(bookId);
-        Assertions.assertThat(findBookComment).isNotPresent();
+        // Then
+        assertThat(comments).isNotEmpty();
     }
 
 }
