@@ -3,33 +3,38 @@ package com.dodream.study.service;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.study.domain.StudyMemberResponse;
 import com.dodream.study.domain.StudyRequest;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.domain.StudyUpdateRequest;
 import com.dodream.study.domain.StudyUpdateResponse;
 import com.dodream.study.entity.Study;
+import com.dodream.study.entity.StudyMember;
 import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.study.repository.StudyMemberRepository;
 import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class StudyServiceImpl implements StudyService {
 
     private final StudyRepository studyRepository;
     private final StudyMemberRepository studyMemberRepository;
 
-    // 스터디 멤버 상태 가져오기
     private String getStatusStudyMember(Long studyId, Long userId) {
         Optional<RoleEnum> role = studyMemberRepository.findRoleByStudyIdAndUserId(studyId, userId);
         return role.map(RoleEnum::getRole).orElse(null);
@@ -69,7 +74,7 @@ public class StudyServiceImpl implements StudyService {
             }
         }
 
-        return studyList;
+        return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
     }
 
     // 검색어 (제목 + 내용 or 작성자) 조회
@@ -78,7 +83,9 @@ public class StudyServiceImpl implements StudyService {
     @Cacheable(cacheNames = "searchStudy")
     public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, String keyword) {
         try {
-            return studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+            Page<StudyResponse> studyList =
+                studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+            return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.STUDY_SEARCH_NOT_FOUND);
         }
@@ -89,6 +96,15 @@ public class StudyServiceImpl implements StudyService {
     public StudyResponse addStudy(User user, StudyRequest studyRequest) {
         Study study = studyRequest.toEntity(user);
         Study savedStudy = studyRepository.save(study);
+
+        StudyMember studyMember = StudyMember.builder()
+            .user(user)
+            .study(savedStudy)
+            .role(RoleEnum.ROLE_LEADER)
+            .joinDate(LocalDateTime.now())
+            .build();
+
+        studyMemberRepository.save(studyMember);
 
         return StudyResponse.builder()
             .id(savedStudy.getId())
@@ -105,29 +121,23 @@ public class StudyServiceImpl implements StudyService {
     @Override
     @Transactional
     public void deleteStudy(User user, Long id) {
-        Study study = studyRepository.findById(id)
-            .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
-
-        // 스터디 소유자 확인
-        if (!study.getUser().getId().equals(user.getId())) {
-            throw new BaseException(ErrorCode.ACCESS_DENIED);
-        }
+        Study study = getStudy(id);
+        checkUserRole(study.getId(), user);
 
         studyRepository.delete(study);
+    }
+
+    private Study getStudy(Long id) {
+        return studyRepository.findById(id)
+            .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
     }
 
     @Override
     @Transactional
     public StudyUpdateResponse updateStudy(User user, Long id,
         StudyUpdateRequest studyUpdateRequest) {
-        Study study = studyRepository.findById(id)
-            .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
-
-        // 스터디 소유자 확인
-        if (!study.getUser().getId().equals(user.getId())) {
-            throw new BaseException(ErrorCode.ACCESS_DENIED);
-        }
-
+        Study study = getStudy(id);
+        checkUserRole(study.getId(), user);
         study.updateStudy(studyUpdateRequest.getTitle(), studyUpdateRequest.getDescription());
 
         return StudyUpdateResponse.builder()
@@ -137,15 +147,51 @@ public class StudyServiceImpl implements StudyService {
             .build();
     }
 
-    // 내가 참여중인 스터디 조회
+    // 내가 참여중인 스터디 조회 (스터디 제목, 유저명, 스터디 참가 인원수)
     // StudyMemberRepository를 통해 ROLE_MEMBER 또는 ROLE_LEADER에 해당하는 스터디 조회
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "myStudy")
     public Page<StudyResponse> getMyStudyList(Pageable pageable, User user) {
-        return studyMemberRepository.findByUserAndRoleIn(pageable, user,
-                List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER))
-            .map(studyMember -> new StudyResponse(studyMember.getStudy()));
+        Page<StudyResponse> myStudyList = studyMemberRepository.findByUserAndRoleIn(pageable, user,
+            List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER));
+
+        List<StudyResponse> studyResponse = myStudyList.stream()
+            .map(study -> StudyResponse.builder()
+                .id(study.getId())
+                .title(study.getTitle())
+                .username(study.getUsername())
+                .userCount(study.getUserCount())
+                .build())
+            .toList();
+
+        return new PageImpl<>(studyResponse, pageable, myStudyList.getTotalElements());
     }
 
+    // 스터디 회원 조회 (ROLE_LEADER 만 가능)
+    @Override
+    @Transactional(readOnly = true)
+    public Page<StudyMemberResponse> getStudyMembers(Long studyId, User user, Pageable pageable) {
+        checkUserRole(studyId, user);
+        Page<StudyMember> studyMembers = studyMemberRepository.findByStudyId(studyId, pageable);
+
+        List<StudyMemberResponse> memberResponses = studyMembers.stream()
+            .map(studyMember -> StudyMemberResponse.builder()
+                .username(studyMember.getUser().getUsername())
+                .joinDate(studyMember.getJoinDate().toString())
+                .build())
+            .toList();
+
+        return new PageImpl<>(memberResponses, pageable, studyMembers.getTotalElements());
+    }
+
+    private void checkUserRole(Long study, User user) {
+        Optional<RoleEnum> role =
+            studyMemberRepository.findRoleByStudyIdAndUserId(study, user.getId());
+
+        // 권한이 ROLE_LEADER 일 때 수정, 삭제 가능!
+        if (role.isEmpty() || role.get() != RoleEnum.ROLE_LEADER) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+    }
 }
