@@ -15,11 +15,17 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 class BookRepositoryTest {
@@ -35,112 +41,80 @@ class BookRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        // 전체 문제집 조회에 필요한 문제집 리스트 미리 생성하기
         user = User.builder().username("hello").provider("provider1").providerId("1").build();
         userRepository.save(user); // 사용자 저장
 
         LocalDateTime now = LocalDateTime.now();
 
         books = List.of(
-            Book.builder()
-                .title("Test Book1")
-                .user(user)
-                .category(Category.CATEGORY_CS)
-                .secret(false)
-                .createdAt(now.plusNanos(1)) // 1일 전
-                .build(),
-            Book.builder()
-                .title("Test Book2")
-                .user(user)
-                .category(Category.CATEGORY_ETC)
-                .secret(false)
-                .createdAt(now.plusNanos(2)) // 2일 전
-                .build(),
-            Book.builder()
-                .title("Test Book3")
-                .user(user)
-                .category(Category.CATEGORY_CS)
-                .secret(false)
-                .createdAt(now.plusNanos(3)) // 3일 전
-                .build(),
-            Book.builder()
-                .title("Test Book4")
-                .user(user)
-                .category(Category.CATEGORY_CERT)
-                .secret(false)
-                .createdAt(now.plusNanos(4)) // 4일 전
-                .build(),
-            Book.builder()
-                .title("Test Book5")
-                .user(user)
-                .category(Category.CATEGORY_ETC)
-                .secret(true)
-                .createdAt(now.plusNanos(5)) // 비공개 문제집
-                .build(),
-            Book.builder()
-                .title("Test Book6")
-                .user(user)
-                .category(Category.CATEGORY_CERT)
-                .secret(false)
-                .createdAt(now.plusNanos(6)) // 6일 전
-                .build()
+            Book.builder().title("Test Book1").user(user).category(Category.CATEGORY_CS)
+                .secret(false).createdAt(now.minusDays(4)).build(), // 4일 전
+            Book.builder().title("Test Book2").user(user).category(Category.CATEGORY_ETC)
+                .secret(false).createdAt(now.minusDays(3)).build(), // 3일 전
+            Book.builder().title("Test Book3").user(user).category(Category.CATEGORY_CS)
+                .secret(false).createdAt(now.minusDays(2)).build(), // 2일 전
+            Book.builder().title("Test Book4").user(user).category(Category.CATEGORY_CERT)
+                .secret(false).createdAt(now.minusDays(1)).build(), // 1일 전
+            Book.builder().title("Test Book5").user(user).category(Category.CATEGORY_ETC)
+                .secret(true).createdAt(now).build(), // 오늘
+            Book.builder().title("Test Book6").user(user).category(Category.CATEGORY_CERT)
+                .secret(false).createdAt(now.plusDays(1)).build() // 내일
         );
+
 
         bookRepository.saveAll(books); // 모든 책 저장
     }
 
-    @DisplayName("전체 문제집 최신순 조회")
+    @DisplayName("전체 문제집 최신순 조회 - 페이지네이션")
     @Test
-    public void getAllBooksTest() {
+    public void getAllBooksWithPaginationTest() {
         // given (사전 준비)
-        // setUp() 참고
+        PageRequest pageable = PageRequest.of(0, 3, Sort.by("createdAt").descending());
 
         // when
-        List<Book> resultBooks = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc();
+        Page<Book> resultBooks = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc(pageable);
 
         // then
         assertThat(resultBooks).isNotNull();
-        assertThat(resultBooks).isNotEmpty();
-        assertThat(resultBooks).hasSize(5); // 공개 문제집 5개
-
-        // 최신순 검증
-        assertThat(resultBooks.get(0).getTitle()).isEqualTo("Test Book1"); // 1일 전
-        assertThat(resultBooks.get(1).getTitle()).isEqualTo("Test Book2"); // 2일 전
-        assertThat(resultBooks.get(2).getTitle()).isEqualTo("Test Book3"); // 3일 전
-        assertThat(resultBooks.get(3).getTitle()).isEqualTo("Test Book4"); // 4일 전
+        assertThat(resultBooks.getContent()).isNotEmpty();
+        assertThat(resultBooks.getTotalElements()).isEqualTo(5); // 공개 문제집 5개
+        assertThat(resultBooks.getTotalPages()).isEqualTo(2); // 2 페이지
+        assertThat(resultBooks.getContent().size()).isEqualTo(3); // 첫 페이지는 3개
+        assertThat(resultBooks.getContent().get(0).getTitle()).isEqualTo("Test Book6"); // 최신순 검증
     }
 
-    @DisplayName("특정 카테고리별로 문제집 최신순 조회")
+    @DisplayName("특정 카테고리별로 문제집 최신순 조회 - 페이지네이션")
     @Test
-    public void getCategoryBooksTest() {
+    public void getCategoryBooksWithPaginationTest() {
         // given (사전 준비)
-        // setUp() 참고
+        PageRequest pageable = PageRequest.of(0, 1, Sort.by("createdAt").descending());
 
-        // when (테스트 진행할 범위)
-        List<Book> resultBooks = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(Category.CATEGORY_ETC);
+        // when
+        Page<Book> resultBooks = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(
+            Category.CATEGORY_CS, pageable);
 
-        // then (범위에 대한 결과 검증)
-        assertThat(resultBooks).isNotNull(); // null 이 아닌가?
-        assertThat(resultBooks).isNotEmpty(); // 비어있는가?
-        assertThat(
-            resultBooks.stream().anyMatch(book -> book.getTitle().equals("Test Book2"))).isTrue(); // Test Book2 문제집이 존재하는가?
-        assertThat(resultBooks.get(0).getTitle()).isEqualTo("Test Book2");
-        assertThat(resultBooks).hasSize(1); // ETC 인 문제집 조회 (하나는 비공개이므로 하나만 조회된다)
+        // then
+        assertThat(resultBooks).isNotNull();
+        assertThat(resultBooks.getContent()).isNotEmpty();
+        assertThat(resultBooks.getTotalElements()).isEqualTo(2); // 공개 문제집 2개
+        assertThat(resultBooks.getContent().get(0).getTitle()).isEqualTo("Test Book1"); // 최신순 검증
+        assertThat(resultBooks.getTotalPages()).isEqualTo(2); // 2 페이지
     }
 
-    @DisplayName("문제집 제목으로 검색")
+    @DisplayName("문제집 제목으로 검색 - 페이지네이션")
     @Test
-    public void searchByBookTitleTest() {
+    public void searchByBookTitleWithPaginationTest() {
         // given (사전 준비)
-        // setUp() 참고
+        PageRequest pageable = PageRequest.of(0, 1, Sort.by("createdAt").descending());
 
-        // when (테스트 진행할 범위)
-        List<Book> resultBooks = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc("Book6");
+        // when
+        Page<Book> resultBooks = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(
+            "Book", pageable);
 
-        // then (범위에 대한 결과 검증)
-        assertThat(resultBooks).isNotNull(); // null 이 아닌가?
-        assertThat(resultBooks).isNotEmpty(); // 비어있는가?
-        assertThat(resultBooks.size()).isEqualTo(1); // Book6 제목 가진 문제집 1개
+        // then
+        assertThat(resultBooks).isNotNull();
+        assertThat(resultBooks.getContent()).isNotEmpty();
+        assertThat(resultBooks.getContent().size()).isEqualTo(1); // 제목에 "Book"이 포함된 문제집 1개
     }
 
     @DisplayName("문제집 생성하기")

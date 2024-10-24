@@ -2,20 +2,21 @@ package com.dodream.book.service;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BookService {
 
-    List<BookResponse> getBooks(String category);
+    Page<BookResponse> getBooks(String category, Pageable pageable, boolean sortByBookmarks);
 
-    List<BookResponse> getBookList();
+    Page<BookResponse> getBookList(Pageable pageable, boolean sortByBookmarks);
 
-    List<BookResponse> getBookListByCategory(String category);
+    Page<BookResponse> getBookListByCategory(Pageable pageable, String category, boolean sortByBookmarks);
 
-    List<BookResponse> searchBooksByKeyword(String keyword);
+    Page<BookResponse> searchBooksByKeyword(String keyword, Pageable pageable);
 
     BookResponse addBook(User user, BookRequest bookRequest);
 

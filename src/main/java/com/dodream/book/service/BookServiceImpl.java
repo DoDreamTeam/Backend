@@ -2,18 +2,22 @@ package com.dodream.book.service;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,53 +26,63 @@ public class BookServiceImpl implements BookService {
     private final BookmarkRepository bookmarkRepository;
 
     @Override
-    public List<BookResponse> getBooks(String category) {
+    @Transactional(readOnly = true)
+    public Page<BookResponse> getBooks(String category, Pageable pageable,
+        boolean sortByBookmarks) {
         if (category != null) {
-            return getBookListByCategory(category);
+            return getBookListByCategory(pageable, category, sortByBookmarks);
         } else {
-            return getBookList();
+            return getBookList(pageable, sortByBookmarks);
         }
     }
 
     // 문제집 전체 조회
     @Override
-    public List<BookResponse> getBookList() {
-        List<Book> bookList = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc();
-
-        return convertToBookResponseList(bookList);
+    @Transactional(readOnly = true)
+    public Page<BookResponse> getBookList(Pageable pageable, boolean sortByBookmarks) {
+        Page<Book> bookPage;
+        if (sortByBookmarks) {
+            bookPage = bookRepository.findAllBySecretFalseOrderByBookmarkCount(pageable);
+        } else {
+            bookPage = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc(pageable);
+        }
+        return convertToBookResponsePage(bookPage);
     }
 
-    // 문제집 카테고리별 조회
     @Override
-    public List<BookResponse> getBookListByCategory(String category) {
+    @Transactional(readOnly = true)
+    public Page<BookResponse> getBookListByCategory(Pageable pageable, String category, boolean sortByBookmarks) {
         Category categoryEnum;
         try {
             categoryEnum = Category.valueOf(category.toUpperCase());
         } catch (IllegalArgumentException e) {
-            // 잘못된 카테고리인 경우 예외처리
             throw new BaseException(ErrorCode.BOOK_CATEGORY_ERROR);
         }
 
-        List<Book> bookList = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(categoryEnum);
+        Page<Book> bookPage;
+        if (sortByBookmarks) {
+            bookPage = bookRepository.findAllByCategoryAndSecretFalseOrderByBookmarkCount(categoryEnum, pageable);
+        } else {
+            bookPage = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(categoryEnum, pageable);
+        }
 
-        // 해당 카테고리에 문제집이 없는 경우 예외처리
-        if (bookList.isEmpty()) {
+        if (bookPage.isEmpty()) {
             throw new BaseException(ErrorCode.BOOK_CATEGORY_NOT_FOUND);
         }
-        return convertToBookResponseList(bookList);
+        return convertToBookResponsePage(bookPage);
     }
 
     // 문제집 제목으로 검색
     @Override
-    public List<BookResponse> searchBooksByKeyword(String keyword) {
-        List<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(keyword);
+    public Page<BookResponse> searchBooksByKeyword(String keyword, Pageable pageable) {
+        Page<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(keyword, pageable);
 
         // 해당 검색어와 일치하는 문제집이 없는 경우 예외처리
         if(bookList.isEmpty()) {
             throw new BaseException(ErrorCode.BOOK_SEARCH_NOT_FOUND);
         }
 
-        return convertToBookResponseList(bookList);
+        return convertToBookResponsePage(bookList);
     }
 
     // 문제집 생성
@@ -89,6 +103,7 @@ public class BookServiceImpl implements BookService {
 
     // 문제집 제목 수정
     @Override
+    @Transactional
     public BookUpdateResponse updateBook(User user, Long id, BookUpdateRequest request) {
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
@@ -117,6 +132,7 @@ public class BookServiceImpl implements BookService {
 
     // 문제집 삭제
     @Override
+    @Transactional
     public void deleteBook(Long id, User user) {
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
@@ -129,16 +145,19 @@ public class BookServiceImpl implements BookService {
         bookRepository.delete(book);
     }
 
-    private List<BookResponse> convertToBookResponseList(List<Book> bookList) {
-        return bookList.stream()
+    // 전체 조회할때 사용하는 List
+    private Page<BookResponse> convertToBookResponsePage(Page<Book> bookPage) {
+        List<BookResponse> bookResponses = bookPage.getContent().stream()
             .map(book -> BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
                 .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book)) // 북마크 수 카운트
+                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
                 .category(book.getCategory().name())
                 .createdAt(book.getCreatedAt())
                 .build())
             .toList();
+
+        return new PageImpl<>(bookResponses, bookPage.getPageable(), bookPage.getTotalElements());
     }
 }

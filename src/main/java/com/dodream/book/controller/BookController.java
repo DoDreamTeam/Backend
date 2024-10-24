@@ -2,12 +2,16 @@ package com.dodream.book.controller;
 
 import com.dodream.book.domain.BookRequest;
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.domain.BookUpdateRequest;
+import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.service.BookService;
-import com.dodream.mypage.domain.BookUpdateRequest;
-import com.dodream.mypage.domain.BookUpdateResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,8 +32,12 @@ public class BookController {
 
     // 문제집 전체/카테고리별 조회
     @GetMapping("")
-    public ResponseEntity<List<BookResponse>> getAllBooks(@RequestParam(value = "category", required = false) String category) {
-        List<BookResponse> bookList = bookService.getBooks(category);
+    public ResponseEntity<Page<BookResponse>> getAllBooks(
+        @PageableDefault(page = 0, size = 12, sort = "createdAt",
+            direction = Sort.Direction.DESC) Pageable pageable,
+        @RequestParam(value = "category", required = false) String category,
+        @RequestParam(value = "sortBybookmarks", defaultValue = "false") boolean sortByBookmarks) {
+        Page<BookResponse> bookList = bookService.getBooks(category, pageable, sortByBookmarks);
         return ResponseEntity.ok(bookList);
     }
 
@@ -58,8 +66,11 @@ public class BookController {
 
     // 문제집 제목으로 검색
     @GetMapping("/search")
-    public ResponseEntity<List<BookResponse>> searchBooks(@RequestParam(value = "keyword", required = false) String keyword) {
-        List<BookResponse> bookList = bookService.searchBooksByKeyword(keyword);
+    public ResponseEntity<Page<BookResponse>> searchBooks(
+        @PageableDefault(page = 0, size = 12, sort = "createdAt",
+            direction = Sort.Direction.DESC) Pageable pageable,
+        @RequestParam(value = "keyword", required = false) String keyword) {
+        Page<BookResponse> bookList = bookService.searchBooksByKeyword(keyword, pageable);
         return ResponseEntity.ok(bookList);
     }
 
