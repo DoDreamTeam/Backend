@@ -1,5 +1,6 @@
 package com.dodream.study.controller;
 
+import com.dodream.study.domain.StudyMemberResponse;
 import com.dodream.study.domain.StudyRequest;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.domain.StudyUpdateRequest;
@@ -45,7 +46,7 @@ public class StudyController {
     // 스터디 검색 조회
     @GetMapping("/search")
     public ResponseEntity<Page<StudyResponse>> searchStudies(
-        @PageableDefault(page = 0, size = 12, sort = "updateAt",
+        @PageableDefault(page = 0, size = 12, sort = "updatedAt",
             direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(value = "keyword", required = false) String keyword) {
         Page<StudyResponse> response = studyService.searchStudiesByKeyword(pageable, keyword);
@@ -84,6 +85,16 @@ public class StudyController {
         @PathVariable("id") Long id, @RequestBody StudyUpdateRequest studyUpdateRequest) {
         StudyUpdateResponse updateResponse = studyService.updateStudy(user, id ,studyUpdateRequest);
         return ResponseEntity.ok(updateResponse);
+    }
+
+    // 스터디 멤버 조회
+    @GetMapping("/{id}/members")
+    public ResponseEntity<Page<StudyMemberResponse>> getStudyMembers(
+        @PageableDefault(page = 0, size = 5, sort = "joinDate",
+            direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal User user, @PathVariable("id") Long studyId) {
+        Page<StudyMemberResponse> memberResponse = studyService.getStudyMembers(studyId, user, pageable);
+        return ResponseEntity.ok(memberResponse);
     }
 
 }
