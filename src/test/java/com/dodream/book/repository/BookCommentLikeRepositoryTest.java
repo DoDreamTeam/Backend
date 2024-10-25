@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -91,11 +92,15 @@ class BookCommentLikeRepositoryTest {
     @Test
     public void findByUserIdTest() {
         // given
-        BookCommentLike like = BookCommentLike.builder().user(user).commentId(comment).isDeleted(false).build();
+        BookCommentLike like = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
         bookCommentLikeRepository.save(like);
 
         // when
-        List<BookCommentLike> likes = bookCommentLikeRepository.findByUserId(user.getId());
+        List<BookCommentLike> likes = bookCommentLikeRepository.findByUserIdAndIsDeletedFalseOrderByCommentId_CreatedAtDesc(user.getId(), Pageable.unpaged()).getContent();
 
         // then
         assertFalse(likes.isEmpty());
