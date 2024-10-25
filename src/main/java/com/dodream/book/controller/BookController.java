@@ -50,6 +50,7 @@ public class BookController {
         return ResponseEntity.ok(updateBookTitle);
     }
 
+    // 문제집 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<BookResponse> deleteBook(@AuthenticationPrincipal User user, @PathVariable("id") Long id) {
         bookService.deleteBook(id, user);

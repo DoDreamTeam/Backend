@@ -97,7 +97,7 @@ class BookRepositoryTest {
         assertThat(resultBooks).isNotNull();
         assertThat(resultBooks.getContent()).isNotEmpty();
         assertThat(resultBooks.getTotalElements()).isEqualTo(2); // 공개 문제집 2개
-        assertThat(resultBooks.getContent().get(0).getTitle()).isEqualTo("Test Book1"); // 최신순 검증
+        assertThat(resultBooks.getContent().get(0).getTitle()).isEqualTo("Test Book3"); // 최신순 검증
         assertThat(resultBooks.getTotalPages()).isEqualTo(2); // 2 페이지
     }
 

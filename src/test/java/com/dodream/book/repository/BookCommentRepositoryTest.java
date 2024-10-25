@@ -115,14 +115,14 @@ class BookCommentRepositoryTest {
         bookCommentRepository.save(comment1);
         bookCommentRepository.save(comment2);
 
-
         // When
-        List<BookComment> comments = bookCommentRepository.findByUserId(user.getId());
+        Page<BookComment> commentsPage = bookCommentRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), PageRequest.of(0, 10));
 
         // Then
-        assertThat(comments).hasSize(2);
-        assertThat(comments).extracting("comment").containsExactlyInAnyOrder("Comment 1", "Comment 2");
+        assertThat(commentsPage.getContent()).hasSize(2);
+        assertThat(commentsPage.getContent()).extracting("comment").containsExactlyInAnyOrder("Comment 1", "Comment 2");
     }
+
 
     @DisplayName("좋아요순 댓글 전체 조회")
     @Test

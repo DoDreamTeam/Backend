@@ -51,4 +51,9 @@ public class Question {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void updateQuestion (String question, String modelAnswer) {
+        this.question = question;
+        this.modelAnswer = modelAnswer;
+    }
 }

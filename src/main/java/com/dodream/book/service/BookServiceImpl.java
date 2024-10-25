@@ -74,6 +74,7 @@ public class BookServiceImpl implements BookService {
 
     // 문제집 제목으로 검색
     @Override
+    @Transactional
     public Page<BookResponse> searchBooksByKeyword(String keyword, Pageable pageable) {
         Page<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(keyword, pageable);
 
@@ -87,6 +88,7 @@ public class BookServiceImpl implements BookService {
 
     // 문제집 생성
     @Override
+    @Transactional
     public BookResponse addBook(User user, BookRequest bookRequest) {
         Book book = bookRequest.toEntity(user);
         Book savedBook = bookRepository.save(book);
