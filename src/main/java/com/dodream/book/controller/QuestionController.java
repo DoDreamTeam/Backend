@@ -1,7 +1,7 @@
 package com.dodream.book.controller;
 
-import com.dodream.book.domain.QuestionAddRequest;
-import com.dodream.book.domain.QuestionAddResponse;
+import com.dodream.book.domain.QuestionRequest;
+import com.dodream.book.domain.QuestionResponse;
 import com.dodream.book.domain.QuestionListResponse;
 import com.dodream.book.service.QuestionService;
 import com.dodream.user.entity.User;
@@ -35,17 +35,24 @@ public class QuestionController {
         return ResponseEntity.ok(questionList);
     }
 
+    // 문제 개별 조회 (문제 풀기 페이지)
+    @GetMapping("/{id}/questions/{questionId}")
+    public ResponseEntity<QuestionListResponse> getQuestion(@PathVariable("id") Long id, @PathVariable("questionId") Long questionId) {
+        QuestionListResponse question = questionService.getOneQuestion(id, questionId);
+        return ResponseEntity.ok(question);
+    }
+
     // 문제 생성
     @PostMapping("/{id}/questions")
-    public ResponseEntity<QuestionAddResponse> addQuestion(@PathVariable("id") Long id,
-        @AuthenticationPrincipal User user, @RequestBody QuestionAddRequest questionRequest) {
-        QuestionAddResponse addedQuestion = questionService.addQuestion(id, user, questionRequest);
+    public ResponseEntity<QuestionResponse> addQuestion(@PathVariable("id") Long id,
+        @AuthenticationPrincipal User user, @RequestBody QuestionRequest questionRequest) {
+        QuestionResponse addedQuestion = questionService.addQuestion(id, user, questionRequest);
         return ResponseEntity.ok(addedQuestion);
     }
 
     // 문제 삭제
     @DeleteMapping("/{id}/questions/{questionId}")
-    public ResponseEntity<QuestionAddResponse> deleteQuestion(@PathVariable("id") Long id,
+    public ResponseEntity<QuestionResponse> deleteQuestion(@PathVariable("id") Long id,
         @PathVariable("questionId") Long questionId, @AuthenticationPrincipal User user) {
         questionService.deleteQuestion(id, questionId, user);
         return ResponseEntity.noContent().build(); // 204 No Content
