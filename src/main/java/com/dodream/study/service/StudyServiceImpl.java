@@ -168,21 +168,21 @@ public class StudyServiceImpl implements StudyService {
         return new PageImpl<>(studyResponse, pageable, myStudyList.getTotalElements());
     }
 
-    // 스터디 회원 조회 (ROLE_LEADER 만 가능)
+    // 인기 스터디 조회
     @Override
-    @Transactional(readOnly = true)
-    public Page<StudyMemberResponse> getStudyMembers(Long studyId, User user, Pageable pageable) {
-        checkUserRole(studyId, user);
-        Page<StudyMember> studyMembers = studyMemberRepository.findByStudyId(studyId, pageable);
+    public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
+        Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 
-        List<StudyMemberResponse> memberResponses = studyMembers.stream()
-            .map(studyMember -> StudyMemberResponse.builder()
-                .username(studyMember.getUser().getUsername())
-                .joinDate(studyMember.getJoinDate().toString())
+        List<StudyResponse> studyResponse = studyList.stream()
+            .map(study -> StudyResponse.builder()
+                .id(study.getId())
+                .title(study.getTitle())
+                .username(study.getUsername())
+                .userCount(study.getUserCount())
                 .build())
             .toList();
 
-        return new PageImpl<>(memberResponses, pageable, studyMembers.getTotalElements());
+        return new PageImpl<>(studyResponse, pageable, studyList.getTotalElements());
     }
 
     private void checkUserRole(Long study, User user) {

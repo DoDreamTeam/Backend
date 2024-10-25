@@ -34,6 +34,7 @@ public enum ErrorCode {
     QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "해당 id를 가진 문제가 존재하지 않습니다."),
     STUDY_USER_ANSWER_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_USER_ANSWER_NOT_FOUND",
         "스터디에 추가한 사용자 문제가 존재하지 않습니다"),
+    NOTICE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_COMMENT_NOT_FOUND", "공지사항 댓글이 존재하지 않습니다."),
 
 
     /* 500 */

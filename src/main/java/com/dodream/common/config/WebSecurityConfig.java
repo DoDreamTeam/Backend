@@ -61,6 +61,9 @@ public class WebSecurityConfig {
                     // 모든 스터디 조회
                     new AntPathRequestMatcher("/api/study", "GET"),
 
+                    // 인기 스터디 조회
+                    new AntPathRequestMatcher("/api/study/popular", "GET"),
+
                     // 스터디 제목 + 내용, 작성자 로 검색
                     new AntPathRequestMatcher("/api/study/search", "GET"),
 

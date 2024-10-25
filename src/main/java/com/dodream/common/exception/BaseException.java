@@ -28,6 +28,10 @@ public class BaseException extends RuntimeException {
     public static final BaseException QUESTION_NOT_FOUND = new BaseException(ErrorCode.QUESTION_NOT_FOUND);
     public static final BaseException STUDY_USER_ANSWER_NOT_FOUND = new BaseException(ErrorCode.STUDY_USER_ANSWER_NOT_FOUND);
 
+    public static final BaseException STUDY_NOT_FOUND = new BaseException(ErrorCode.STUDY_NOT_FOUND);
+    public static final BaseException NOTICE_NOT_FOUND = new BaseException(ErrorCode.NOTICE_NOT_FOUND);
+    public static final BaseException NOTICE_COMMENT_NOT_FOUND = new BaseException(ErrorCode.NOTICE_COMMENT_NOT_FOUND);
+
     private final ErrorCode errorCode;
 
     @Override

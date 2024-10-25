@@ -1,6 +1,5 @@
 package com.dodream.study.entity;
 
-import com.dodream.study.entity.NotiComment;
 import com.dodream.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotiCommLike {
+public class NoticeCommentLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +30,11 @@ public class NotiCommLike {
 
     @Column
     @Builder.Default
-    private boolean is_deleted = false;
+    private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "noti_comment_id", referencedColumnName = "id", nullable = false)
-    private NotiComment notiComment;
+    private NoticeComment noticeCommentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)

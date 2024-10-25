@@ -15,12 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> {
-
-//    @Query("select count(*) from StudyMember sm where sm.study.id = :id and sm.role != 'ROLE_WAITING'")
-//    Long countAllByStudyId(@Param("id") Long id);
-
-    @Query("SELECT sm FROM StudyMember sm JOIN FETCH sm.user WHERE sm.study.id = :studyId")
-    Page<StudyMember> findByStudyId(@Param("studyId") Long studyId, Pageable pageable);
+    @Query("SELECT sm FROM StudyMember sm JOIN FETCH sm.user WHERE sm.study.id = :studyId AND sm.role = :role")
+    Page<StudyMember> findByStudyMemberId(Long studyId, RoleEnum role, Pageable pageable);
     @Query("SELECT sm.role FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.user.id = :userId")
     Optional<RoleEnum> findRoleByStudyIdAndUserId(@Param("studyId") Long studyId, @Param("userId") Long userId);
     @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.description, s.category, " +
@@ -29,6 +25,6 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
         "JOIN sm.study s " +
         "WHERE sm.user = :user " +
         "AND sm.role IN :roles")
-    Page<StudyResponse> findByUserAndRoleIn(Pageable pageable,
-        @Param("user") User user, @Param("roles") List<RoleEnum> roles);
+    Page<StudyResponse> findByUserAndRoleIn(Pageable pageable, User user, List<RoleEnum> roles);
+
 }

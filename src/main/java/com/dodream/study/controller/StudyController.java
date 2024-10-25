@@ -1,12 +1,15 @@
 package com.dodream.study.controller;
 
+import com.dodream.study.domain.NoticeRequest;
 import com.dodream.study.domain.StudyMemberResponse;
 import com.dodream.study.domain.StudyRequest;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.domain.StudyUpdateRequest;
 import com.dodream.study.domain.StudyUpdateResponse;
+import com.dodream.study.entity.StudyMember;
 import com.dodream.study.service.StudyService;
 import com.dodream.user.entity.User;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +46,18 @@ public class StudyController {
         return ResponseEntity.ok(response);
     }
 
-    // 스터디 검색 조회
+    // 인기 스터디 조회
+    @GetMapping("/popular")
+    public ResponseEntity<Page<StudyResponse>> getPopularStudyList(
+        @PageableDefault(page = 0, size = 4, sort = "createdAt",
+            direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal User user,
+        @RequestParam(value = "sortByUserCount", required = false) Long userCount) {
+        Page<StudyResponse> response = studyService.getPopularStudyList(pageable, user, userCount);
+        return ResponseEntity.ok(response);
+    }
+
+    // 스터디 검색 조회 - updatedAt으로 DoDream에 수정
     @GetMapping("/search")
     public ResponseEntity<Page<StudyResponse>> searchStudies(
         @PageableDefault(page = 0, size = 12, sort = "updatedAt",
@@ -62,11 +76,11 @@ public class StudyController {
         return ResponseEntity.ok(response);
     }
 
-    // 스터디 생성 - 공지사항 추가 필요
+    // 스터디 생성
     @PostMapping("")
     public ResponseEntity<StudyResponse> createStudy(@AuthenticationPrincipal User user,
         @RequestBody StudyRequest studyRequest) {
-        studyRequest.setUsername(user.getUsername());
+//        studyRequest.setUsername(user.getUsername());
         StudyResponse studyResponse = studyService.addStudy(user, studyRequest);
         return ResponseEntity.ok(studyResponse);
     }
@@ -79,22 +93,12 @@ public class StudyController {
         return ResponseEntity.noContent().build();
     }
 
-    // 스터디 수정 (추후 공지사항 컬럼도 같이 추가)
+    // 스터디 수정
     @PatchMapping("/{id}")
     public ResponseEntity<StudyUpdateResponse> updateStudy(@AuthenticationPrincipal User user,
         @PathVariable("id") Long id, @RequestBody StudyUpdateRequest studyUpdateRequest) {
         StudyUpdateResponse updateResponse = studyService.updateStudy(user, id ,studyUpdateRequest);
         return ResponseEntity.ok(updateResponse);
-    }
-
-    // 스터디 멤버 조회
-    @GetMapping("/{id}/members")
-    public ResponseEntity<Page<StudyMemberResponse>> getStudyMembers(
-        @PageableDefault(page = 0, size = 5, sort = "joinDate",
-            direction = Sort.Direction.DESC) Pageable pageable,
-        @AuthenticationPrincipal User user, @PathVariable("id") Long studyId) {
-        Page<StudyMemberResponse> memberResponse = studyService.getStudyMembers(studyId, user, pageable);
-        return ResponseEntity.ok(memberResponse);
     }
 
 }
