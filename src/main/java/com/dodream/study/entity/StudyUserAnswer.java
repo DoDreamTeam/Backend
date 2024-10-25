@@ -1,6 +1,7 @@
 package com.dodream.study.entity;
 
 import com.dodream.book.entity.Question;
+import com.dodream.book.entity.UserAnswer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -35,7 +36,7 @@ public class StudyUserAnswer {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
-    private Question question;
+    private UserAnswer userAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id", nullable = false)
