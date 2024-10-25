@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookCommentLikeResponse {
-    private Long commentId;
-    private String comment;
-    private Long userId;
-    private String userName;
-    private LocalDateTime createdAt;
+    private Long commentId; // 댓글 ID
+    private String comment; // 댓글 내용
+    private Long userId; // 사용자 ID
+    private String userName; // 사용자 이름
+    private LocalDateTime createdAt; // 생성날짜
 }
