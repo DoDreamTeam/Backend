@@ -1,5 +1,7 @@
 package com.dodream.study.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,6 +10,8 @@ import lombok.Data;
 public class StudyMemberResponse {
 
     private String username;
-    private String joinDate;
+
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime joinDate;
 
 }
