@@ -52,6 +52,9 @@ public class WebSecurityConfig {
                     // 특정 문제집의 전체 문제 조회
                     new AntPathRequestMatcher("/api/books/**/questions", "GET"),
 
+                    // 특정 문제집의 문제 조회
+                    new AntPathRequestMatcher("/api/books/**/questions/**", "GET"),
+
                     // 특정 문제집의 모든 댓글 조회
                     new AntPathRequestMatcher("/api/books/*/comments", "GET"),
 
