@@ -112,4 +112,55 @@ public class QuestionServiceTest {
             questionService.addQuestion(1L, anotherUser, questionRequest));
         assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
     }
+
+    @DisplayName("문제 삭제 성공")
+    @Test
+    void testDeleteQuestion_Success() {
+        Question question = Question.builder()
+            .id(1L)
+            .book(book)
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
+
+        questionService.deleteQuestion(1L, 1L, user);
+
+        verify(questionRepository).delete(question);
+    }
+
+    @DisplayName("문제집 잘못된 경우 문제 삭제 실패")
+    @Test
+    void testDeleteQuestion_BookNotFound() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+
+        BaseException exception = assertThrows(BaseException.class, () ->
+            questionService.deleteQuestion(1L, 1L, user));
+        assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("다른 사용자가 삭제 시도 시 문제 삭제 실패")
+    @Test
+    void testDeleteQuestion_AccessDenied() {
+        User anotherUser = User.builder()
+            .id(2L) // 다른 사용자 설정
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        BaseException exception = assertThrows(BaseException.class, () ->
+            questionService.deleteQuestion(1L, book.getId(), anotherUser));
+        assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
+    }
+
+    @DisplayName("문제가 잘못된 경우 문제 삭제 실패")
+    @Test
+    void testDeleteQuestion_QuestionNotFound() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(questionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        BaseException exception = assertThrows(BaseException.class, () ->
+            questionService.deleteQuestion(1L, 1L, user));
+        assertEquals(ErrorCode.QUESTION_NOT_FOUND, exception.getErrorCode());
+    }
 }
