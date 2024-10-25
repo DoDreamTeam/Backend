@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,6 +49,15 @@ public class QuestionController {
         @AuthenticationPrincipal User user, @RequestBody QuestionRequest questionRequest) {
         QuestionResponse addedQuestion = questionService.addQuestion(id, user, questionRequest);
         return ResponseEntity.ok(addedQuestion);
+    }
+
+    // 문제 수정 (문제, 모범답안 둘 다 수정 가능)
+    @PatchMapping("/{id}/questions/{questionId}")
+    public ResponseEntity<QuestionResponse> updateQuestion(@PathVariable("id") Long id,
+        @PathVariable("questionId") Long questionId, @AuthenticationPrincipal User user,
+        @RequestBody QuestionRequest questionRequest) {
+        QuestionResponse response = questionService.updateQuestion(id, questionId, questionRequest, user);
+        return ResponseEntity.ok(response);
     }
 
     // 문제 삭제
