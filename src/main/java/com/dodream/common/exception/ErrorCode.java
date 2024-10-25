@@ -31,6 +31,7 @@ public enum ErrorCode {
     COMMENT_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_LIKE_NOT_FOUND", "좋아요 한 댓글이 존재하지 않습니다"),
     USER_ANSWER_EVALUATION_ERROR(HttpStatus.NOT_FOUND, "USER_ANSWER_EVALUATION_ERROR", "해당 평가는 존재하지 않습니다"),
     USER_ANSWER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_ANSWER_NOT_FOUND", "사용자가 푼 문제가 존재하지 않습니다"),
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "QUESTION_NOT_FOUND", "해당 id를 가진 문제가 존재하지 않습니다."),
 
     /* 500 */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예상치 못한 서버 에러가 발생했습니다.");

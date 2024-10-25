@@ -25,6 +25,7 @@ public class BaseException extends RuntimeException {
     public static final BaseException COMMENT_LIKE_NOT_FOUND = new BaseException(ErrorCode.COMMENT_LIKE_NOT_FOUND);
     public static final BaseException USER_ANSWER_NOT_FOUND = new BaseException(ErrorCode.USER_ANSWER_NOT_FOUND);
     public static final BaseException USER_ANSWER_EVALUATION_ERROR = new BaseException(ErrorCode.USER_ANSWER_EVALUATION_ERROR);
+    public static final BaseException QUESTION_NOT_FOUND = new BaseException(ErrorCode.QUESTION_NOT_FOUND);
 
     private final ErrorCode errorCode;
 
