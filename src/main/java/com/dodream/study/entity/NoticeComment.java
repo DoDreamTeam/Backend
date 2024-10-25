@@ -1,7 +1,7 @@
 package com.dodream.study.entity;
 
-import com.dodream.study.entity.Notice;
 import com.dodream.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -28,7 +28,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotiComment {
+public class NoticeComment {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,5 +53,9 @@ public class NotiComment {
    @LastModifiedDate
    @Column(name = "updated_at")
    private LocalDateTime updatedAt;
+
+   public void updateContent(String content) {
+      this.content = content;
+   }
 
 }
