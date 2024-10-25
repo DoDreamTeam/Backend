@@ -8,4 +8,5 @@ public interface QuestionService {
 
     QuestionResponse addQuestion(Long id, User user, QuestionRequest questionRequest);
 
+    void deleteQuestion(Long id, Long questionId, User user);
 }
