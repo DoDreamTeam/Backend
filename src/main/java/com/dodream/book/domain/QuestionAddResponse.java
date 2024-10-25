@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class QuestionResponse {
+public class QuestionAddResponse {
     private Long id;                    // 문제 ID
     private String question;            // 문제
     private String modelAnswer;         // 문제 모범답안
