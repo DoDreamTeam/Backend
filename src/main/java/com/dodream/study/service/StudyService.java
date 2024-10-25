@@ -16,7 +16,6 @@ public interface StudyService {
     void deleteStudy(User user, Long id);
     StudyUpdateResponse updateStudy(User user, Long id, StudyUpdateRequest studyUpdateRequest);
     Page<StudyResponse> getMyStudyList(Pageable pageable, User user);
-    Page<StudyMemberResponse> getStudyMembers(Long studyId, User user, Pageable pageable);
-
+    Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount);
 //    Page<StudyResponse> getMyStudy(User user, Pageable pageable, Long id);
 }
