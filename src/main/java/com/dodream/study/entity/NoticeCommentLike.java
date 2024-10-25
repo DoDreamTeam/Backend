@@ -30,11 +30,11 @@ public class NoticeCommentLike {
 
     @Column
     @Builder.Default
-    private boolean is_deleted = false;
+    private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "noti_comment_id", referencedColumnName = "id", nullable = false)
-    private NoticeComment notiComment;
+    private NoticeComment noticeCommentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
