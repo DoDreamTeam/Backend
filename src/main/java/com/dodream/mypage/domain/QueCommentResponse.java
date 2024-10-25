@@ -10,12 +10,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookCommentResponse {
+public class QueCommentResponse {
     private Long id; // 댓글 ID
-    private Long bookId; // 문제집 ID
+    private Long studyAnswerId; // 스터디 문제 ID
     private String comment; // 댓글 내용
     private Long userId; // 사용자 ID
     private String username; // 사용자 이름
+    private String studyTitle; // 스터디 제목
     private LocalDateTime createdAt; // 생성 날짜
     private LocalDateTime updatedAt; // 수정 날짜
 }

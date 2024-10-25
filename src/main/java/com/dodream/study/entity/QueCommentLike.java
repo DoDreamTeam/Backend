@@ -39,4 +39,8 @@ public class QueCommentLike {
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;                        // 좋아요를 누른 사용자 ID
+
+    @Column(name = "is_deleted")
+    @Builder.Default
+    private boolean isDeleted = false;
 }

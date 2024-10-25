@@ -5,6 +5,8 @@ import com.dodream.book.entity.Bookmark;
 import com.dodream.user.entity.User;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +19,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Integer> {
     // 북마크하기
     Optional<Bookmark> findByUserAndBook(User user, Book book);
 
-    // 유저 ID 로 찿기
-    List<Bookmark> findByUserId(Long userId);
+    // 유저 북마크 목록
+    Page<Bookmark> findByUserIdOrderByBookCreatedAtDesc(Long userId, Pageable pageable);
 }

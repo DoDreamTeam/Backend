@@ -15,8 +15,8 @@ public interface BookCommentRepository extends JpaRepository<BookComment, Long> 
     // 최신순 댓글 전체 조회
     Page<BookComment> findByBookIdOrderByCreatedAtDesc(Pageable pageable, Long bookId);
 
-    // 유저 ID 로 찿기
-    List<BookComment> findByUserId(Long userId);
+    // 유저 댓글 목록 조회
+    Page<BookComment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
     // 좋아요순 댓글 전체 조회
     @Query("SELECT bc FROM BookComment bc LEFT JOIN BookCommentLike bcl ON bc.id = bcl.commentId.id AND bcl.isDeleted = false " +

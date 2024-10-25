@@ -5,6 +5,8 @@ import com.dodream.book.entity.BookCommentLike;
 import com.dodream.user.entity.User;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,8 +19,9 @@ public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike
     @Query("SELECT COUNT(bl) FROM BookCommentLike bl WHERE bl.commentId = :commentId AND bl.isDeleted = false")
     long countByCommentIdAndIsDeletedFalse(@Param("commentId") BookComment commentId);
 
-    // 유저 ID로 찾기
-    List<BookCommentLike> findByUserId(Long userId);
+    // 유저 좋아요 목록 조회
+    Page<BookCommentLike> findByUserIdAndIsDeletedFalseOrderByCommentId_CreatedAtDesc(Long userId,
+        Pageable pageable);
 
     // 좋아요 조회
     Optional<BookCommentLike> findByUserAndCommentId(User user, BookComment commentId);

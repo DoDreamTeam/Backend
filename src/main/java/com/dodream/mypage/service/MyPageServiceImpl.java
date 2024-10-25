@@ -1,6 +1,7 @@
 package com.dodream.mypage.service;
 
 import com.dodream.book.domain.BookResponse;
+import com.dodream.book.entity.Book;
 import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
@@ -11,6 +12,9 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -28,26 +32,34 @@ public class MyPageServiceImpl implements MyPageService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        // 사용자의 문제집 리스트
-        List<UserBook> userBooks = userBookRepository.findByUserId(userId);
-
-        userBooks.forEach(userBook -> System.out.println(userBook.getBook().getTitle()));
-
-        // 사용자 문제집의 정보 리스트
-        List<BookResponse> books = userBooks.stream()
-            .map(UserBook::getBook)
-            .filter(book -> !book.isSecret())
-            .distinct()
-            .map(book -> BookResponse.builder()
-                .id(book.getId()).title(book.getTitle())
-                .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
-                .category(book.getCategory().name())
-                .createdAt(book.getCreatedAt())
-                .build())
-            .toList();
-        return UserInfoResponse.toDTO(user, books);
+        return UserInfoResponse.toProfileDTO(user);
     }
+
+    // 사용자의 문제집 목록 조회
+    @Override
+    public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
+        // 사용자의 문제집 리스트
+        Page<UserBook> userBooksPage = userBookRepository
+            .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(
+            userId, pageable);
+
+        // 문제집 정보 반환
+        List<BookResponse> bookResponses = userBooksPage.getContent().stream()
+            .map(userBook -> {
+                Book book = userBook.getBook();
+                return BookResponse.builder()
+                    .id(book.getId())
+                    .title(book.getTitle())
+                    .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                    .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+                    .category(book.getCategory().name())
+                    .createdAt(book.getCreatedAt())
+                    .build();
+            })
+            .toList();
+        return new PageImpl<>(bookResponses, pageable, userBooksPage.getTotalElements());
+    }
+
 
     // 사용자 프로필 수정
     @Override
@@ -67,6 +79,6 @@ public class MyPageServiceImpl implements MyPageService {
             user.setProfileImage(newProfileImage);
         }
         userRepository.save(user);
-        return UserInfoResponse.toDTO(user);
+        return UserInfoResponse.toProfileDTO(user);
     }
 }
