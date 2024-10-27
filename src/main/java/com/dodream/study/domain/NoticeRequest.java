@@ -2,11 +2,11 @@ package com.dodream.study.domain;
 
 import com.dodream.study.entity.Notice;
 import com.dodream.study.entity.Study;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@Builder
 public class NoticeRequest {
     private String content;
     private boolean isDeleted;
