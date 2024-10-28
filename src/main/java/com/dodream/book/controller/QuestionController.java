@@ -86,4 +86,13 @@ public class QuestionController {
         return ResponseEntity.ok(response);
     }
 
+    // 문제 제목으로 검색해서 결과 조회
+    @GetMapping("/{id}/questions/search")
+    public ResponseEntity<Page<QuestionListResponse>> searchQuestions(
+        @PathVariable("id") Long id,
+        @RequestParam("keyword") String keyword, Pageable pageable) {
+        Page<QuestionListResponse> questions = questionService.searchQuestions(id, keyword, pageable);
+        return ResponseEntity.ok(questions);
+    }
+
 }
