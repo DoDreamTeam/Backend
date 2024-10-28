@@ -43,6 +43,9 @@ public class WebSecurityConfig {
                     // 로그인/로그아웃
                     new AntPathRequestMatcher("/api/oauth/**"),
 
+                    // 메인 페이지에서 문제집+스터디 검색
+                    new AntPathRequestMatcher("/api/search", "GET"),
+
                     // 모든 문제집 조회 (최신순)
                     new AntPathRequestMatcher("/api/books", "GET"),
 
