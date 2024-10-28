@@ -2,20 +2,26 @@ package com.dodream.book.service;
 
 import com.dodream.book.domain.AddToMyBooksRequest;
 import com.dodream.book.domain.AddToMyBooksResponse;
+import com.dodream.book.domain.EvaluationResponse;
 import com.dodream.book.domain.QuestionRequest;
 import com.dodream.book.domain.QuestionResponse;
 import com.dodream.book.domain.QuestionListResponse;
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.Question;
+import com.dodream.book.entity.UserAnswer;
 import com.dodream.book.entity.UserBook;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.QuestionRepository;
+import com.dodream.book.repository.UserAnswerRepository;
 import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.user.entity.User;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,23 +36,51 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
     private final BookRepository bookRepository;
     private final UserBookRepository userBookRepository;
+    private final UserAnswerRepository userAnswerRepository;
 
     // 문제 전체 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long id) {
+    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user, Boolean type) {
+        // 문제 조회
         Page<Question> questions = questionRepository.findByBookIdOrderByCreatedAtDesc(pageable, id);
 
-        // 비회원/회원이 하나도 풀지 않은 경우
-        List<QuestionListResponse> questionResponses = questions.getContent().stream()
-            .map(question -> QuestionListResponse.builder()
-                .id(question.getId())
-                .question(question.getQuestion())
-                .createdAt(question.getCreatedAt())
-                .build())
-            .collect(Collectors.toList());
+        // 사용자가 푼 문제 ID 목록
+        Set<Long> answeredQuestionIds = new HashSet<>();
 
-        // 회원이 한 문제라도 푼 경우 (문제 평가 기능 구현 이후 구현할 예정)
+        if (user != null && type != null && type) {
+            // 사용자가 푼 문제 ID 목록 수집
+            answeredQuestionIds.addAll(userAnswerRepository.findByUserIdAndQuestionIdIn(
+                    user.getId(),
+                    questions.getContent().stream().map(Question::getId).collect(Collectors.toList()))
+                .stream().map(answer -> answer.getQuestion().getId()).collect(Collectors.toSet()));
+        }
+
+        // QuestionListResponse 생성
+        List<QuestionListResponse> questionResponses = questions.getContent().stream()
+            .filter(question -> (type == null || !type || !answeredQuestionIds.contains(question.getId()))) // 푼 문제 제외
+            .map(question -> {
+                EvaluationResponse evaluationResponse = null;
+
+                if (user != null) {
+                    Optional<UserAnswer> userAnswer = userAnswerRepository.findByUserAndQuestion(user, question);
+                    if (userAnswer.isPresent()) {
+                        evaluationResponse = new EvaluationResponse(
+                            userAnswer.get().getEvaluation().getEvaluation(),
+                            userAnswer.get().getUser().getId(),
+                            userAnswer.get().getCreatedAt()
+                        );
+                    }
+                }
+
+                return QuestionListResponse.builder()
+                    .id(question.getId())
+                    .question(question.getQuestion())
+                    .createdAt(question.getCreatedAt())
+                    .evaluation(evaluationResponse) // 평가 정보 설정
+                    .build();
+            })
+            .collect(Collectors.toList());
 
         return new PageImpl<>(questionResponses, pageable, questions.getTotalElements());
     }
@@ -213,5 +247,18 @@ public class QuestionServiceImpl implements QuestionService {
         } catch (Exception e) {
             return false; // 실패하면 false 반환
         }
+    }
+
+    // 문제 제목으로 검색하기
+    @Override
+    @Transactional(readOnly = true)
+    public Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable) {
+        Page<Question> questions = questionRepository.findByBookIdAndQuestionContaining(bookId, keyword, pageable);
+
+        return questions.map(question -> QuestionListResponse.builder()
+            .id(question.getId())
+            .question(question.getQuestion())
+            .createdAt(question.getCreatedAt())
+            .build());
     }
 }

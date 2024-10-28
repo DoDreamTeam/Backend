@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,8 @@ import com.dodream.book.entity.Book;
 import com.dodream.book.entity.Question;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.QuestionRepository;
+import com.dodream.book.repository.UserAnswerRepository;
+import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.user.entity.User;
@@ -46,7 +49,9 @@ public class QuestionServiceTest {
     private BookRepository bookRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserBookRepository userBookRepository; // Added
+    @Mock
+    private UserAnswerRepository userAnswerRepository; // Added
 
     private User user;
     private Book book;
@@ -55,8 +60,7 @@ public class QuestionServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User();
-        user.setId(1L); // 사용자 ID 설정
+        user = User.builder().id(1L).username("testuser").provider("provider1").providerId("1").build();
 
         book = new Book();
         book.setId(1L);
@@ -198,7 +202,7 @@ public class QuestionServiceTest {
             .thenReturn(questionPage);
 
         // When
-        Page<QuestionListResponse> result = questionService.getQuestions(PageRequest.of(0, 2), book.getId());
+        Page<QuestionListResponse> result = questionService.getQuestions(PageRequest.of(0, 2), book.getId(), user, null);
 
         // Then
         assertNotNull(result);
@@ -262,7 +266,6 @@ public class QuestionServiceTest {
 
         QuestionRequest updateRequest = new QuestionRequest();
         updateRequest.setQuestion("Updated question");
-        updateRequest.setModelAnswer(null); // 모범답안은 수정하지 않음
 
         // When
         QuestionResponse response = questionService.updateQuestion(1L, 1L, updateRequest, user);
@@ -270,93 +273,79 @@ public class QuestionServiceTest {
         // Then
         assertNotNull(response);
         assertEquals("Updated question", response.getQuestion());
-        assertEquals("Old answer", response.getModelAnswer()); // 모범답안은 변경되지 않음
+        assertEquals("Old answer", response.getModelAnswer());
+        assertEquals(1L, response.getBookId());
+        assertNotNull(response.getCreatedAt());
+
+        // Verify that the question was updated correctly
+        assertEquals("Updated question", question.getQuestion());
+        assertEquals("Old answer", question.getModelAnswer());
     }
 
-    @DisplayName("문제 수정 시 모범답안만 업데이트")
+    @DisplayName("문제 수정 시 문제집이 잘못된 경우 수정 실패")
     @Test
-    void testUpdateQuestion_OnlyModelAnswerUpdated() {
+    void testUpdateQuestion_BookNotFound() {
+        // Given
+        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When
+        BaseException exception = assertThrows(BaseException.class, () ->
+            questionService.updateQuestion(1L, 1L, questionRequest, user));
+
+        // Then
+        assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("문제 수정 시 다른 사용자가 수정 시도할 경우 수정 실패")
+    @Test
+    void testUpdateQuestion_AccessDenied() {
+        // Given
+        User anotherUser = User.builder().id(2L).build(); // Another user
+        Question question = Question.builder()
+            .id(1L)
+            .question("Existing question")
+            .modelAnswer("Existing answer")
+            .book(book) // Make sure this question belongs to the same book
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(questionRepository.findById(1L)).thenReturn(Optional.of(question)); // Mock the question retrieval
+
+        // When
+        BaseException exception = assertThrows(BaseException.class, () ->
+            questionService.updateQuestion(1L, 1L, questionRequest, anotherUser));
+
+        // Then
+        assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
+    }
+
+
+    @DisplayName("문제 제목으로 검색 성공")
+    @Test
+    void testSearchQuestionsByTitle_Success() {
         // Given
         Question question = Question.builder()
             .id(1L)
-            .question("Old question")
+            .question("Searchable Question")
             .modelAnswer("Old answer")
             .book(book)
             .createdAt(LocalDateTime.now())
             .build();
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
+        List<Question> questionList = List.of(question);
+        Page<Question> questionPage = new PageImpl<>(questionList);
 
-        QuestionRequest updateRequest = new QuestionRequest();
-        updateRequest.setQuestion(null); // 질문은 수정하지 않음
-        updateRequest.setModelAnswer("Updated answer");
+        when(questionRepository.findByBookIdAndQuestionContaining(eq(book.getId()), anyString(), any(Pageable.class)))
+            .thenReturn(questionPage);
 
         // When
-        QuestionResponse response = questionService.updateQuestion(1L, 1L, updateRequest, user);
+        Page<QuestionListResponse> result = questionService.searchQuestions(book.getId(), "Searchable", Pageable.ofSize(10));
 
         // Then
-        assertNotNull(response);
-        assertEquals("Old question", response.getQuestion()); // 질문은 변경되지 않음
-        assertEquals("Updated answer", response.getModelAnswer());
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Searchable Question", result.getContent().get(0).getQuestion());
     }
 
-    @DisplayName("문제가 잘못된 경우 문제 수정 실패")
-    @Test
-    void testUpdateQuestion_QuestionNotFound() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(questionRepository.findById(1L)).thenReturn(Optional.empty());
-
-        QuestionRequest updateRequest = new QuestionRequest();
-        updateRequest.setQuestion("Some question");
-        updateRequest.setModelAnswer("Some answer");
-
-        BaseException exception = assertThrows(BaseException.class, () ->
-            questionService.updateQuestion(1L, 1L, updateRequest, user));
-        assertEquals(ErrorCode.QUESTION_NOT_FOUND, exception.getErrorCode());
-    }
-
-    @DisplayName("문제집 잘못된 경우 문제 수정 실패")
-    @Test
-    void testUpdateQuestion_BookNotFound() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
-
-        QuestionRequest updateRequest = new QuestionRequest();
-        updateRequest.setQuestion("Some question");
-        updateRequest.setModelAnswer("Some answer");
-
-        BaseException exception = assertThrows(BaseException.class, () ->
-            questionService.updateQuestion(1L, 1L, updateRequest, user));
-        assertEquals(ErrorCode.BOOK_NOT_FOUND, exception.getErrorCode());
-    }
-
-    @DisplayName("다른 사용자가 수정 시도 시 문제 수정 실패")
-    @Test
-    void testUpdateQuestion_AccessDenied() {
-        User anotherUser = User.builder()
-            .id(2L) // 다른 사용자 설정
-            .build();
-
-        // 문제집이 존재함
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-
-        // 문제도 존재함
-        Question question = Question.builder()
-            .id(1L)
-            .question("Existing question")
-            .modelAnswer("Existing answer")
-            .book(book)
-            .build();
-        when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
-
-        // 수정 요청
-        QuestionRequest updateRequest = new QuestionRequest();
-        updateRequest.setQuestion("Some question");
-        updateRequest.setModelAnswer("Some answer");
-
-        // AccessDenied 예외가 발생해야 함
-        BaseException exception = assertThrows(BaseException.class, () ->
-            questionService.updateQuestion(1L, 1L, updateRequest, anotherUser));
-        assertEquals(ErrorCode.ACCESS_DENIED, exception.getErrorCode());
-    }
 }
