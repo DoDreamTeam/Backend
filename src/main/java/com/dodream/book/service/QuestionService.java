@@ -22,4 +22,6 @@ public interface QuestionService {
     QuestionResponse updateQuestion(Long id, Long questionId, QuestionRequest questionRequest, User user);
 
     AddToMyBooksResponse addQuestionToBooks(Long id, Long questionId, AddToMyBooksRequest request, User user);
+
+    Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable);
 }

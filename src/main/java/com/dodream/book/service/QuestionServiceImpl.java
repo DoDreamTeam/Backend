@@ -248,4 +248,17 @@ public class QuestionServiceImpl implements QuestionService {
             return false; // 실패하면 false 반환
         }
     }
+
+    // 문제 제목으로 검색하기
+    @Override
+    @Transactional(readOnly = true)
+    public Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable) {
+        Page<Question> questions = questionRepository.findByBookIdAndQuestionContaining(bookId, keyword, pageable);
+
+        return questions.map(question -> QuestionListResponse.builder()
+            .id(question.getId())
+            .question(question.getQuestion())
+            .createdAt(question.getCreatedAt())
+            .build());
+    }
 }
