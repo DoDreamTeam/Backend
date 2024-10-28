@@ -57,4 +57,14 @@ public class UserAnswer {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // 문제 평가하기
+    public void updateEvaluation(Evaluation evaluation) {
+        this.evaluation = evaluation;
+    }
+
+    // 문제 다시 풀기
+    public void updateAnswer(String answer, Evaluation evaluation) {
+        this.answer = answer;
+        this.evaluation = evaluation;
+    }
 }
