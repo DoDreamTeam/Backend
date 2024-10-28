@@ -99,6 +99,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
+        noticeCommentLikeRepository.deleteByNoticeCommentId(noticeComment);
         noticeCommentRepository.delete(noticeComment);
     }
 

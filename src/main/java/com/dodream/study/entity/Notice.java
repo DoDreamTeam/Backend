@@ -1,6 +1,7 @@
 package com.dodream.study.entity;
 
 import com.dodream.study.entity.Study;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -10,8 +11,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,6 +57,9 @@ public class Notice {
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoticeComment> noticeComments;
 
     public void updateNotice(String content) {
         this.content = content;
