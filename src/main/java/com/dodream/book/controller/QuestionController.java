@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,9 +33,12 @@ public class QuestionController {
     // 문제 전체 조회 (최신순/내가 푼 문제 제외 조회)
     @GetMapping("/{id}/questions")
     public ResponseEntity<Page<QuestionListResponse>> getAllQuestions(
-        @PageableDefault(page = 0, size = 5, sort = "createdAt",
-            direction = Sort.Direction.DESC) Pageable pageable, @PathVariable("id") Long id) {
-        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, id);
+        @PageableDefault(page = 0, size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @PathVariable("id") Long bookId,
+        @RequestParam(value = "type", required = false) Boolean type,
+        @AuthenticationPrincipal User user // 사용자 인증 정보 주입
+    ) {
+        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, bookId, user, type);
         return ResponseEntity.ok(questionList);
     }
 
