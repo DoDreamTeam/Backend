@@ -20,7 +20,7 @@ public interface QueCommentLikeRepository extends JpaRepository<QueCommentLike, 
     long countByQueCommentIdAndIsDeletedFalse(@Param("queCommentId") QueComment queCommentId);
 
     // 특정 사용자가 특정 댓글에 좋아요를 눌렀는지 확인하는 메서드
-    Optional<QueCommentLike> findByUserAndQueComment(User user, QueComment queComment);
+    Optional<QueCommentLike> findByUserAndQuecomment(User user, QueComment queComment);
 
     // 유저 ID 로 찿기
     Page<QueCommentLike> findByUserIdAndIsDeletedFalseOrderByQuecomment_CreatedAtDesc(Long userId,

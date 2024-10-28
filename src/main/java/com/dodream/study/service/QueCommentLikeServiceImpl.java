@@ -31,7 +31,7 @@ public class QueCommentLikeServiceImpl implements QueCommentLikeService {
 
         // 좋아요 조회
         Optional<QueCommentLike> existingLike
-                = queCommentLikeRepository.findByUserAndQueComment(user, queComment);
+                = queCommentLikeRepository.findByUserAndQuecomment(user, queComment);
         QueCommentLikeResponse likeResponse;
 
         // 이미 좋아요가 존재하는 경우 (좋아요 취소)
