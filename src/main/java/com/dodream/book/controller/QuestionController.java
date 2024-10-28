@@ -1,5 +1,7 @@
 package com.dodream.book.controller;
 
+import com.dodream.book.domain.AddToMyBooksRequest;
+import com.dodream.book.domain.AddToMyBooksResponse;
 import com.dodream.book.domain.QuestionRequest;
 import com.dodream.book.domain.QuestionResponse;
 import com.dodream.book.domain.QuestionListResponse;
@@ -66,6 +68,18 @@ public class QuestionController {
         @PathVariable("questionId") Long questionId, @AuthenticationPrincipal User user) {
         questionService.deleteQuestion(id, questionId, user);
         return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    // 문제를 내 문제집에 추가
+    @PostMapping("/{id}/questions/{questionId}/books")
+    public ResponseEntity<AddToMyBooksResponse> addQuestionToBooks(
+        @AuthenticationPrincipal User user,
+        @PathVariable("id") Long id,
+        @PathVariable("questionId") Long questionId,
+        @RequestBody AddToMyBooksRequest request) {
+
+        AddToMyBooksResponse response = questionService.addQuestionToBooks(id, questionId, request, user);
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.dodream.book.service;
 
+import com.dodream.book.domain.AddToMyBooksRequest;
+import com.dodream.book.domain.AddToMyBooksResponse;
 import com.dodream.book.domain.QuestionRequest;
 import com.dodream.book.domain.QuestionResponse;
 import com.dodream.book.domain.QuestionListResponse;
@@ -18,4 +20,6 @@ public interface QuestionService {
     QuestionListResponse getOneQuestion(Long id, Long questionId);
 
     QuestionResponse updateQuestion(Long id, Long questionId, QuestionRequest questionRequest, User user);
+
+    AddToMyBooksResponse addQuestionToBooks(Long id, Long questionId, AddToMyBooksRequest request, User user);
 }

@@ -10,7 +10,14 @@ import com.dodream.book.repository.QuestionRepository;
 import com.dodream.book.repository.UserAnswerRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.study.entity.Study;
+import com.dodream.study.entity.StudyUserAnswer;
+import com.dodream.study.repository.StudyRepository;
+import com.dodream.study.repository.StudyUserAnswerRepository;
 import com.dodream.user.entity.User;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserAnswerServiceImpl implements UserAnswerService{
     private final UserAnswerRepository userAnswerRepository;
     private final QuestionRepository questionRepository;
+    private final StudyRepository studyRepository;
+    private final StudyUserAnswerRepository studyUserAnswerRepository;
 
     // 문제 풀기
     @Override
@@ -116,6 +125,38 @@ public class UserAnswerServiceImpl implements UserAnswerService{
             .modelAnswer(modelAnswer) // 모범답안
             .userAnswer(userAnswer.getAnswer()) // 사용자가 작성한 답안
             .build();
+    }
+
+    // 문제 제출 이후 내가 참여하는 스터디에 추가하기
+    @Override
+    @Transactional
+    public void addQuestionToMyStudies(User user, Long questionId, List<Long> studyIds) {
+        // 문제 확인
+        Question question = questionRepository.findById(questionId)
+            .orElseThrow(() -> new BaseException(ErrorCode.QUESTION_NOT_FOUND));
+
+        // 사용자 답변을 가져옴
+        UserAnswer userAnswer = userAnswerRepository.findByUserAndQuestion(user, question)
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_ANSWER_NOT_FOUND));
+
+        List<StudyUserAnswer> studyUserAnswers = new ArrayList<>();
+
+        for (Long studyId : studyIds) {
+            Study study = studyRepository.findById(studyId)
+                .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
+
+            // StudyUserAnswer 객체 생성
+            StudyUserAnswer studyUserAnswer = StudyUserAnswer.builder()
+                .userAnswer(userAnswer) // UserAnswer 객체 설정
+                .study(study)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+            studyUserAnswers.add(studyUserAnswer);
+        }
+
+        // 모든 StudyUserAnswer 저장
+        studyUserAnswerRepository.saveAll(studyUserAnswers);
     }
 
 }
