@@ -15,6 +15,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,7 @@ public class BookServiceImpl implements BookService {
         return convertToBookResponsePage(bookPage);
     }
 
+    // 문제집 카테고리별 조회
     @Override
     @Transactional(readOnly = true)
     public Page<BookResponse> getBookListByCategory(Pageable pageable, String category, boolean sortByBookmarks) {
@@ -70,6 +72,16 @@ public class BookServiceImpl implements BookService {
             throw new BaseException(ErrorCode.BOOK_CATEGORY_NOT_FOUND);
         }
         return convertToBookResponsePage(bookPage);
+    }
+
+    // 문제집 북마크 많은 순 4개 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookResponse> getPopularBooks() {
+        Pageable pageable = PageRequest.of(0, 4);
+        Page<Book> popularBooksPage = bookRepository.findAllBySecretFalseOrderByBookmarkCount(pageable);
+
+        return convertToBookResponsePage(popularBooksPage);
     }
 
     // 문제집 제목으로 검색
