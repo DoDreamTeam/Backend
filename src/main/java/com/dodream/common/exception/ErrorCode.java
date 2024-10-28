@@ -37,7 +37,7 @@ public enum ErrorCode {
         "스터디에 추가한 사용자 문제가 존재하지 않습니다"),
     NOTICE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_COMMENT_NOT_FOUND", "공지사항 댓글이 존재하지 않습니다."),
     ANSWER_NOT_FOUND(HttpStatus.NOT_FOUND, "ANSWER_NOT_FOUND", "해당 id를 가진 답안이 존재하지 않습니다"),
-
+    QUE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "QUE_COMMENT_NOT_FOUND", "댓글이 존재하지 않습니다"),
 
     /* 500 */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예상치 못한 서버 에러가 발생했습니다.");
