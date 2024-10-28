@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface StudyService {
     Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category);
-    Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, String keyword);
+    Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, User user, String keyword);
     StudyResponse addStudy(User user, StudyRequest studyRequest);
     void deleteStudy(User user, Long id);
     StudyUpdateResponse updateStudy(User user, Long id, StudyUpdateRequest studyUpdateRequest);

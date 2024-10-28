@@ -27,4 +27,6 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
         "AND sm.role IN :roles")
     Page<StudyResponse> findByUserAndRoleIn(Pageable pageable, User user, List<RoleEnum> roles);
 
+    Optional<StudyMember> findByUserIdAndStudyId(Long userId, Long studyId);
+
 }

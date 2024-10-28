@@ -33,6 +33,10 @@ public class BaseException extends RuntimeException {
     public static final BaseException NOTICE_COMMENT_NOT_FOUND = new BaseException(ErrorCode.NOTICE_COMMENT_NOT_FOUND);
     public static final BaseException INVALID_EVALUATION = new BaseException(ErrorCode.INVALID_EVALUATION);
     public static final BaseException ANSWER_NOT_FOUND = new BaseException(ErrorCode.ANSWER_NOT_FOUND);
+    public static final BaseException ALREADY_APPLIED_TO_STUDY = new BaseException(ErrorCode.ALREADY_APPLIED_TO_STUDY);
+    public static final BaseException STUDY_MEMBER_NOT_FOUND = new BaseException(ErrorCode.STUDY_MEMBER_NOT_FOUND);
+    public static final BaseException INVALID_CURRENT_LEADER = new BaseException(ErrorCode.INVALID_CURRENT_LEADER);
+    public static final BaseException INVALID_NEW_LEADER = new BaseException(ErrorCode.INVALID_NEW_LEADER);
 
     private final ErrorCode errorCode;
 

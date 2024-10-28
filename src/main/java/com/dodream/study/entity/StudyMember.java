@@ -51,4 +51,8 @@ public class StudyMember {
     @Builder.Default
     private RoleEnum role = RoleEnum.ROLE_WAITING;
 
+    public void updateStudyMember(RoleEnum role) {
+        this.role = role;
+    }
+
 }

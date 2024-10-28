@@ -41,37 +41,27 @@ public class StudyServiceImpl implements StudyService {
     }
 
     // 메인 페이지 스터디 조회 (12개씩) - 비회원 + 회원 포함
-    // 메인 페이지 인기 스터디 조회 (인원수별 조회)
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "getStudy")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
-        Sort sort = pageable.getSort();
-
-        // StudyMember 수로 정렬하는지 확인
-        boolean sortByMemberCount = sort.stream()
-            .anyMatch(order -> order.getProperty().equals("count"));
-
         Page<StudyResponse> studyList;
-        if (sortByMemberCount) {
-            studyList = studyRepository.findAllStudyWithMemberCount(pageable);
-        } else {
-            if (category != null) {
-                try {
-                    studyList = studyRepository.findByStudyCategory(pageable,
-                        Category.valueOf(category));
-                } catch (IllegalArgumentException e) {
-                    throw new BaseException(ErrorCode.STUDY_CATEGORY_ERROR);
-                }
-            } else {
-                studyList = studyRepository.findAllStudy(pageable);
 
-                if (loginedUser != null) {
-                    studyList.getContent().forEach(s ->
-                        s.setStatus(getStatusStudyMember(s.getId(), loginedUser.getId()))
-                    );
-                }
+        if (category != null) {
+            // 카테고리별 조회
+            try {
+                studyList = studyRepository.findByStudyCategory(pageable, Category.valueOf(category));
+            } catch (IllegalArgumentException e) {
+                throw new BaseException(ErrorCode.STUDY_CATEGORY_ERROR);
             }
+        } else {
+            studyList = studyRepository.findAllStudy(pageable);
+        }
+
+        if (loginedUser != null) {
+            studyList.getContent().forEach(study ->
+                study.setStatus(getStatusStudyMember(study.getId(), loginedUser.getId()))
+            );
         }
 
         return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
@@ -81,10 +71,18 @@ public class StudyServiceImpl implements StudyService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "searchStudy")
-    public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, String keyword) {
+    public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, User loginedUser, String keyword) {
         try {
             Page<StudyResponse> studyList =
                 studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+
+            // 로그인한 사용자가 있을 경우 role 조회 및 설정
+            if (loginedUser != null) {
+                studyList.getContent().forEach(study ->
+                    study.setStatus(getStatusStudyMember(study.getId(), loginedUser.getId()))
+                );
+            }
+
             return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.STUDY_SEARCH_NOT_FOUND);
@@ -170,6 +168,8 @@ public class StudyServiceImpl implements StudyService {
 
     // 인기 스터디 조회
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "popularStudy")
     public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
         Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 

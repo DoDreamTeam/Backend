@@ -13,6 +13,10 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     BOOK_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOK_NOT_FOUND", "해당 id를 가진 문제집이 없습니다."),
     INVALID_EVALUATION(HttpStatus.BAD_REQUEST, "INVALID_EVALUATION", "유효하지 않은 평가입니다"),
+    INVALID_CURRENT_LEADER(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_LEADER", "INVALID_CURRENT_LEADER - 검증되지 않은 값입니다."),
+    INVALID_NEW_LEADER(HttpStatus.BAD_REQUEST, "INVALID_NEW_LEADER", "INVALID_NEW_LEADER - 검증되지 않은 값입니다."),
+    ALREADY_APPLIED_TO_STUDY(HttpStatus.BAD_REQUEST, "ALREADY_APPLIED_TO_STUDY", "이미 가입신청이 되었습니다."),
+    ALREADY_STUDY_MEMBER(HttpStatus.BAD_REQUEST, "ALREADY_STUDY_MEMBER", "이미 해당 스터디 멤버입니다."),
 
     /* 403 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
@@ -40,8 +44,7 @@ public enum ErrorCode {
 
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_NOT_FOUND", "해당 id를 가진 공지사항이 없습니다."),
-
-
+    STUDY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_MEMBER_NOT_FOUND", "해당 스터디 멤버를 찾을 수 없습니다."),
 
     /* 500 */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예상치 못한 서버 에러가 발생했습니다.");
