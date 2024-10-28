@@ -91,6 +91,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
     }
 
     @Override
+    @Transactional
     public void deleteNoticeComment(Long commentId, User user) {
         NoticeComment noticeComment = noticeCommentRepository.findById(commentId)
             .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_COMMENT_NOT_FOUND));
