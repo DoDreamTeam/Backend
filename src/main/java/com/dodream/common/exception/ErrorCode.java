@@ -12,8 +12,6 @@ public enum ErrorCode {
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "입력값 유효성 검사에 실패했습니다."),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     BOOK_NOT_FOUND(HttpStatus.BAD_REQUEST, "BOOK_NOT_FOUND", "해당 id를 가진 문제집이 없습니다."),
-    STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
-    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_NOT_FOUND", "해당 id를 가진 공지사항이 없습니다."),
     INVALID_EVALUATION(HttpStatus.BAD_REQUEST, "INVALID_EVALUATION", "유효하지 않은 평가입니다"),
 
     /* 403 */
@@ -37,7 +35,13 @@ public enum ErrorCode {
         "스터디에 추가한 사용자 문제가 존재하지 않습니다"),
     NOTICE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_COMMENT_NOT_FOUND", "공지사항 댓글이 존재하지 않습니다."),
     ANSWER_NOT_FOUND(HttpStatus.NOT_FOUND, "ANSWER_NOT_FOUND", "해당 id를 가진 답안이 존재하지 않습니다"),
+
     QUE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "QUE_COMMENT_NOT_FOUND", "댓글이 존재하지 않습니다"),
+
+    STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_NOT_FOUND", "해당 id를 가진 공지사항이 없습니다."),
+
+
 
     /* 500 */
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "예상치 못한 서버 에러가 발생했습니다.");

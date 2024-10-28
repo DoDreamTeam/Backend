@@ -15,11 +15,13 @@ public interface QuestionService {
 
     void deleteQuestion(Long id, Long questionId, User user);
 
-    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id);
+    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user, Boolean type);
 
     QuestionListResponse getOneQuestion(Long id, Long questionId);
 
     QuestionResponse updateQuestion(Long id, Long questionId, QuestionRequest questionRequest, User user);
 
     AddToMyBooksResponse addQuestionToBooks(Long id, Long questionId, AddToMyBooksRequest request, User user);
+
+    Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable);
 }
