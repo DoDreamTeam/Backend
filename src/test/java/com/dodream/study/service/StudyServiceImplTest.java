@@ -185,7 +185,7 @@ class StudyServiceImplTest {
             .thenReturn(studyPage);
 
         // when (테스트 진행할 행위)
-        Page<StudyResponse> result = studyService.searchStudiesByKeyword(pageable, keyword);
+        Page<StudyResponse> result = studyService.searchStudiesByKeyword(pageable, testUser, keyword);
 
         // then (행위에 대한 결과 검증)
         assertEquals(1, result.getTotalElements());
@@ -205,7 +205,7 @@ class StudyServiceImplTest {
             .thenReturn(emptyPage);
 
         // when (테스트 진행할 행위)
-        Page<StudyResponse> result = studyService.searchStudiesByKeyword(pageable, keyword);
+        Page<StudyResponse> result = studyService.searchStudiesByKeyword(pageable, testUser, keyword);
 
         // then (행위에 대한 결과 검증)
         assertTrue(result.getContent().isEmpty());
@@ -224,7 +224,7 @@ class StudyServiceImplTest {
 
         // when (테스트 진행할 행위) + then (행위에 대한 결과 검증)
         BaseException exception = assertThrows(BaseException.class, () ->
-            studyService.searchStudiesByKeyword(pageable, keyword)
+            studyService.searchStudiesByKeyword(pageable, testUser, keyword)
         );
 
         assertEquals(ErrorCode.STUDY_SEARCH_NOT_FOUND, exception.getErrorCode());
