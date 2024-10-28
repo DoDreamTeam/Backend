@@ -4,6 +4,7 @@ import com.dodream.book.entity.Question;
 import com.dodream.book.entity.UserAnswer;
 import com.dodream.book.enumtype.Evaluation;
 import com.dodream.user.entity.User;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,5 +26,8 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 사용자가 특정 질문에 대해 제출한 답변 조회
     Optional<UserAnswer> findByUserAndQuestion(User user, Question question);
+
+    // 사용자가 푼 문제의 평가 목록 조회 (질문 ID 목록을 기반으로)
+    List<UserAnswer> findByUserIdAndQuestionIdIn(Long userId, List<Long> questionIds);
 
 }
