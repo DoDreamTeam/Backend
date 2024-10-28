@@ -62,8 +62,9 @@ public class StudyController {
     public ResponseEntity<Page<StudyResponse>> searchStudies(
         @PageableDefault(page = 0, size = 12, sort = "updatedAt",
             direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal User user,
         @RequestParam(value = "keyword", required = false) String keyword) {
-        Page<StudyResponse> response = studyService.searchStudiesByKeyword(pageable, keyword);
+        Page<StudyResponse> response = studyService.searchStudiesByKeyword(pageable, user, keyword);
         return ResponseEntity.ok(response);
     }
 
