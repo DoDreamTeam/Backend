@@ -35,8 +35,12 @@ public enum ErrorCode {
         "스터디에 추가한 사용자 문제가 존재하지 않습니다"),
     NOTICE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_COMMENT_NOT_FOUND", "공지사항 댓글이 존재하지 않습니다."),
     ANSWER_NOT_FOUND(HttpStatus.NOT_FOUND, "ANSWER_NOT_FOUND", "해당 id를 가진 답안이 존재하지 않습니다"),
+
+    QUE_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "QUE_COMMENT_NOT_FOUND", "댓글이 존재하지 않습니다"),
+
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDY_NOT_FOUND", "해당 id를 가진 스터디가 없습니다."),
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_NOT_FOUND", "해당 id를 가진 공지사항이 없습니다."),
+
 
 
     /* 500 */

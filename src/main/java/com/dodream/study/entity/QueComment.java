@@ -53,4 +53,8 @@ public class QueComment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt; // 댓글 수정 날짜
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
 }
