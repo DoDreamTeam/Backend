@@ -41,6 +41,13 @@ public class BookController {
         return ResponseEntity.ok(bookList);
     }
 
+    // 인기 문제집 조회 (북마크 많은 순으로 4개)
+    @GetMapping("/popular")
+    public ResponseEntity<Page<BookResponse>> getPopularBooks() {
+        Page<BookResponse> popularBookList = bookService.getPopularBooks();
+        return ResponseEntity.ok(popularBookList);
+    }
+
     // 문제집 제목 수정
     @PatchMapping("/{id}")
     public ResponseEntity<BookUpdateResponse> updateBook(@AuthenticationPrincipal User user, @PathVariable("id") Long id,

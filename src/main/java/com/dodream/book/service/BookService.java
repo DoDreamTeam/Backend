@@ -24,5 +24,6 @@ public interface BookService {
 
     void deleteBook(Long id, User user);
 
+    Page<BookResponse> getPopularBooks();;
 }
 
