@@ -1,5 +1,6 @@
 package com.dodream.book.controller;
 
+import com.dodream.book.domain.AddToStudiesRequest;
 import com.dodream.book.domain.AnswerDetailsResponse;
 import com.dodream.book.domain.EvaluationRequest;
 import com.dodream.book.domain.UserAnswerRequest;
@@ -57,5 +58,17 @@ public class UserAnswerController {
 
         AnswerDetailsResponse response = userAnswerService.getAnswerDetails(bookId, questionId, answerId, user);
         return ResponseEntity.ok(response);
+    }
+
+    // 문제 푼 뒤, 내가 참여하는 스터디에 추가하기
+    @PostMapping("/{id}/questions/{questionId}/studies")
+    public ResponseEntity<Void> addQuestionToMyStudies(
+        @PathVariable("id") Long id,
+        @AuthenticationPrincipal User user,
+        @PathVariable("questionId") Long questionId,
+        @RequestBody AddToStudiesRequest addToStudiesRequest // 선택한 스터디 ID 리스트
+    ) {
+        userAnswerService.addQuestionToMyStudies(user, questionId, addToStudiesRequest.getStudyIds());
+        return ResponseEntity.ok().build();
     }
 }
