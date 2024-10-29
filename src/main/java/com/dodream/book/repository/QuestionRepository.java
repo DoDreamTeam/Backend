@@ -13,6 +13,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     Page<Question> findByBookIdOrderByCreatedAtDesc(Pageable pageable, Long bookId);
 
     // 제목으로 검색하는 메서드
-    Page<Question> findByBookIdAndQuestionContaining(Long bookId, String title, Pageable pageable);
+    Page<Question> findByBookIdAndQuestionContainingOrderByCreatedAtDesc(Long bookId, String title, Pageable pageable);
 
 }
