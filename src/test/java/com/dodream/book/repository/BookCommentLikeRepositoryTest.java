@@ -1,8 +1,6 @@
 package com.dodream.book.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.BookComment;
@@ -20,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -45,16 +43,14 @@ class BookCommentLikeRepositoryTest {
     @BeforeEach
     public void setUp() {
         // 테스트에 필요한 User와 Book을 생성 및 저장
-        user = User
-            .builder()
+        user = User.builder()
             .username("testUser")
             .provider("provider1")
             .providerId("1")
             .build();
         userRepository.save(user);
 
-        book = Book
-            .builder()
+        book = Book.builder()
             .title("Test Book")
             .category(Category.CATEGORY_ETC)
             .secret(false)
@@ -62,8 +58,7 @@ class BookCommentLikeRepositoryTest {
             .build();
         bookRepository.save(book);
 
-        comment = BookComment
-            .builder()
+        comment = BookComment.builder()
             .comment("comment 1")
             .user(user)
             .book(book)
@@ -74,10 +69,18 @@ class BookCommentLikeRepositoryTest {
 
     @DisplayName("좋아요 수 카운트 테스트")
     @Test
-    public void countByLikeAndIsDeletedFalseTest() {
+    public void countByCommentIdAndIsDeletedFalseTest() {
         // given
-        BookCommentLike like1 = BookCommentLike.builder().user(user).commentId(comment).isDeleted(false).build();
-        BookCommentLike like2 = BookCommentLike.builder().user(user).commentId(comment).isDeleted(false).build();
+        BookCommentLike like1 = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
+        BookCommentLike like2 = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
         bookCommentLikeRepository.save(like1);
         bookCommentLikeRepository.save(like2);
 
@@ -90,7 +93,7 @@ class BookCommentLikeRepositoryTest {
 
     @DisplayName("좋아요 유저 ID로 찾기")
     @Test
-    public void findByUserIdTest() {
+    public void findByUserIdAndIsDeletedFalseOrderByCommentId_CreatedAtDescTest() {
         // given
         BookCommentLike like = BookCommentLike.builder()
             .user(user)
@@ -100,7 +103,8 @@ class BookCommentLikeRepositoryTest {
         bookCommentLikeRepository.save(like);
 
         // when
-        List<BookCommentLike> likes = bookCommentLikeRepository.findByUserIdAndIsDeletedFalseOrderByCommentId_CreatedAtDesc(user.getId(), Pageable.unpaged()).getContent();
+        List<BookCommentLike> likes = bookCommentLikeRepository.findByUserIdAndIsDeletedFalseOrderByCommentId_CreatedAtDesc(
+            user.getId(), PageRequest.of(0, 10)).getContent();
 
         // then
         assertFalse(likes.isEmpty());
@@ -112,7 +116,11 @@ class BookCommentLikeRepositoryTest {
     @Test
     public void findByUserAndCommentIdTest() {
         // given
-        BookCommentLike like = BookCommentLike.builder().user(user).commentId(comment).isDeleted(false).build();
+        BookCommentLike like = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
         bookCommentLikeRepository.save(like);
 
         // when
@@ -123,12 +131,20 @@ class BookCommentLikeRepositoryTest {
         assertEquals(like.getId(), foundLike.get().getId());
     }
 
-    @DisplayName("취소된 좋아요는 카운트 X")
+    @DisplayName("취소된 좋아요는 카운트하지 않는다")
     @Test
-    public void countByLikeAndIsDeletedFalseShouldNotCountDeletedTest() {
+    public void countByCommentIdAndIsDeletedFalseShouldNotCountDeletedTest() {
         // given
-        BookCommentLike like1 = BookCommentLike.builder().user(user).commentId(comment).isDeleted(false).build();
-        BookCommentLike like2 = BookCommentLike.builder().user(user).commentId(comment).isDeleted(true).build();
+        BookCommentLike like1 = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
+        BookCommentLike like2 = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(true)
+            .build();
         bookCommentLikeRepository.save(like1);
         bookCommentLikeRepository.save(like2);
 
@@ -139,4 +155,22 @@ class BookCommentLikeRepositoryTest {
         assertEquals(1, count);
     }
 
+    @DisplayName("좋아요 삭제 테스트")
+    @Test
+    public void deleteByCommentIdTest() {
+        // given
+        BookCommentLike like = BookCommentLike.builder()
+            .user(user)
+            .commentId(comment)
+            .isDeleted(false)
+            .build();
+        bookCommentLikeRepository.save(like);
+
+        // when
+        bookCommentLikeRepository.deleteByCommentId(comment);
+
+        // then
+        long count = bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment);
+        assertEquals(0, count); // 좋아요가 삭제되어야 하므로 카운트는 0이어야 함
+    }
 }
