@@ -21,4 +21,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Integer> {
 
     // 유저 북마크 목록
     Page<Bookmark> findByUserIdOrderByBookCreatedAtDesc(Long userId, Pageable pageable);
+
+    // 문제집 ID로 삭제
+    void deleteByBook(Book book);
 }

@@ -25,4 +25,8 @@ public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike
 
     // 좋아요 조회
     Optional<BookCommentLike> findByUserAndCommentId(User user, BookComment commentId);
+
+    // comment ID로 삭제
+    void deleteByCommentId(BookComment commentId);
+
 }
