@@ -61,7 +61,7 @@ class QuestionRepositoryTest {
             .question("Question 1")
             .modelAnswer("Answer 1")
             .book(book)
-            .createdAt(LocalDateTime.now().minusDays(1))
+            .createdAt(LocalDateTime.now().minusDays(2))
             .build();
         Question question2 = Question.builder()
             .question("Question 2")
@@ -84,4 +84,34 @@ class QuestionRepositoryTest {
         assertThat(questions.get(1).getQuestion()).isEqualTo("Question 1"); // 이전 질문
     }
 
+    @DisplayName("제목으로 문제 검색 성공")
+    @Test
+    void findByBookIdAndQuestionContaining() {
+        // Given: 샘플 Question 엔티티 생성 및 저장
+        Question question1 = Question.builder()
+            .question("What is Question 1?")
+            .modelAnswer("Answer 1")
+            .book(book)
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+        Question question2 = Question.builder()
+            .question("What is Question 2?")
+            .modelAnswer("Answer 2")
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+        questionRepository.save(question1);
+        questionRepository.save(question2);
+
+        Pageable pageable = PageRequest.of(0, 5); // 첫 페이지, 페이지당 5개
+
+        // When: 지정한 bookId로 제목에 특정 문자열이 포함된 문제 조회
+        Page<Question> questionPage = questionRepository.findByBookIdAndQuestionContainingOrderByCreatedAtDesc(book.getId(), "Question", pageable);
+
+        // Then: 조회된 질문의 수 및 내용 확인
+        List<Question> questions = questionPage.getContent();
+        assertThat(questions).hasSize(2); // 제목에 "Question"이 포함된 질문 2개
+        assertThat(questions.get(0).getQuestion()).isEqualTo("What is Question 2?"); // 최신 질문
+        assertThat(questions.get(1).getQuestion()).isEqualTo("What is Question 1?"); // 이전 질문
+    }
 }

@@ -10,8 +10,6 @@ import com.dodream.common.enumtype.Category;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +24,8 @@ import org.springframework.data.domain.Pageable;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-class UserAnswerRepositoryTest {
+class UserBookRepositoryTest {
+
     @Autowired
     private QuestionRepository questionRepository;
 
@@ -135,90 +134,5 @@ class UserAnswerRepositoryTest {
         assertFalse(answersPage.isEmpty());
         assertEquals(2, answersPage.getTotalElements());
         assertEquals("first answer", answersPage.getContent().get(0).getAnswer()); // 최근 답변이 첫 번째
-    }
-
-    @DisplayName("사용자가 특정 질문에 대한 평가별 문제 목록을 조회할 수 있다.")
-    @Test
-    public void testFindByUserIdAndEvaluationOrderByCreatedAtDesc() {
-        // given (사전 준비)
-        UserAnswer userAnswer1 = UserAnswer.builder()
-            .user(user)
-            .question(question)
-            .answer("first answer")
-            .evaluation(Evaluation.EVALUATION_BEFORE)
-            .build();
-        userAnswerRepository.save(userAnswer1); // 첫 번째 답변 저장
-
-        UserAnswer userAnswer2 = UserAnswer.builder()
-            .user(user)
-            .question(question)
-            .answer("second answer")
-            .evaluation(Evaluation.EVALUATION_SOSO)
-            .build();
-        userAnswerRepository.save(userAnswer2); // 두 번째 답변 저장
-
-        // when (테스트 진행할 범위)
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<UserAnswer> answersPage = userAnswerRepository.findByUserIdAndEvaluationOrderByCreatedAtDesc(user.getId(), Evaluation.EVALUATION_BEFORE, pageable);
-
-        // then (범위에 대한 결과 검증)
-        assertFalse(answersPage.isEmpty());
-        assertEquals(1, answersPage.getTotalElements());
-        assertEquals("first answer", answersPage.getContent().get(0).getAnswer()); // 평가가 EVALUATION_BEFORE인 답변이 조회되어야 함
-    }
-
-    @DisplayName("사용자가 특정 질문의 답변을 삭제할 수 있다.")
-    @Test
-    public void testDeleteByQuestionId() {
-        // given (사전 준비)
-        UserAnswer userAnswer = UserAnswer.builder()
-            .user(user)
-            .question(question)
-            .answer("test answer")
-            .evaluation(Evaluation.EVALUATION_SOSO)
-            .build();
-        userAnswerRepository.save(userAnswer); // 답변 저장
-
-        // when (테스트 진행할 범위)
-        userAnswerRepository.deleteByQuestionId(question.getId());
-
-        // then (범위에 대한 결과 검증)
-        Optional<UserAnswer> foundAnswer = userAnswerRepository.findByUserAndQuestion(user, question);
-        assertFalse(foundAnswer.isPresent()); // 답변이 삭제되었으므로 조회할 수 없어야 함
-    }
-
-    @DisplayName("사용자가 푼 문제의 평가 목록을 조회할 수 있다.")
-    @Test
-    public void testFindByUserIdAndQuestionIdIn() {
-        // given (사전 준비)
-        Question question2 = Question.builder()
-            .question("second question?")
-            .modelAnswer("answer2")
-            .build();
-        questionRepository.save(question2);
-
-        UserAnswer userAnswer1 = UserAnswer.builder()
-            .user(user)
-            .question(question)
-            .answer("first answer")
-            .evaluation(Evaluation.EVALUATION_SOSO)
-            .build();
-        userAnswerRepository.save(userAnswer1); // 첫 번째 답변 저장
-
-        UserAnswer userAnswer2 = UserAnswer.builder()
-            .user(user)
-            .question(question2)
-            .answer("second answer")
-            .evaluation(Evaluation.EVALUATION_SOSO)
-            .build();
-        userAnswerRepository.save(userAnswer2); // 두 번째 답변 저장
-
-        List<Long> questionIds = Arrays.asList(question.getId(), question2.getId());
-
-        // when (테스트 진행할 범위)
-        List<UserAnswer> answers = userAnswerRepository.findByUserIdAndQuestionIdIn(user.getId(), questionIds);
-
-        // then (범위에 대한 결과 검증)
-        assertEquals(2, answers.size()); // 두 개의 질문에 대한 답변이 조회되어야 함
     }
 }

@@ -61,7 +61,6 @@ class BookRepositoryTest {
                 .secret(false).createdAt(now.plusDays(1)).build() // 내일
         );
 
-
         bookRepository.saveAll(books); // 모든 책 저장
     }
 
@@ -124,8 +123,7 @@ class BookRepositoryTest {
         user = User.builder().username("hello").provider("provider1").providerId("1").build();
         userRepository.save(user); // 사용자 저장
 
-        Book book = Book
-            .builder()
+        Book book = Book.builder()
             .title("add test book")
             .user(user)
             .category(Category.CATEGORY_CERT)
@@ -147,16 +145,14 @@ class BookRepositoryTest {
     @Test
     public void deleteBookTest() {
         // given (사전 준비)
-        // setUp() 참고
-        Long bookId = 1L;
+        Long bookId = 1L; // 존재하는 문제집 ID
 
         // when (테스트 진행할 범위)
         bookRepository.deleteById(bookId);
 
         // then (범위에 대한 결과 검증)
         Optional<Book> findBook = bookRepository.findById(bookId);
-        Assertions.assertThat(findBook).isNotPresent();
-
+        assertThat(findBook).isNotPresent();
     }
 
 }

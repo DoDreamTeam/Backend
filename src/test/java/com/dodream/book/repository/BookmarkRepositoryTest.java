@@ -1,7 +1,7 @@
 package com.dodream.book.repository;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dodream.book.entity.Book;
 import com.dodream.book.entity.Bookmark;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -36,16 +37,14 @@ class BookmarkRepositoryTest {
     @BeforeEach
     public void setUp() {
         // 테스트에 필요한 User와 Book을 생성 및 저장
-        user = User
-            .builder()
+        user = User.builder()
             .username("testUser")
             .provider("provider1")
             .providerId("1")
             .build();
         userRepository.save(user);
 
-        book = Book
-            .builder()
+        book = Book.builder()
             .title("Test Book")
             .category(Category.CATEGORY_ETC)
             .secret(false)
@@ -58,13 +57,12 @@ class BookmarkRepositoryTest {
     @Test
     public void countByBookAndIsDeletedFalseTest() {
         // given
-        Bookmark bookmark1 = Bookmark
-            .builder().user(user)
+        Bookmark bookmark1 = Bookmark.builder()
+            .user(user)
             .book(book)
             .isDeleted(false)
             .build();
-        Bookmark bookmark2 = Bookmark
-            .builder()
+        Bookmark bookmark2 = Bookmark.builder()
             .user(user)
             .book(book)
             .isDeleted(false)
@@ -83,8 +81,7 @@ class BookmarkRepositoryTest {
     @Test
     public void findByUserAndBookTest() {
         // given
-        Bookmark bookmark = Bookmark
-            .builder()
+        Bookmark bookmark = Bookmark.builder()
             .user(user)
             .book(book)
             .isDeleted(false)
@@ -103,8 +100,7 @@ class BookmarkRepositoryTest {
     @Test
     public void countByBookAndIsDeletedFalseShouldNotCountDeletedBookmarks() {
         // given
-        Bookmark deletedBookmark = Bookmark
-            .builder()
+        Bookmark deletedBookmark = Bookmark.builder()
             .user(user)
             .book(book)
             .isDeleted(true)
@@ -118,4 +114,52 @@ class BookmarkRepositoryTest {
         assertThat(count).isEqualTo(0);
     }
 
+    @DisplayName("유저 북마크 목록 조회 테스트")
+    @Test
+    public void findByUserIdOrderByBookCreatedAtDescTest() {
+        // given
+        Bookmark bookmark1 = Bookmark.builder()
+            .user(user)
+            .book(book)
+            .isDeleted(false)
+            .build();
+        Bookmark bookmark2 = Bookmark.builder()
+            .user(user)
+            .book(book)
+            .isDeleted(false)
+            .build();
+        bookmarkRepository.save(bookmark1);
+        bookmarkRepository.save(bookmark2);
+
+        // when
+        var bookmarksPage = bookmarkRepository.findByUserIdOrderByBookCreatedAtDesc(user.getId(), PageRequest.of(0, 10));
+
+        // then
+        assertThat(bookmarksPage.getContent()).hasSize(2);
+    }
+
+    @DisplayName("문제집으로 북마크 삭제 테스트")
+    @Test
+    public void deleteByBookTest() {
+        // given
+        Bookmark bookmark1 = Bookmark.builder()
+            .user(user)
+            .book(book)
+            .isDeleted(false)
+            .build();
+        Bookmark bookmark2 = Bookmark.builder()
+            .user(user)
+            .book(book)
+            .isDeleted(false)
+            .build();
+        bookmarkRepository.save(bookmark1);
+        bookmarkRepository.save(bookmark2);
+
+        // when
+        bookmarkRepository.deleteByBook(book);
+
+        // then
+        long count = bookmarkRepository.countByBookAndIsDeletedFalse(book);
+        assertThat(count).isEqualTo(0); // 모든 북마크가 삭제되어야 함
+    }
 }

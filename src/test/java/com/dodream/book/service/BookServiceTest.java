@@ -11,6 +11,7 @@ import com.dodream.book.domain.BookResponse;
 import com.dodream.book.domain.BookUpdateRequest;
 import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
+import com.dodream.book.repository.BookCommentRepository;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
@@ -45,6 +46,9 @@ class BookServiceTest {
 
     @InjectMocks
     private BookServiceImpl bookService;
+
+    @Mock
+    private BookCommentRepository bookCommentRepository;
 
     private User user;
     private BookRequest bookRequest;
@@ -242,6 +246,7 @@ class BookServiceTest {
         bookService.deleteBook(1L, user);
 
         // then
+        verify(bookCommentRepository).deleteByBookId(existingBook.getId()); // Comment 삭제 검증 추가
         verify(bookRepository).delete(existingBook);
     }
 
@@ -265,4 +270,41 @@ class BookServiceTest {
         });
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ACCESS_DENIED);
     }
+
+    @DisplayName("문제집 북마크 수에 따라 정렬하여 조회 성공")
+    @Test
+    void testGetBooks_SortedByBookmarks() {
+        // given
+        Book book1 = Book.builder()
+            .id(1L)
+            .title("Book with More Bookmarks")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        Book book2 = Book.builder()
+            .id(2L)
+            .title("Book with Fewer Bookmarks")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .build();
+
+        // Mocking the repository to return books sorted by bookmarks
+        when(bookmarkRepository.countByBookAndIsDeletedFalse(book1)).thenReturn(10L);
+        when(bookmarkRepository.countByBookAndIsDeletedFalse(book2)).thenReturn(5L);
+        when(bookRepository.findAllBySecretFalseOrderByBookmarkCount(pageable))
+            .thenReturn(new PageImpl<>(List.of(book1, book2)));
+
+        // when
+        Page<BookResponse> responses = bookService.getBooks(null, pageable, true);
+
+        // then
+        assertThat(responses).isNotNull();
+        assertThat(responses.getContent()).hasSize(2);
+        assertThat(responses.getContent().get(0).getTitle()).isEqualTo("Book with More Bookmarks"); // 북마크가 더 많은 책
+        assertThat(responses.getContent().get(1).getTitle()).isEqualTo("Book with Fewer Bookmarks");
+    }
+
 }

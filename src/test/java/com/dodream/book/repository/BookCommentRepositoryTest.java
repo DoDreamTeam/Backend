@@ -10,8 +10,6 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +31,6 @@ class BookCommentRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
-
 
     @DisplayName("문제집 ID로 최신순 댓글 조회")
     @Test
@@ -82,7 +79,7 @@ class BookCommentRepositoryTest {
 
     @DisplayName("유저 ID로 댓글 조회")
     @Test
-    public void findByUserIdTest() {
+    public void findByUserIdOrderByCreatedAtDescTest() {
         // Given
         User user = User.builder()
             .username("testUser")
@@ -123,7 +120,6 @@ class BookCommentRepositoryTest {
         assertThat(commentsPage.getContent()).extracting("comment").containsExactlyInAnyOrder("Comment 1", "Comment 2");
     }
 
-
     @DisplayName("좋아요순 댓글 전체 조회")
     @Test
     public void findByBookIdOrderByLikeCountDescTest() {
@@ -143,7 +139,6 @@ class BookCommentRepositoryTest {
             .createdAt(LocalDateTime.now())
             .build();
         bookRepository.save(book);
-
 
         BookComment comment1 = BookComment.builder()
             .comment("Comment with likes")
@@ -167,4 +162,46 @@ class BookCommentRepositoryTest {
         assertThat(comments).isNotEmpty();
     }
 
+    @DisplayName("문제집 ID로 댓글 삭제")
+    @Test
+    public void deleteByBookIdTest() {
+        // Given
+        User user = User.builder()
+            .username("testUser")
+            .provider("provider1")
+            .providerId("1")
+            .build();
+        userRepository.save(user);
+
+        Book book = Book.builder()
+            .title("Test Book")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now())
+            .build();
+        bookRepository.save(book);
+
+        BookComment comment1 = BookComment.builder()
+            .comment("First comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+        BookComment comment2 = BookComment.builder()
+            .comment("Second comment")
+            .user(user)
+            .book(book)
+            .createdAt(LocalDateTime.now())
+            .build();
+        bookCommentRepository.save(comment1);
+        bookCommentRepository.save(comment2);
+
+        // When
+        bookCommentRepository.deleteByBookId(book.getId());
+
+        // Then
+        List<BookComment> comments = bookCommentRepository.findByBookIdOrderByCreatedAtDesc(PageRequest.of(0, 5), book.getId()).getContent();
+        assertThat(comments).isEmpty(); // 모든 댓글이 삭제되어야 함
+    }
 }

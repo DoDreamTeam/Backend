@@ -258,7 +258,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional(readOnly = true)
     public Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable) {
-        Page<Question> questions = questionRepository.findByBookIdAndQuestionContaining(bookId, keyword, pageable);
+        Page<Question> questions = questionRepository.findByBookIdAndQuestionContainingOrderByCreatedAtDesc(bookId, keyword, pageable);
 
         return questions.map(question -> QuestionListResponse.builder()
             .id(question.getId())
