@@ -30,4 +30,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     // 사용자가 푼 문제의 평가 목록 조회 (질문 ID 목록을 기반으로)
     List<UserAnswer> findByUserIdAndQuestionIdIn(Long userId, List<Long> questionIds);
 
+    // 문제 ID로 삭제
+    void deleteByQuestionId(Long questionId);
+
 }

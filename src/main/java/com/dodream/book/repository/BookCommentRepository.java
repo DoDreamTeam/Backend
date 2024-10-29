@@ -23,5 +23,7 @@ public interface BookCommentRepository extends JpaRepository<BookComment, Long> 
         "WHERE bc.book.id = :bookId GROUP BY bc ORDER BY COUNT(bcl.id) DESC")
     Page<BookComment> findByBookIdOrderByLikeCountDesc(Pageable pageable, @Param("bookId") Long bookId);
 
+    // 문제집 ID로 삭제
+    void deleteByBookId(Long bookId);
 
 }

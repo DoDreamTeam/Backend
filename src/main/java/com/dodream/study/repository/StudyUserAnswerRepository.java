@@ -7,4 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StudyUserAnswerRepository extends JpaRepository<StudyUserAnswer, Long> {
 
+    // user answer ID로 삭제
+    void deleteByUserAnswerId(Long questionId);
+
 }

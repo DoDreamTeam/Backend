@@ -129,6 +129,7 @@ public class BookCommentServiceImpl implements BookCommentService {
         }
 
         // 댓글 삭제
+        bookCommentLikeRepository.deleteByCommentId(comment);
         bookCommentRepository.delete(comment);
     }
 }

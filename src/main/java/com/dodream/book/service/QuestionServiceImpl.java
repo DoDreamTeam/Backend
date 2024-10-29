@@ -16,6 +16,7 @@ import com.dodream.book.repository.UserAnswerRepository;
 import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.study.repository.StudyUserAnswerRepository;
 import com.dodream.user.entity.User;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final BookRepository bookRepository;
     private final UserBookRepository userBookRepository;
     private final UserAnswerRepository userAnswerRepository;
+    private final StudyUserAnswerRepository studyUserAnswerRepository;
 
     // 문제 전체 조회
     @Override
@@ -187,6 +189,9 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.findById(questionId)
             .orElseThrow(() -> new BaseException(ErrorCode.QUESTION_NOT_FOUND));
 
+        studyUserAnswerRepository.deleteByUserAnswerId(questionId);
+        userAnswerRepository.deleteByQuestionId(questionId);
+        userBookRepository.deleteByQuestionId(question);
         questionRepository.delete(question);
     }
 

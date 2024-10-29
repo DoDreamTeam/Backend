@@ -5,6 +5,7 @@ import com.dodream.book.domain.BookResponse;
 import com.dodream.book.domain.BookUpdateRequest;
 import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.entity.Book;
+import com.dodream.book.repository.BookCommentRepository;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.common.enumtype.Category;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final BookCommentRepository bookCommentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -156,6 +158,8 @@ public class BookServiceImpl implements BookService {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
+        bookmarkRepository.deleteByBook(book);
+        bookCommentRepository.deleteByBookId(book.getId());
         bookRepository.delete(book);
     }
 
