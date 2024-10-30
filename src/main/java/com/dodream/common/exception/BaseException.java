@@ -37,6 +37,7 @@ public class BaseException extends RuntimeException {
     public static final BaseException STUDY_MEMBER_NOT_FOUND = new BaseException(ErrorCode.STUDY_MEMBER_NOT_FOUND);
     public static final BaseException INVALID_CURRENT_LEADER = new BaseException(ErrorCode.INVALID_CURRENT_LEADER);
     public static final BaseException INVALID_NEW_LEADER = new BaseException(ErrorCode.INVALID_NEW_LEADER);
+    public static final BaseException FILE_DELETE_FAILED = new BaseException(ErrorCode.FILE_DELETE_FAILED);
 
     private final ErrorCode errorCode;
 

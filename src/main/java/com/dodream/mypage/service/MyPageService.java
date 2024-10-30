@@ -2,8 +2,10 @@ package com.dodream.mypage.service;
 
 import com.dodream.book.domain.BookResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
+import java.io.IOException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 
 public interface MyPageService {
@@ -15,6 +17,6 @@ public interface MyPageService {
     Page<BookResponse> getUserBooks(Long userId, Pageable pageable);
 
     // 사용자 프로필 수정하기
-    UserInfoResponse updateUserProfile(String newUserName, String newProfileImage);
+    UserInfoResponse updateUserProfile(String newUserName, MultipartFile file) throws IOException;
 
 }
