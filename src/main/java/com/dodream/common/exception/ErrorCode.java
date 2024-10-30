@@ -17,6 +17,7 @@ public enum ErrorCode {
     INVALID_NEW_LEADER(HttpStatus.BAD_REQUEST, "INVALID_NEW_LEADER", "INVALID_NEW_LEADER - 검증되지 않은 값입니다."),
     ALREADY_APPLIED_TO_STUDY(HttpStatus.BAD_REQUEST, "ALREADY_APPLIED_TO_STUDY", "이미 가입신청이 되었습니다."),
     ALREADY_STUDY_MEMBER(HttpStatus.BAD_REQUEST, "ALREADY_STUDY_MEMBER", "이미 해당 스터디 멤버입니다."),
+    FILE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "FILE_DELETE_FAILED", "파일 삭제에 실패했습니다."),
 
     /* 403 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
