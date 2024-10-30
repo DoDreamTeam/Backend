@@ -270,6 +270,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
             .username(book.getUser() != null ? book.getUser().getUsername() : null)
             .category(book.getCategory().name())
             .createdAt(book.getCreatedAt())
+            .secret(book.isSecret())
             .build();
     }
 

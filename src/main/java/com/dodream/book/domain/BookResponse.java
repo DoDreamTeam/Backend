@@ -13,6 +13,7 @@ public class BookResponse {
     private String username;        // 생성한 사람
     private Long bookmarkCount;      // 북마크 수
     private String category;        // 카테고리
+    private boolean secret;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;    // 생성한 날짜 (정렬을 위해 필요)
