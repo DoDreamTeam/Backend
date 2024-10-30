@@ -3,12 +3,15 @@ package com.dodream.book.repository;
 import com.dodream.book.entity.Question;
 import com.dodream.book.entity.UserAnswer;
 import com.dodream.book.enumtype.Evaluation;
+import com.dodream.study.domain.StudyUserQueAnswerResponse;
 import com.dodream.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -32,5 +35,54 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 문제 ID로 삭제
     void deleteByQuestionId(Long questionId);
+
+    // 스터디방에 추가된 문제 조회
+    @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        "FROM StudyUserAnswer sua " +
+        "JOIN sua.userAnswer ua " +
+        "JOIN ua.question q " +
+        "LEFT JOIN ua.user u " + // Change to LEFT JOIN to allow for missing answers
+        "WHERE sua.study.id = :studyId OR ua.user = :user")
+    Page<StudyUserQueAnswerResponse> findStudyUserAnswers(Pageable pageable,
+        @Param("studyId") Long studyId,
+        @Param("user") User user);
+
+    // 스터디방에서 내가 푼 문제 조회
+    @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        "FROM StudyUserAnswer sua " +
+        "JOIN sua.userAnswer ua " +
+        "JOIN ua.question q " +
+        "LEFT JOIN ua.user u " +
+        "WHERE sua.study.id = :studyId AND ua.user = :user")
+    Page<StudyUserQueAnswerResponse> findStudyMyUserAnswers(Pageable pageable,
+        @Param("studyId") Long studyId,
+        @Param("user") User user);
+
+    // 스터디방에서 내가 풀지 않은 문제 조회
+    @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        "FROM StudyUserAnswer sua " +
+        "JOIN sua.userAnswer ua " +
+        "JOIN ua.question q " +
+        "LEFT JOIN ua.user u " +
+        "WHERE sua.study.id = :studyId AND ua.user != :user")
+    Page<StudyUserQueAnswerResponse> findStudyOtherUserAnswers(Pageable pageable,
+        @Param("studyId") Long studyId,
+        @Param("user") User user);
+
+    @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        "FROM StudyUserAnswer sua " +
+        "JOIN sua.userAnswer ua " +
+        "JOIN ua.question q " +
+        "WHERE sua.study.id = :studyId " +
+        "AND (q.question LIKE %:keyword% OR q.modelAnswer LIKE %:keyword%) " +
+        "AND ua.user = :user")
+    Page<StudyUserQueAnswerResponse> searchStudyUserAnswers(Pageable pageable,
+        @Param("studyId") Long studyId,
+        @Param("user") User user,
+        @Param("keyword") String keyword);
 
 }
