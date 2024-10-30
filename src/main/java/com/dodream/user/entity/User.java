@@ -39,7 +39,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String username;
 
-    @Column
+    @Column(length = 5000)
     private String profileImage;
 
     // google, naver, kakao

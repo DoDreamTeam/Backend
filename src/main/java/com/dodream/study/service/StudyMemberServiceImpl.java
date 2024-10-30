@@ -142,6 +142,12 @@ public class StudyMemberServiceImpl implements StudyMemberService {
         currentLeader.updateStudyMember(RoleEnum.ROLE_MEMBER);
         newLeader.updateStudyMember(RoleEnum.ROLE_LEADER);
 
+        Study study = currentLeader.getStudy();
+        study.setUser(newLeader.getUser());
+
+        // study의 user_id를 newLeaderId로 변경
+        studyRepository.save(study);
+
         return StudyMemberUpdateResponse.builder()
             .id(newLeader.getId())
             .roleEnum(newLeader.getRole())
