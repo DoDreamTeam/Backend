@@ -1,11 +1,14 @@
 package com.dodream.user.service;
 
+import com.dodream.security.JwtProvider;
 import com.dodream.user.domain.AuthEnum;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 import com.dodream.util.OAuth2Properties;
 import com.dodream.util.TokenUtils;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final OAuth2Properties oAuth2Properties;
     private final TokenUtils tokenUtils;
+    private final JwtProvider jwtProvider;
 
     @Override
     public User oAuthUser(String code, AuthEnum provider) {
@@ -58,6 +62,50 @@ public class UserServiceImpl implements UserService {
         // BODY에 추가(access)
         return tokenMap.get("accessToken");
     }
+
+    // Refresh token을 쿠키에서 가져오는 메소드
+    private String getRefreshTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if (cookie.getName().equals("refreshToken")) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    // refresh token 재발급
+    @Override
+    public Map<String, String> refreshToken(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookies(request);
+        System.out.println(refreshToken);
+        log.info("리프레시 토큰: {}", refreshToken);
+
+        // 만약 토큰이 유효하지 않으면 null 반환
+        if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
+            return null;
+        }
+
+        // 유효한 토큰에서 id 추출
+        String userId = jwtProvider.getUserIdByToken(refreshToken);
+        log.info("추출한 username : {}", userId);
+
+        // 사용자 조회 후 refreshToken 비교
+        User user = userRepository.findById(Long.valueOf(userId)).orElse(null);
+        if (user == null || !user.getRefreshToken().equals(refreshToken)) {
+            return null;
+        }
+
+        // 새로운 토큰 생성 후 저장
+        Map<String, String> tokenMap = tokenUtils.generateToken(user);
+        user.setRefreshToken(tokenMap.get("refreshToken"));
+        userRepository.save(user);
+
+        return tokenMap;
+    }
+
 
     public String getAccessToken(String code, AuthEnum provider) {
         // 설정 가져오기
