@@ -72,7 +72,8 @@ public class JwtProvider {
             log.info("토큰 검증 통과");
             return true;
         } catch (Exception e) {
-            throw new BaseException(ErrorCode.INVALID_TOKEN);
+            log.info("토큰 검증 실패");
+            return false;
         }
     }
 
@@ -95,7 +96,7 @@ public class JwtProvider {
         );
     }
 
-    // 토큰에서 사용자 이름만 추출하는 메소드
+    // 토큰에서 사용자 id만 추출하는 메소드
     public String getUserIdByToken(String token) {
         log.info("[getUserIdByToken] 토큰 기반 회원 식별 정보 추출");
         Claims claims = getClaims(token);

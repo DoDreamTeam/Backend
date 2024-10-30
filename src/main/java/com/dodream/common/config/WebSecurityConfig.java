@@ -43,6 +43,9 @@ public class WebSecurityConfig {
                     // 로그인/로그아웃
                     new AntPathRequestMatcher("/api/oauth/**"),
 
+                    // 토큰 재발급
+                    new AntPathRequestMatcher("/api/refresh-token", "POST"),
+
                     // 메인 페이지에서 문제집+스터디 검색
                     new AntPathRequestMatcher("/api/search", "GET"),
 
@@ -84,7 +87,7 @@ public class WebSecurityConfig {
 
                     // 특정 스터디의 문제 조회
                     new AntPathRequestMatcher("/api/study/*/question/*", "GET")
-
+                    
                 ).permitAll()
                 // 그 밖의 다른 요청들은 인증을 통과한(로그인한) 사용자라면 모두 접근할 수 있도록 한다.
                 .anyRequest().authenticated()
