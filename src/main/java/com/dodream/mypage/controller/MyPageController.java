@@ -5,6 +5,7 @@ import com.dodream.book.domain.BookResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.domain.UserUpdateRequest;
 import com.dodream.mypage.service.MyPageService;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,10 +47,10 @@ public class MyPageController {
     // 사용자 프로필 수정 (userName , profileImage)
     @PatchMapping("")
     public ResponseEntity<UserInfoResponse> updateUserInfo(
-        @RequestBody UserUpdateRequest userUpdateRequest) {
+        @RequestParam(value = "file", required = false) MultipartFile file,
+        @RequestParam(value = "newUserName", required = false) String newUserName) throws IOException {
         UserInfoResponse updateUserProfile = myPageService.updateUserProfile(
-            userUpdateRequest.getUsername(),
-            userUpdateRequest.getProfileImage());
+            newUserName, file);
         return ResponseEntity.ok(updateUserProfile);
     }
 
