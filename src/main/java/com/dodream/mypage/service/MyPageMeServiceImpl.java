@@ -29,7 +29,10 @@ import com.dodream.study.repository.QueCommentLikeRepository;
 import com.dodream.study.repository.QueCommentRepository;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -251,16 +254,23 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     }
 
     private Page<BookResponse> getBookResponse(Page<?> page, Pageable pageable) {
-        List<BookResponse> bookResponses = page.getContent().stream()
+        // 중복 제거를 위한 Map 사용
+        Map<Long, BookResponse> bookResponseMap = page.getContent().stream()
             .map(item -> {
+                Book book;
                 if (item instanceof UserBook) {
-                    return convertToBookResponse(((UserBook) item).getBook());
+                    book = ((UserBook) item).getBook();
                 } else {
-                    return convertToBookResponse(((Bookmark) item).getBook());
+                    book = ((Bookmark) item).getBook();
                 }
+                return convertToBookResponse(book);
             })
-            .collect(Collectors.toList());
-        return new PageImpl<>(bookResponses, pageable, page.getTotalElements());
+            .collect(Collectors.toMap(BookResponse::getId, Function.identity(), (existing, replacement) -> existing)); // 중복일 경우 기존 것을 유지
+
+        List<BookResponse> bookResponses = new ArrayList<>(bookResponseMap.values());
+
+        // 중복 제거 후의 총 요소 수
+        return new PageImpl<>(bookResponses, pageable, bookResponses.size());
     }
 
     private BookResponse convertToBookResponse(Book book) {

@@ -15,9 +15,13 @@ import com.dodream.user.repository.UserRepository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,11 +62,10 @@ public class MyPageServiceImpl implements MyPageService {
     public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
         // 사용자의 문제집 리스트
         Page<UserBook> userBooksPage = userBookRepository
-            .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(
-            userId, pageable);
+            .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(userId, pageable);
 
-        // 문제집 정보 반환
-        List<BookResponse> bookResponses = userBooksPage.getContent().stream()
+        // 중복을 제거하기 위해 Map을 사용
+        Map<Long, BookResponse> bookResponseMap = userBooksPage.getContent().stream()
             .map(userBook -> {
                 Book book = userBook.getBook();
                 return BookResponse.builder()
@@ -74,8 +77,12 @@ public class MyPageServiceImpl implements MyPageService {
                     .createdAt(book.getCreatedAt())
                     .build();
             })
-            .toList();
-        return new PageImpl<>(bookResponses, pageable, userBooksPage.getTotalElements());
+            .collect(Collectors.toMap(BookResponse::getId, Function.identity(), (existing, replacement) -> existing)); // 중복일 경우 기존 것을 유지
+
+        List<BookResponse> bookResponses = new ArrayList<>(bookResponseMap.values());
+
+        // 중복을 제거한 후의 총 요소 수
+        return new PageImpl<>(bookResponses, pageable, bookResponses.size());
     }
 
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
