@@ -286,6 +286,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     private GetUserAnswerResponse mapToResponse(UserAnswer answer) {
         return GetUserAnswerResponse.builder()
+            .id(answer.getId())
             .title(answer.getQuestion().getQuestion())
             .createdAt(answer.getCreatedAt())
             .evaluation(answer.getEvaluation().getEvaluation())
