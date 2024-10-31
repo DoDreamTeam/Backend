@@ -48,6 +48,13 @@ public class BookController {
         return ResponseEntity.ok(popularBookList);
     }
 
+    // 문제집 개별 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponse> getBookById(@PathVariable("id") Long id) {
+        BookResponse book = bookService.getBook(id);
+        return ResponseEntity.ok(book);
+    }
+
     // 문제집 제목 수정
     @PatchMapping("/{id}")
     public ResponseEntity<BookUpdateResponse> updateBook(@AuthenticationPrincipal User user, @PathVariable("id") Long id,
