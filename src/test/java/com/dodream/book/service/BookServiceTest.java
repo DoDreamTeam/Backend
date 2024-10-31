@@ -19,6 +19,7 @@ import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -305,6 +306,44 @@ class BookServiceTest {
         assertThat(responses.getContent()).hasSize(2);
         assertThat(responses.getContent().get(0).getTitle()).isEqualTo("Book with More Bookmarks"); // 북마크가 더 많은 책
         assertThat(responses.getContent().get(1).getTitle()).isEqualTo("Book with Fewer Bookmarks");
+    }
+
+    @DisplayName("문제집 개별 조회 성공")
+    @Test
+    void testGetBook_Success() {
+        // given
+        Book book = Book.builder()
+            .id(1L)
+            .title("Sample Book")
+            .user(user)
+            .category(Category.CATEGORY_CS)
+            .secret(false)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(bookmarkRepository.countByBookAndIsDeletedFalse(book)).thenReturn(0L);
+
+        // when
+        BookResponse response = bookService.getBook(1L);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getTitle()).isEqualTo("Sample Book");
+        assertThat(response.getUsername()).isEqualTo("testuser");
+    }
+
+    @DisplayName("문제집 개별 조회 시 존재하지 않는 문제집")
+    @Test
+    void testGetBook_NotFound() {
+        // given
+        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when & then
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            bookService.getBook(1L);
+        });
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.BOOK_NOT_FOUND);
     }
 
 }
