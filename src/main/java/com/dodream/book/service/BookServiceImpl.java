@@ -86,6 +86,23 @@ public class BookServiceImpl implements BookService {
         return convertToBookResponsePage(popularBooksPage);
     }
 
+    // 문제집 개별 조회
+    @Override
+    public BookResponse getBook(Long id) {
+        Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
+
+        return BookResponse
+            .builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .username(book.getUser() != null ? book.getUser().getUsername() : null)
+            .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+            .category(book.getCategory().name())
+            .createdAt(book.getCreatedAt())
+            .build();
+    }
+
     // 문제집 제목으로 검색
     @Override
     @Transactional

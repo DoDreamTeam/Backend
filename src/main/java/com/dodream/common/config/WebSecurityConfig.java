@@ -52,6 +52,9 @@ public class WebSecurityConfig {
                     // 모든 문제집 조회 (최신순)
                     new AntPathRequestMatcher("/api/books", "GET"),
 
+                    // 개별 문제집 조회
+                    new AntPathRequestMatcher("/api/books/**", "GET"),
+
                     // 인기 문제집 4개 조회 (북마크 많은 순)
                     new AntPathRequestMatcher("/api/books/popular", "GET"),
 
