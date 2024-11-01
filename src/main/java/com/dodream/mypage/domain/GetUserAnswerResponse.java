@@ -14,6 +14,8 @@ public class GetUserAnswerResponse {
 
     private Long id;
     private String title;
+    private Long questionId;
+    private Long bookId;
     private String evaluation;
     private LocalDateTime createdAt;
 }

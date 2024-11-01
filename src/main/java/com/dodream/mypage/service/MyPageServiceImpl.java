@@ -62,27 +62,25 @@ public class MyPageServiceImpl implements MyPageService {
     public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
         // 사용자의 문제집 리스트
         Page<UserBook> userBooksPage = userBookRepository
-            .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(userId, pageable);
+                .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(userId, pageable);
 
-        // 중복을 제거하기 위해 Map을 사용
-        Map<Long, BookResponse> bookResponseMap = userBooksPage.getContent().stream()
-            .map(userBook -> {
-                Book book = userBook.getBook();
-                return BookResponse.builder()
-                    .id(book.getId())
-                    .title(book.getTitle())
-                    .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                    .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
-                    .category(book.getCategory().name())
-                    .createdAt(book.getCreatedAt())
-                    .build();
-            })
-            .collect(Collectors.toMap(BookResponse::getId, Function.identity(), (existing, replacement) -> existing)); // 중복일 경우 기존 것을 유지
+        // 모든 BookResponse 생성 (중복 제거 로직 제거)
+        List<BookResponse> bookResponses = userBooksPage.getContent().stream()
+                .map(userBook -> {
+                    Book book = userBook.getBook();
+                    return BookResponse.builder()
+                            .id(book.getId())
+                            .title(book.getTitle())
+                            .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                            .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+                            .category(book.getCategory().name())
+                            .createdAt(book.getCreatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
 
-        List<BookResponse> bookResponses = new ArrayList<>(bookResponseMap.values());
-
-        // 중복을 제거한 후의 총 요소 수
-        return new PageImpl<>(bookResponses, pageable, bookResponses.size());
+        // 중복 제거 없이 반환
+        return new PageImpl<>(bookResponses, pageable, userBooksPage.getTotalElements());
     }
 
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
