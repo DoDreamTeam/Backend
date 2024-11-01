@@ -30,6 +30,6 @@ public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike
     void deleteByCommentId(BookComment commentId);
 
     // 로그인한 사용자가 좋아요 했는지 여부
-    boolean existsByUserIdAndCommentId(Long user_id, BookComment commentId);
+    boolean existsByUserIdAndCommentIdAndIsDeletedFalse(Long userId, BookComment commentId);
 
 }

@@ -95,7 +95,7 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
 
-        boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookId(user.getId(), book.getId());
+        boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookIdAndIsDeletedFalse(user.getId(), book.getId());
 
         return BookResponse.builder()
             .id(book.getId())
@@ -193,7 +193,7 @@ public class BookServiceImpl implements BookService {
     private Page<BookResponse> convertToBookResponsePage(Page<Book> bookPage, User user) {
         List<BookResponse> bookResponses = bookPage.getContent().stream()
             .map(book -> {
-                boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookId(user.getId(), book.getId());
+                boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookIdAndIsDeletedFalse(user.getId(), book.getId());
 
                 return BookResponse.builder()
                     .id(book.getId())

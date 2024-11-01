@@ -26,5 +26,5 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Integer> {
     void deleteByBook(Book book);
 
     // 로그인한 사용자가 북마크 했는지 여부
-    boolean existsByUserIdAndBookId(Long userId, Long bookId);
+    boolean existsByUserIdAndBookIdAndIsDeletedFalse(Long userId, Long bookId);
 }

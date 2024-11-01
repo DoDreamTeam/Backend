@@ -51,7 +51,7 @@ public class BookCommentServiceImpl implements BookCommentService {
         // 응답 객체 생성
         List<BookCommentResponse> responses = comments.stream()
             .map(comment -> {
-                boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentId(user.getId(), comment);
+                boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentIdAndIsDeletedFalse(user.getId(), comment);
 
                 return BookCommentResponse.builder()
                     .id(comment.getId())
@@ -93,7 +93,7 @@ public class BookCommentServiceImpl implements BookCommentService {
         BookComment savedComment = bookCommentRepository.save(comment);
 
         // 댓글 좋아요 여부
-        boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentId(user.getId(), comment);
+        boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentIdAndIsDeletedFalse(user.getId(), comment);
 
         // 응답 객체 생성
         return BookCommentResponse.builder()
