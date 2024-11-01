@@ -13,6 +13,8 @@ import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.user.entity.User;
 import java.util.List;
+import java.util.Optional;
+import javax.swing.text.html.Option;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,31 +33,32 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public Page<BookResponse> getBooks(String category, Pageable pageable,
-        boolean sortByBookmarks) {
+        boolean sortByBookmarks, User user) {
         if (category != null) {
-            return getBookListByCategory(pageable, category, sortByBookmarks);
+            return getBookListByCategory(pageable, category, sortByBookmarks, user);
         } else {
-            return getBookList(pageable, sortByBookmarks);
+            return getBookList(pageable, sortByBookmarks, user);
         }
     }
 
     // 문제집 전체 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<BookResponse> getBookList(Pageable pageable, boolean sortByBookmarks) {
+    public Page<BookResponse> getBookList(Pageable pageable, boolean sortByBookmarks, User user) {
         Page<Book> bookPage;
         if (sortByBookmarks) {
             bookPage = bookRepository.findAllBySecretFalseOrderByBookmarkCount(pageable);
         } else {
             bookPage = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc(pageable);
         }
-        return convertToBookResponsePage(bookPage);
+        return convertToBookResponsePage(bookPage, user);
     }
 
     // 문제집 카테고리별 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<BookResponse> getBookListByCategory(Pageable pageable, String category, boolean sortByBookmarks) {
+    public Page<BookResponse> getBookListByCategory(Pageable pageable, String category,
+            boolean sortByBookmarks, User user) {
         Category categoryEnum;
         try {
             categoryEnum = Category.valueOf(category.toUpperCase());
@@ -73,27 +76,28 @@ public class BookServiceImpl implements BookService {
         if (bookPage.isEmpty()) {
             throw new BaseException(ErrorCode.BOOK_CATEGORY_NOT_FOUND);
         }
-        return convertToBookResponsePage(bookPage);
+        return convertToBookResponsePage(bookPage, user);
     }
 
     // 문제집 북마크 많은 순 4개 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<BookResponse> getPopularBooks() {
+    public Page<BookResponse> getPopularBooks(User user) {
         Pageable pageable = PageRequest.of(0, 4);
         Page<Book> popularBooksPage = bookRepository.findAllBySecretFalseOrderByBookmarkCount(pageable);
 
-        return convertToBookResponsePage(popularBooksPage);
+        return convertToBookResponsePage(popularBooksPage, user);
     }
 
     // 문제집 개별 조회
     @Override
-    public BookResponse getBook(Long id) {
+    public BookResponse getBook(Long id, User user) {
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
 
-        return BookResponse
-            .builder()
+        boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookId(user.getId(), book.getId());
+
+        return BookResponse.builder()
             .id(book.getId())
             .title(book.getTitle())
             .userId(book.getUser() != null ? book.getUser().getId() : null)
@@ -102,13 +106,14 @@ public class BookServiceImpl implements BookService {
             .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
             .category(book.getCategory().name())
             .createdAt(book.getCreatedAt())
+            .isBookmarked(isBookmarked) // 북마크 여부 추가
             .build();
     }
 
     // 문제집 제목으로 검색
     @Override
     @Transactional
-    public Page<BookResponse> searchBooksByKeyword(String keyword, Pageable pageable) {
+    public Page<BookResponse> searchBooksByKeyword(String keyword, Pageable pageable, User user) {
         Page<Book> bookList = bookRepository.findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(keyword, pageable);
 
         // 해당 검색어와 일치하는 문제집이 없는 경우 예외처리
@@ -116,7 +121,7 @@ public class BookServiceImpl implements BookService {
             throw new BaseException(ErrorCode.BOOK_SEARCH_NOT_FOUND);
         }
 
-        return convertToBookResponsePage(bookList);
+        return convertToBookResponsePage(bookList, user);
     }
 
     // 문제집 생성
@@ -185,20 +190,26 @@ public class BookServiceImpl implements BookService {
     }
 
     // 전체 조회할때 사용하는 List
-    private Page<BookResponse> convertToBookResponsePage(Page<Book> bookPage) {
+    private Page<BookResponse> convertToBookResponsePage(Page<Book> bookPage, User user) {
         List<BookResponse> bookResponses = bookPage.getContent().stream()
-            .map(book -> BookResponse.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .userId(book.getUser() != null ? book.getUser().getId() : null)
-                .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
-                .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
-                .category(book.getCategory().name())
-                .createdAt(book.getCreatedAt())
-                .build())
+            .map(book -> {
+                boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookId(user.getId(), book.getId());
+
+                return BookResponse.builder()
+                    .id(book.getId())
+                    .title(book.getTitle())
+                    .userId(book.getUser() != null ? book.getUser().getId() : null)
+                    .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                    .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
+                    .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+                    .category(book.getCategory().name())
+                    .createdAt(book.getCreatedAt())
+                    .isBookmarked(isBookmarked) // 북마크 여부 추가
+                    .build();
+            })
             .toList();
 
         return new PageImpl<>(bookResponses, bookPage.getPageable(), bookPage.getTotalElements());
     }
+
 }

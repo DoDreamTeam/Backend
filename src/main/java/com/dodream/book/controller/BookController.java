@@ -7,6 +7,7 @@ import com.dodream.book.domain.BookUpdateResponse;
 import com.dodream.book.service.BookService;
 import com.dodream.user.entity.User;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,22 +37,24 @@ public class BookController {
         @PageableDefault(page = 0, size = 12, sort = "createdAt",
             direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(value = "category", required = false) String category,
-        @RequestParam(value = "sortBybookmarks", defaultValue = "false") boolean sortByBookmarks) {
-        Page<BookResponse> bookList = bookService.getBooks(category, pageable, sortByBookmarks);
+        @RequestParam(value = "sortBybookmarks", defaultValue = "false") boolean sortByBookmarks,
+        @AuthenticationPrincipal User user) {
+        Page<BookResponse> bookList = bookService.getBooks(category, pageable, sortByBookmarks, user);
         return ResponseEntity.ok(bookList);
     }
 
     // 인기 문제집 조회 (북마크 많은 순으로 4개)
     @GetMapping("/popular")
-    public ResponseEntity<Page<BookResponse>> getPopularBooks() {
-        Page<BookResponse> popularBookList = bookService.getPopularBooks();
+    public ResponseEntity<Page<BookResponse>> getPopularBooks(@AuthenticationPrincipal User user) {
+        Page<BookResponse> popularBookList = bookService.getPopularBooks(user);
         return ResponseEntity.ok(popularBookList);
     }
 
     // 문제집 개별 조회
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponse> getBookById(@PathVariable("id") Long id) {
-        BookResponse book = bookService.getBook(id);
+    public ResponseEntity<BookResponse> getBookById(@PathVariable("id") Long id,
+        @AuthenticationPrincipal User user) {
+        BookResponse book = bookService.getBook(id, user);
         return ResponseEntity.ok(book);
     }
 
@@ -84,8 +87,9 @@ public class BookController {
     public ResponseEntity<Page<BookResponse>> searchBooks(
         @PageableDefault(page = 0, size = 12, sort = "createdAt",
             direction = Sort.Direction.DESC) Pageable pageable,
-        @RequestParam(value = "keyword", required = false) String keyword) {
-        Page<BookResponse> bookList = bookService.searchBooksByKeyword(keyword, pageable);
+        @RequestParam(value = "keyword", required = false) String keyword,
+        @AuthenticationPrincipal User user) {
+        Page<BookResponse> bookList = bookService.searchBooksByKeyword(keyword, pageable, user);
         return ResponseEntity.ok(bookList);
     }
 

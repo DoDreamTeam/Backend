@@ -8,10 +8,11 @@ import com.dodream.user.entity.User;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 public interface BookCommentService {
 
-    Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes);
+    Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes, User user);
 
     BookCommentResponse addComment(Long id, User user, BookCommentRequest bookCommentRequest);
 

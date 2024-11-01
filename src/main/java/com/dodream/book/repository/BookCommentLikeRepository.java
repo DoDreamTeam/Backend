@@ -29,4 +29,7 @@ public interface BookCommentLikeRepository extends JpaRepository<BookCommentLike
     // comment ID로 삭제
     void deleteByCommentId(BookComment commentId);
 
+    // 로그인한 사용자가 좋아요 했는지 여부
+    boolean existsByUserIdAndCommentId(Long user_id, BookComment commentId);
+
 }
