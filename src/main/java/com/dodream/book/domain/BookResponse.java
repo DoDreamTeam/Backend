@@ -15,7 +15,8 @@ public class BookResponse {
     private String userProfile;     // 생성한 사람 프로필
     private Long bookmarkCount;      // 북마크 수
     private String category;        // 카테고리
-    private boolean secret;
+    private boolean secret;         // 공개 비공개 여부
+    private boolean isBookmarked;   // 사용자가 북마크했는지 여부
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;    // 생성한 날짜 (정렬을 위해 필요)
