@@ -19,7 +19,9 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     Page<StudyMember> findByStudyMemberId(Long studyId, RoleEnum role, Pageable pageable);
     @Query("SELECT sm.role FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.user.id = :userId")
     Optional<RoleEnum> findRoleByStudyIdAndUserId(@Param("studyId") Long studyId, @Param("userId") Long userId);
-    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.description, s.category, " +
+
+    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, "
+        + "s.user.profileImage, s.description, s.category, " +
         "(SELECT COUNT(sm2) FROM StudyMember sm2 WHERE sm2.study.id = s.id), s.updatedAt, s.createdAt) " +
         "FROM StudyMember sm " +
         "JOIN sm.study s " +
