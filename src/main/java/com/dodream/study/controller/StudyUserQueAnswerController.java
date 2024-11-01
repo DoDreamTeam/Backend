@@ -1,7 +1,7 @@
 package com.dodream.study.controller;
 
 import com.dodream.study.domain.StudyUserQueAnswerResponse;
-import com.dodream.study.service.StudyQueUserAnswerService;
+import com.dodream.study.service.StudyUserQueAnswerService;
 import com.dodream.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class StudyUserQueAnswerController {
 
-    private final StudyQueUserAnswerService studyQueUserAnswerService;
+    private final StudyUserQueAnswerService studyUserQueAnswerService;
 
     // 스터디방 문제 전체 조회 (내 답안 제외 조회 + 내가 푼 문제 조회 - 로그인 사용자 기준)
     @GetMapping("")
@@ -30,7 +30,7 @@ public class StudyUserQueAnswerController {
         @PathVariable("id") Long studyId,
         @AuthenticationPrincipal User user) {
         Page<StudyUserQueAnswerResponse> response
-            = studyQueUserAnswerService.getStudyDetails(pageable, studyId, user);
+            = studyUserQueAnswerService.getStudyDetails(pageable, studyId, user);
         return ResponseEntity.ok(response);
     }
 
@@ -41,7 +41,7 @@ public class StudyUserQueAnswerController {
         @PathVariable("id") Long studyId,
         @AuthenticationPrincipal User user) {
         Page<StudyUserQueAnswerResponse> response
-            = studyQueUserAnswerService.getStudyMyDetails(pageable, studyId, user);
+            = studyUserQueAnswerService.getStudyMyDetails(pageable, studyId, user);
         return ResponseEntity.ok(response);
     }
 
@@ -52,7 +52,7 @@ public class StudyUserQueAnswerController {
         @PathVariable("id") Long studyId,
         @AuthenticationPrincipal User user) {
         Page<StudyUserQueAnswerResponse> response
-            = studyQueUserAnswerService.getStudyOtherDetails(pageable, studyId, user);
+            = studyUserQueAnswerService.getStudyOtherDetails(pageable, studyId, user);
         return ResponseEntity.ok(response);
     }
 
@@ -65,7 +65,7 @@ public class StudyUserQueAnswerController {
          @PathVariable("id") Long studyId,
          @AuthenticationPrincipal User user, String keyword) {
          Page<StudyUserQueAnswerResponse> response
-             = studyQueUserAnswerService.getSearchStudyUserAnswer(pageable, studyId, user, keyword);
+             = studyUserQueAnswerService.getSearchStudyUserAnswer(pageable, studyId, user, keyword);
          return ResponseEntity.ok(response);
      }
 
