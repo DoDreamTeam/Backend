@@ -24,6 +24,7 @@ public class StudyResponse {
     private Long id;
     private String title;               // 2024년 정처기 실기 2회 대비
     private String username;            // test
+    private String profileImage;        // 프로필 이미지
     private String description;         // 스터디에 대한 아주 간단한 설명
     private Category category;          // 자격증
     private String status;              // 신청, 승인대기중, 참여중
@@ -44,17 +45,19 @@ public class StudyResponse {
         this.id = study.getId();
         this.title = study.getTitle();
         this.username = study.getUser().getUsername();
+        this.profileImage = study.getUser().getProfileImage();
         this.description = study.getDescription();
         this.category = study.getCategory();
         this.updatedAt = study.getUpdatedAt();
         this.createdAt = study.getCreatedAt();
     }
 
-    public StudyResponse(Long id, String title, String username, String description,
+    public StudyResponse(Long id, String title, String username, String profileImage, String description,
         Category category, Long userCount, LocalDateTime updatedAt, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.username = username;
+        this.profileImage = profileImage;
         this.description = description;
         this.category = category;
         this.userCount = userCount;
