@@ -13,7 +13,7 @@ public interface QueCommentService {
 
     QueCommentResponse addQueComment(Long id, User user, QueCommentRequest queCommentRequest);
 
-    Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id, boolean isSortByLikes);
+    Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id, User user, boolean isSortByLikes);
 
     void deleteQueComment(Long commentId, User user);
 

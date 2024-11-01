@@ -60,7 +60,8 @@ public class QueCommentServiceImpl implements QueCommentService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "getUserAnswer")
-    public Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id, boolean isSortByLikes) {
+    public Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id,
+        User user, boolean isSortByLikes) {
 
         // 공지사항 ID 가 존재하지 않는 경우 예외 처리
         if (!studyUserAnswerRepository.existsById(id)) {
@@ -73,15 +74,23 @@ public class QueCommentServiceImpl implements QueCommentService {
                 queCommentRepository.findByStudyAnswerIdOrderByCreatedAtDesc(pageable, id);
 
         List<QueCommentResponse> responses = contents.stream()
-                .map(queComment -> QueCommentResponse.builder()
-                        .id(queComment.getId())
-                        .content(queComment.getContent())
-                        .username(queComment.getUser().getUsername() != null ? queComment.getUser().getUsername() : null)
-                        .likeCount(queCommentLikeRepository.countByQueCommentIdAndIsDeletedFalse(queComment))
-                        .userAnswerId(queComment.getStudyAnswer().getId())
-                        .createdAt(queComment.getCreatedAt())
-                        .build())
-                .toList();
+            .map(queComment -> {
+                boolean isLiked = (user != null)
+                    && queCommentLikeRepository.existsByUserIdAndQuecommentIdAndIsDeletedFalse(
+                    user.getId(), queComment);
+
+                return QueCommentResponse.builder()
+                    .id(queComment.getId())
+                    .content(queComment.getContent())
+                    .username(queComment.getUser().getUsername() != null ? queComment.getUser().getUsername() : null)
+                    .likeCount(queCommentLikeRepository.countByQueCommentIdAndIsDeletedFalse(queComment))
+                    .userAnswerId(queComment.getStudyAnswer().getId())
+                    .profileImage(queComment.getUser().getProfileImage())
+                    .createdAt(queComment.getCreatedAt())
+                    .isLiked(isLiked)
+                    .build();
+            })
+            .toList();
         return new PageImpl<>(responses, pageable, contents.getTotalElements());
     }
 
