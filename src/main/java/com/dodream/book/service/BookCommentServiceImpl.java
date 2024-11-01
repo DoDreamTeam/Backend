@@ -33,7 +33,7 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes) {
+    public Page<BookCommentResponse> getCommentList(Pageable pageable, Long id, boolean isSortByLikes, User user) {
         // 문제집 ID가 존재하지 않는 경우 예외 처리
         if (!bookRepository.existsById(id)) {
             throw new BaseException(ErrorCode.BOOK_ID_NOT_FOUND);
@@ -50,15 +50,24 @@ public class BookCommentServiceImpl implements BookCommentService {
 
         // 응답 객체 생성
         List<BookCommentResponse> responses = comments.stream()
-            .map(comment -> BookCommentResponse.builder()
-                .id(comment.getId())
-                .comment(comment.getComment())
-                .userId(comment.getUser().getId())
-                .username(comment.getUser().getUsername() != null ? comment.getUser().getUsername() : null)
-                .likeCount(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment)) // 좋아요 수 카운트
-                .bookId(comment.getBook().getId())
-                .createdAt(comment.getCreatedAt())
-                .build())
+            .map(comment -> {
+                boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentId(user.getId(), comment);
+
+                return BookCommentResponse.builder()
+                    .id(comment.getId())
+                    .comment(comment.getComment())
+                    .userId(comment.getUser().getId())
+                    .username(
+                        comment.getUser().getUsername() != null ? comment.getUser().getUsername()
+                            : null)
+                    .userProfile(comment.getUser().getProfileImage() != null ? comment.getUser().getProfileImage() : null)
+                    .likeCount(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(
+                        comment)) // 좋아요 수 카운트
+                    .bookId(comment.getBook().getId())
+                    .createdAt(comment.getCreatedAt())
+                    .isLiked(isLiked)
+                    .build();
+            })
             .collect(Collectors.toList());
 
         return new PageImpl<>(responses, pageable, comments.getTotalElements());
@@ -83,15 +92,20 @@ public class BookCommentServiceImpl implements BookCommentService {
         // 댓글 저장
         BookComment savedComment = bookCommentRepository.save(comment);
 
+        // 댓글 좋아요 여부
+        boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentId(user.getId(), comment);
+
         // 응답 객체 생성
         return BookCommentResponse.builder()
             .id(savedComment.getId())
             .comment(savedComment.getComment())
             .userId(savedComment.getUser().getId())
-            .username(user.getUsername())
+            .username(savedComment.getUser().getUsername() != null ? savedComment.getUser().getUsername() : null)
+            .userProfile(comment.getUser().getProfileImage() != null ? comment.getUser().getProfileImage() : null)
             .bookId(savedComment.getBook().getId())
             .likeCount(0L) // 초기 좋아요 수 0
             .createdAt(savedComment.getCreatedAt())
+            .isLiked(isLiked)
             .build();
     }
 

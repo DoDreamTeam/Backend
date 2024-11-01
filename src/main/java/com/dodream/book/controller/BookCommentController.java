@@ -37,8 +37,9 @@ public class BookCommentController {
         @PageableDefault(page = 0, size = 5, sort = "createdAt",
             direction = Sort.Direction.DESC) Pageable pageable,
         @PathVariable("id") Long id,
-        @RequestParam(value = "sortByLikes", required = false) boolean isSortByLikes) {
-        Page<BookCommentResponse> bookCommentList = bookCommentService.getCommentList(pageable, id, isSortByLikes);
+        @RequestParam(value = "sortByLikes", required = false) boolean isSortByLikes,
+        @AuthenticationPrincipal User user) {
+        Page<BookCommentResponse> bookCommentList = bookCommentService.getCommentList(pageable, id, isSortByLikes, user);
         return ResponseEntity.ok(bookCommentList);
     }
 
