@@ -109,7 +109,7 @@ class NoticeCommentServiceTest {
         when(noticeCommentRepository.findByNoticeIdOrderByLikeCountDesc(pageable, 1L))
             .thenReturn(new PageImpl<>(Collections.singletonList(noticeComment)));
         Page<NoticeCommentResponse> responsePage = noticeCommentService.getNoticeCommentList(
-            pageable, 1L, true);
+            pageable, 1L, user, false);
 
         // then (행위에 대한 결과 검증)
         assertNotNull(responsePage);
@@ -128,7 +128,7 @@ class NoticeCommentServiceTest {
         when(noticeCommentRepository.findByNoticeIdOrderByCreatedAtDesc(pageable, 1L))
             .thenReturn(new PageImpl<>(Collections.singletonList(noticeComment)));
         Page<NoticeCommentResponse> responsePage = noticeCommentService.getNoticeCommentList(
-            pageable, 1L, false);
+            pageable, 1L, user, false);
 
         // then (행위에 대한 결과 검증)
         assertNotNull(responsePage);
