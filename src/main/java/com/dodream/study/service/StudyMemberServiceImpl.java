@@ -50,6 +50,7 @@ public class StudyMemberServiceImpl implements StudyMemberService {
             .map(studyMember -> StudyMemberResponse.builder()
                 .username(studyMember.getUser().getUsername())
                 .joinDate(studyMember.getJoinDate())
+                .profileImage(studyMember.getUser().getProfileImage())
                 .build())
             .toList();
     }
