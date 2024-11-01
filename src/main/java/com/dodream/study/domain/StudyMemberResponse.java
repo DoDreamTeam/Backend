@@ -20,5 +20,6 @@ public class StudyMemberResponse {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime joinDate;
+    private String profileImage;
 
 }

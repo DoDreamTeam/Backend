@@ -12,4 +12,5 @@ public class StudyUserAnswerResponse {
     private String modelAnswer;
     private String answer;
     private LocalDateTime createdAt;
+    private String profileImage;
 }

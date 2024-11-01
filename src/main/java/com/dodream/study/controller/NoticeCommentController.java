@@ -35,10 +35,11 @@ public class NoticeCommentController {
     public ResponseEntity<Page<NoticeCommentResponse>> getAllNoticeComments(
         @PageableDefault(page = 0, size = 5, sort = "createdAt",
         direction = Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal User user,
         @PathVariable("id") Long id,
         @RequestParam(value = "sortByLikes", required = false) boolean isSortByLikes) {
         Page<NoticeCommentResponse> noticeCommentList
-            = noticeCommentService.getNoticeCommentList(pageable, id, isSortByLikes);
+            = noticeCommentService.getNoticeCommentList(pageable, id, user, isSortByLikes);
         return ResponseEntity.ok(noticeCommentList);
     }
 

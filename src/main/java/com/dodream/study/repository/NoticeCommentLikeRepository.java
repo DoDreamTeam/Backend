@@ -1,5 +1,6 @@
 package com.dodream.study.repository;
 
+import com.dodream.book.entity.BookComment;
 import com.dodream.study.entity.NoticeComment;
 import com.dodream.study.entity.NoticeCommentLike;
 import com.dodream.user.entity.User;
@@ -18,5 +19,7 @@ public interface NoticeCommentLikeRepository extends JpaRepository<NoticeComment
     Optional<NoticeCommentLike> findByUserAndNoticeCommentId(User user, NoticeComment noticeComment);
 
     void deleteByNoticeCommentId(NoticeComment noticeComment);
+
+    boolean existsByUserIdAndNoticeCommentIdAndIsDeletedFalse(Long userId, NoticeComment noticeComment);
 
 }

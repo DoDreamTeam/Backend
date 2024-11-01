@@ -48,14 +48,19 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
 
         NoticeComment savedComment = noticeCommentRepository.save(noticeComment);
 
+        // 댓글 좋아요 여부
+        boolean isLiked = (user != null)
+            && noticeCommentLikeRepository.existsByUserIdAndNoticeCommentIdAndIsDeletedFalse(user.getId(), noticeComment);
+
         return NoticeCommentResponse.builder()
             .id(savedComment.getId())
             .content(savedComment.getContent())
-            .username(user.getUsername())
+            .username(user != null ? user.getUsername() : null)
             .noticeId(savedComment.getNotice().getId())
             .likeCount(0L)
             .createdAt(savedComment.getCreatedAt())
             .updatedAt(savedComment.getUpdatedAt())
+            .isLiked(isLiked)
             .build();
     }
 
@@ -63,7 +68,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "getNotice")
     public Page<NoticeCommentResponse> getNoticeCommentList(Pageable pageable, Long id,
-        boolean isSortByLikes) {
+        User user, boolean isSortByLikes) {
 
         // 공지사항 ID가 존재하지 않는 경우 예외 처리
         if (!noticeRepository.existsById(id)) {
@@ -77,14 +82,22 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
             noticeCommentRepository.findByNoticeIdOrderByCreatedAtDesc(pageable, id);
 
         List<NoticeCommentResponse> responses = contents.stream()
-            .map(notiComment -> NoticeCommentResponse.builder()
-                .id(notiComment.getId())
-                .content(notiComment.getContent())
-                .username(notiComment.getUser().getUsername() != null ? notiComment.getUser().getUsername() : null)
-                .likeCount(noticeCommentLikeRepository.countByNoticeCommentIdAndIsDeletedFalse(notiComment))
-                .noticeId(notiComment.getNotice().getId())
-                .createdAt(notiComment.getCreatedAt())
-                .build())
+            .map(notiComment -> {
+                boolean isLiked = (user != null)
+                    && noticeCommentLikeRepository.existsByUserIdAndNoticeCommentIdAndIsDeletedFalse(
+                    user.getId(), notiComment);
+
+                return NoticeCommentResponse.builder()
+                    .id(notiComment.getId())
+                    .content(notiComment.getContent())
+                    .username(notiComment.getUser().getUsername() != null ? notiComment.getUser().getUsername() : null)
+                    .likeCount(noticeCommentLikeRepository.countByNoticeCommentIdAndIsDeletedFalse(notiComment))
+                    .profileImage(notiComment.getUser().getProfileImage())
+                    .noticeId(notiComment.getNotice().getId())
+                    .createdAt(notiComment.getCreatedAt())
+                    .isLiked(isLiked)
+                    .build();
+            })
             .toList();
 
         return new PageImpl<>(responses, pageable, contents.getTotalElements());

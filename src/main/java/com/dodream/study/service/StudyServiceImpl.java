@@ -160,6 +160,7 @@ public class StudyServiceImpl implements StudyService {
                 .title(study.getTitle())
                 .username(study.getUsername())
                 .userCount(study.getUserCount())
+                .profileImage(study.getProfileImage())
                 .build())
             .toList();
 
@@ -179,6 +180,7 @@ public class StudyServiceImpl implements StudyService {
                 .title(study.getTitle())
                 .username(study.getUsername())
                 .userCount(study.getUserCount())
+                .profileImage(study.getProfileImage())
                 .build())
             .toList();
 

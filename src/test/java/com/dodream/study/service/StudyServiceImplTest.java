@@ -136,7 +136,7 @@ class StudyServiceImplTest {
 
         Page<StudyResponse> page = new PageImpl<>(List.of(
             new StudyResponse(testStudy.getId(), testStudy.getTitle(), testUser.getUsername(),
-                testStudy.getDescription(), testStudy.getCategory(), 5L, // example user count
+                testUser.getProfileImage(), testStudy.getDescription(), testStudy.getCategory(), 5L,
                 testStudy.getUpdatedAt(), testStudy.getCreatedAt())
         ));
         when(studyMemberRepository.findByUserAndRoleIn(pageable, testUser,

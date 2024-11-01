@@ -19,7 +19,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
         String titleKeyword, String descriptionKeyword);
 
     /* 스터디 카테고리별로 검색 */
-    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, "
+    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt, "
         + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id)) "
         + "FROM Study s "
@@ -27,7 +27,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     Page<StudyResponse> findByStudyCategory(Pageable pageable, @Param("category") Category category);
 
     /* 스터디 키워드(제목 + 내용 or 사용자) 로 검색 */
-    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, "
+    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt,"
         + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id)) "
         + "FROM Study s "
@@ -37,13 +37,13 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     Page<StudyResponse> findStudiesByTitleDescriptionOrUsername(Pageable pageable, @Param("keyword") String keyword);
 
     /* 스터디 전체 조회 */
-    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, "
+    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt, "
         + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id)) FROM Study s")
     Page<StudyResponse> findAllStudy(Pageable pageable);
 
     /* 인기 스터디 조회 */
-    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, "
+    @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt as update, "
         + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id) as count ) FROM Study s "
         + "ORDER BY count DESC, update DESC ")
