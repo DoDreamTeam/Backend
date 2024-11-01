@@ -48,14 +48,19 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
 
         NoticeComment savedComment = noticeCommentRepository.save(noticeComment);
 
+        // 댓글 좋아요 여부
+        boolean isLiked = (user != null)
+            && noticeCommentLikeRepository.existsByUserIdAndNoticeCommentIdAndIsDeletedFalse(user.getId(), noticeComment);
+
         return NoticeCommentResponse.builder()
             .id(savedComment.getId())
             .content(savedComment.getContent())
-            .username(user.getUsername())
+            .username(user != null ? user.getUsername() : null)
             .noticeId(savedComment.getNotice().getId())
             .likeCount(0L)
             .createdAt(savedComment.getCreatedAt())
             .updatedAt(savedComment.getUpdatedAt())
+            .isLiked(isLiked)
             .build();
     }
 
@@ -79,7 +84,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
         List<NoticeCommentResponse> responses = contents.stream()
             .map(notiComment -> {
                 boolean isLiked = (user != null)
-                    && noticeCommentLikeRepository.existsByUserIdAndNoticeCommentIdIsDeletedFalse(
+                    && noticeCommentLikeRepository.existsByUserIdAndNoticeCommentIdAndIsDeletedFalse(
                     user.getId(), notiComment);
 
                 return NoticeCommentResponse.builder()

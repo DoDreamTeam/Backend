@@ -36,7 +36,7 @@ public class QueCommentServiceImpl implements QueCommentService {
 
         StudyUserAnswer studyAnswer = studyUserAnswerRepository.findById(id)
                 .orElseThrow(() -> new BaseException(ErrorCode.STUDY_USER_ANSWER_NOT_FOUND));
-//
+
         QueComment queComment = QueComment.builder()
                 .content(queCommentRequest.getContent())
                 .user(user)
@@ -46,14 +46,20 @@ public class QueCommentServiceImpl implements QueCommentService {
                 .build();
         QueComment savedComment = queCommentRepository.save(queComment);
 
+        // 댓글 좋아요 여부
+        boolean isLiked = (user != null)
+            && queCommentLikeRepository.existsByUserIdAndQuecommentIdAndIsDeletedFalse(
+            user.getId(), queComment);
+
         return QueCommentResponse.builder()
                 .id(savedComment.getId())
                 .content(savedComment.getContent())
-                .username(user.getUsername())
+                .username(user != null ? user.getUsername() : null)
                 .userAnswerId(savedComment.getStudyAnswer().getId())
                 .likeCount(0L)
                 .createdAt(savedComment.getCreatedAt())
                 .updatedAt(savedComment.getUpdatedAt())
+                .isLiked(isLiked)
                 .build();
     }
 
