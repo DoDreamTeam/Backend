@@ -18,6 +18,7 @@ public class StudyUserQueAnswerResponse {
     private String question;
     private String modelAnswer;
     private String username;
+    private String profileImage;
     private Evaluation evaluation;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
