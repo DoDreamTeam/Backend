@@ -9,6 +9,7 @@ import lombok.Data;
 public class BookCommentResponse {
     private Long id;
     private String comment;
+    private Long userId;                    // 작성자 ID
     private String username;                // 작성자
     private Long likeCount;                 // 좋아요 수
     private Long bookId;                    // 문제집 ID

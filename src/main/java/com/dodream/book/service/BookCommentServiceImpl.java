@@ -53,6 +53,7 @@ public class BookCommentServiceImpl implements BookCommentService {
             .map(comment -> BookCommentResponse.builder()
                 .id(comment.getId())
                 .comment(comment.getComment())
+                .userId(comment.getUser().getId())
                 .username(comment.getUser().getUsername() != null ? comment.getUser().getUsername() : null)
                 .likeCount(bookCommentLikeRepository.countByCommentIdAndIsDeletedFalse(comment)) // 좋아요 수 카운트
                 .bookId(comment.getBook().getId())
@@ -86,6 +87,7 @@ public class BookCommentServiceImpl implements BookCommentService {
         return BookCommentResponse.builder()
             .id(savedComment.getId())
             .comment(savedComment.getComment())
+            .userId(savedComment.getUser().getId())
             .username(user.getUsername())
             .bookId(savedComment.getBook().getId())
             .likeCount(0L) // 초기 좋아요 수 0
@@ -111,6 +113,7 @@ public class BookCommentServiceImpl implements BookCommentService {
 
         // 응답 객체 생성
         return BookCommentUpdateResponse.builder()
+            .userId(user.getId())
             .comment(comment.getComment()) // 수정된 댓글 내용 반환
             .build();
     }

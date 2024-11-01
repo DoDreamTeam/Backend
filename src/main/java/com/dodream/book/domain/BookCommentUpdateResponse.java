@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class BookCommentUpdateResponse {
-    private String comment;
+    private Long userId;            // 작성자 ID
+    private String comment;         // 댓글
 }
 

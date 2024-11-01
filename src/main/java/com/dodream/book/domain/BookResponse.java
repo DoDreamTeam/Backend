@@ -10,7 +10,9 @@ import lombok.Data;
 public class BookResponse {
     private Long id;
     private String title;           // 문제집 제목
+    private Long userId;            // 생성자 ID
     private String username;        // 생성한 사람
+    private String userProfile;     // 생성한 사람 프로필
     private Long bookmarkCount;      // 북마크 수
     private String category;        // 카테고리
     private boolean secret;

@@ -96,7 +96,9 @@ public class BookServiceImpl implements BookService {
             .builder()
             .id(book.getId())
             .title(book.getTitle())
+            .userId(book.getUser() != null ? book.getUser().getId() : null)
             .username(book.getUser() != null ? book.getUser().getUsername() : null)
+            .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
             .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
             .category(book.getCategory().name())
             .createdAt(book.getCreatedAt())
@@ -127,7 +129,9 @@ public class BookServiceImpl implements BookService {
         return BookResponse.builder()
             .id(savedBook.getId())
             .title(savedBook.getTitle())
+            .userId(book.getUser() != null ? book.getUser().getId() : null)
             .username(user.getUsername())  // 현재 로그인한 사용자 이름
+            .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
             .bookmarkCount(0L)             // 초기 북마크 수
             .category(savedBook.getCategory().name())
             .createdAt(savedBook.getCreatedAt()) // 실제 생성된 날짜 사용
@@ -186,7 +190,9 @@ public class BookServiceImpl implements BookService {
             .map(book -> BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
+                .userId(book.getUser() != null ? book.getUser().getId() : null)
                 .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
                 .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
                 .category(book.getCategory().name())
                 .createdAt(book.getCreatedAt())
