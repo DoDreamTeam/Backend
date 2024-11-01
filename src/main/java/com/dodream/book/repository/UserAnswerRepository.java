@@ -38,11 +38,11 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에 추가된 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
-        "LEFT JOIN ua.user u " + // Change to LEFT JOIN to allow for missing answers
+        "LEFT JOIN ua.user u " +
         "WHERE sua.study.id = :studyId OR ua.user = :user")
     Page<StudyUserQueAnswerResponse> findStudyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
@@ -50,7 +50,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에서 내가 푼 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
@@ -62,7 +62,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에서 내가 풀지 않은 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
@@ -73,7 +73,8 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         @Param("user") User user);
 
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, q.modelAnswer, ua.user.username, ua.evaluation, ua.createdAt) " +
+        + "q.id, q.question, q.modelAnswer, ua.user.username, "
+        + "ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
