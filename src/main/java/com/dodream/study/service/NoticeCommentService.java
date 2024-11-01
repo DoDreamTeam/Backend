@@ -12,7 +12,7 @@ public interface NoticeCommentService {
 
     NoticeCommentResponse addNoticeComment(Long id, User user, NoticeCommentRequest noticeCommentRequest);
 
-    Page<NoticeCommentResponse> getNoticeCommentList(Pageable pageable, Long id, boolean isSortByLikes);
+    Page<NoticeCommentResponse> getNoticeCommentList(Pageable pageable, Long id, User user, boolean isSortByLikes);
 
     void deleteNoticeComment(Long commentId, User user);
 
