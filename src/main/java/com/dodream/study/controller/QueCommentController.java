@@ -27,9 +27,10 @@ public class QueCommentController {
             @PageableDefault(page = 0, size = 5, sort = "createdAt",
                     direction = Direction.DESC) Pageable pageable,
             @PathVariable("id") Long id,
+        @AuthenticationPrincipal User user,
             @RequestParam(value = "sortByLikes", required = false) boolean isSortByLikes) {
         Page<QueCommentResponse> queCommentList
-                = queCommentService.getQueCommentList(pageable, id, isSortByLikes);
+                = queCommentService.getQueCommentList(pageable, id, user, isSortByLikes);
         return ResponseEntity.ok(queCommentList);
     }
 
