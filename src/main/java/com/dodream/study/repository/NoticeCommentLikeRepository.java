@@ -19,4 +19,6 @@ public interface NoticeCommentLikeRepository extends JpaRepository<NoticeComment
 
     void deleteByNoticeCommentId(NoticeComment noticeComment);
 
+    boolean existsByUserIdAndNoticeCommentIdIsDeletedFalse(Long id, NoticeComment noticeComment);
+
 }
