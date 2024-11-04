@@ -86,6 +86,14 @@ public class StudyController {
         return ResponseEntity.ok(studyResponse);
     }
 
+    // 스터디 개별 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<StudyResponse> getStudyById(@PathVariable("id") Long id,
+        @AuthenticationPrincipal User user) {
+        StudyResponse study = studyService.findStudy(id, user);
+        return ResponseEntity.ok(study);
+    }
+
     // 스터디 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<StudyResponse> deleteStudy(@AuthenticationPrincipal User user,

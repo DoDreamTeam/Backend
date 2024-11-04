@@ -1,6 +1,7 @@
 package com.dodream.study.repository;
 
 import com.dodream.study.domain.StudyResponse;
+import com.dodream.study.entity.Study;
 import com.dodream.study.entity.StudyMember;
 import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.user.entity.User;
@@ -34,4 +35,5 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
     @Query("SELECT sm FROM StudyMember sm WHERE sm.study.id = :studyId AND sm.role = 'ROLE_LEADER'")
     Optional<StudyMember> findLeaderByStudyId(@Param("studyId") Long studyId);
 
+    Optional<StudyMember> findByStudyAndUser(Study study, User user);
 }

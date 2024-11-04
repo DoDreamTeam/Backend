@@ -43,7 +43,7 @@ public class StudyServiceImpl implements StudyService {
     // 메인 페이지 스터디 조회 (12개씩) - 비회원 + 회원 포함
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "getStudy")
+    @Cacheable(cacheNames = "getStudyList")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
         Page<StudyResponse> studyList;
 
@@ -187,6 +187,28 @@ public class StudyServiceImpl implements StudyService {
             .toList();
 
         return new PageImpl<>(studyResponse, pageable, studyList.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "study")
+    public StudyResponse findStudy(Long id, User user) {
+        Study study = studyRepository.findById(id)
+            .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
+
+        StudyMember studyMember = studyMemberRepository.findByStudyAndUser(study, user)
+            .orElseThrow(() -> new BaseException(ErrorCode.STUDY_MEMBER_NOT_FOUND));
+
+        if (studyMember.getRole() != RoleEnum.ROLE_MEMBER && studyMember.getRole() != RoleEnum.ROLE_LEADER) {
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        }
+
+        return StudyResponse.builder()
+            .id(study.getId())
+            .title(study.getTitle())
+            .username(study.getUser() != null ? study.getUser().getUsername() : null)
+            .profileImage(study.getUser() != null ? study.getUser().getProfileImage() : null)
+            .build();
     }
 
     private void checkUserRole(Long study, User user) {
