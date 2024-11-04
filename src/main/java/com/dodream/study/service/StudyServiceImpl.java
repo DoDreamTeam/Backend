@@ -159,6 +159,7 @@ public class StudyServiceImpl implements StudyService {
                 .id(study.getId())
                 .title(study.getTitle())
                 .username(study.getUsername())
+                .category(study.getCategory())
                 .userCount(study.getUserCount())
                 .profileImage(study.getProfileImage())
                 .build())
