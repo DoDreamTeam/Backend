@@ -4,11 +4,14 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.Book;
+import com.dodream.book.entity.UserAnswer;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
+import com.dodream.book.repository.UserAnswerRepository;
 import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.mypage.domain.GetUserAnswerResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
@@ -43,6 +46,7 @@ public class MyPageServiceImpl implements MyPageService {
     private static String profileName;
     private static String uuidString;
     private final BookRepository bookRepository;
+    private final UserAnswerRepository userAnswerRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -156,6 +160,24 @@ public class MyPageServiceImpl implements MyPageService {
         }
 
         return UserInfoResponse.toProfileDTO(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GetUserAnswerResponse> getUserIdAnswers(Long userId) {
+        List<UserAnswer> userAnswers = userAnswerRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+        if (userAnswers.isEmpty()) {
+            throw new BaseException(ErrorCode.USER_ANSWER_NOT_FOUND);
+        }
+
+        return userAnswers.stream()
+            .map(userAnswer -> {
+                return GetUserAnswerResponse.builder()
+                    .createdAt(userAnswer.getCreatedAt())
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
     private void updateUserNameAndUserProfileImage(String newUserName, MultipartFile file,

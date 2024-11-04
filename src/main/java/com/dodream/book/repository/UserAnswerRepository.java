@@ -19,7 +19,10 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     
     // 사용자가 푼 문제 목록
     Page<UserAnswer> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
-    
+
+    // 사용자가 푼 문제 목록
+    List<UserAnswer> findByUserIdOrderByCreatedAtDesc(Long userId);
+
     // 사용자가 푼 평가별 문제 목록
     Page<UserAnswer> findByUserIdAndEvaluationOrderByCreatedAtDesc(Long userId,
         Evaluation evaluation, Pageable pageable);

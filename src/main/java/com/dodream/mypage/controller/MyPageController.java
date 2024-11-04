@@ -2,10 +2,12 @@ package com.dodream.mypage.controller;
 
 
 import com.dodream.book.domain.BookResponse;
+import com.dodream.mypage.domain.GetUserAnswerResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.mypage.domain.UserUpdateRequest;
 import com.dodream.mypage.service.MyPageService;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +54,13 @@ public class MyPageController {
         UserInfoResponse updateUserProfile = myPageService.updateUserProfile(
             newUserName, file);
         return ResponseEntity.ok(updateUserProfile);
+    }
+
+    // 사용자 푼 문제 목록 가져오기
+    @GetMapping("/answers/{id}")
+    public ResponseEntity<List<GetUserAnswerResponse>> getUserAnswers(@PathVariable("id") Long userId) {
+        List<GetUserAnswerResponse> userAnswers = myPageService.getUserIdAnswers(userId);
+        return ResponseEntity.ok(userAnswers);
     }
 
 }
