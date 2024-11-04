@@ -27,8 +27,7 @@ import com.dodream.study.repository.QueCommentLikeRepository;
 import com.dodream.study.repository.QueCommentRepository;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
-
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -211,8 +210,9 @@ public class MyPageMeServiceImpl implements MyPageMeService {
         List<QueCommentResponse> responses = queComment.stream()
             .map(comment -> QueCommentResponse.builder()
                 .id(comment.getId())
-                .studyAnswerId(comment.getStudyAnswer().getId())
+                .studyAnswerId(comment.getStudyAnswer().getId()) // 이부분 push  해야함
                 .comment(comment.getContent())
+                .studyId(comment.getStudyAnswer().getStudy().getId())
                 .userId(comment.getUser() != null ? comment.getUser().getId() : null)
                 .username(comment.getUser() != null ? comment.getUser().getUsername() : null)
                 .studyTitle(comment.getStudyAnswer().getStudy().getTitle())
@@ -241,7 +241,6 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                     .commentId(queComment.getId())
                     .comment(queComment.getContent())
                     .userId(queComment.getUser() != null ? queComment.getUser().getId() : null)
-                    .studyAnswerId(queComment.getStudyAnswer().getId())
                     .userName(
                         queComment.getUser() != null ? queComment.getUser().getUsername() : null)
                     .createdAt(queComment.getCreatedAt())

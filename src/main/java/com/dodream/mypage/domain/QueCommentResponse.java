@@ -19,4 +19,5 @@ public class QueCommentResponse {
     private String studyTitle; // 스터디 제목
     private LocalDateTime createdAt; // 생성 날짜
     private LocalDateTime updatedAt; // 수정 날짜
+    private Long studyId;
 }

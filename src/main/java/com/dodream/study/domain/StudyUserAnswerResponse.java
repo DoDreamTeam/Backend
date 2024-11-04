@@ -13,4 +13,6 @@ public class StudyUserAnswerResponse {
     private String answer;
     private LocalDateTime createdAt;
     private String profileImage;
+    private Long userId;
+    private String userName;
 }

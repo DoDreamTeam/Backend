@@ -32,7 +32,9 @@ public class StudyUserAnswerServiceImpl implements StudyUserAnswerService {
             .question(question.getQuestion())
             .modelAnswer(question.getModelAnswer())
             .answer(userAnswer.getAnswer())
+            .userId(userAnswer.getUser().getId())
             .profileImage(userAnswer.getUser().getProfileImage())
+            .userName(userAnswer.getUser().getUsername())
             .createdAt(studyUserAnswer.getCreatedAt())
             .build();
     }
