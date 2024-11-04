@@ -11,6 +11,8 @@ import com.dodream.book.repository.BookCommentRepository;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.notifications.enumtype.NotifyType;
+import com.dodream.notifications.service.NotificationService;
 import com.dodream.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +31,7 @@ public class BookCommentServiceImpl implements BookCommentService {
     private final BookCommentRepository bookCommentRepository;
     private final BookCommentLikeRepository bookCommentLikeRepository;
     private final BookRepository bookRepository;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -91,6 +94,22 @@ public class BookCommentServiceImpl implements BookCommentService {
 
         // 댓글 저장
         BookComment savedComment = bookCommentRepository.save(comment);
+
+        // 내 문제집 댓글 알림 신청 - 문제집 만든 사람에게 전송
+        User bookCreator = book.getUser();
+        String content =
+            savedComment.getUser().getUsername() + "님이 "
+                + book.getTitle() + "에 "
+                + "댓글을 남겼습니다.";
+        String url = "/api/books/" + savedComment.getId() + "/comments";
+
+        notificationService.notifyDoDreamClient(
+            bookCreator,
+            NotifyType.BOOK_COMMENT,
+            content,
+            url,
+            bookCreator.getUsername()
+        );
 
         // 댓글 좋아요 여부
         boolean isLiked = (user != null) && bookCommentLikeRepository.existsByUserIdAndCommentIdAndIsDeletedFalse(user.getId(), comment);
