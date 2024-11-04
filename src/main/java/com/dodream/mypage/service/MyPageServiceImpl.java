@@ -147,11 +147,11 @@ public class MyPageServiceImpl implements MyPageService {
         String existingProfileImage = user.getProfileImage();
         String currentName = user.getUsername();
 
-        if (!file.isEmpty() && !newUserName.isEmpty()) {                        // 업로드 파일 + 새로운 유저명
+        if (file != null && newUserName != null) {                    // 업로드 파일 + 새로운 유저명
             updateUserNameAndUserProfileImage(newUserName, file, existingProfileImage, user);
-        } else if (file.isEmpty() && !user.getUsername().isEmpty()) {            // 빈 파일 + 새로운 유저명
+        } else if (file == null && newUserName != null) {            // 빈 파일 + 새로운 유저명
             user.updateProfile(newUserName, existingProfileImage);
-        } else if (!file.isEmpty() && newUserName.isEmpty()) {                   // 업로드 파일 + 기존 유저명
+        } else if (file != null) {                                   // 업로드 파일 + 기존 유저명
             updateUserNameAndUserProfileImage(currentName, file, existingProfileImage, user);
         }
 
