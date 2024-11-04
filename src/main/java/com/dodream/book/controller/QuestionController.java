@@ -44,8 +44,8 @@ public class QuestionController {
 
     // 문제 개별 조회 (문제 풀기 페이지)
     @GetMapping("/{id}/questions/{questionId}")
-    public ResponseEntity<QuestionListResponse> getQuestion(@PathVariable("id") Long id, @PathVariable("questionId") Long questionId) {
-        QuestionListResponse question = questionService.getOneQuestion(id, questionId);
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable("id") Long id, @PathVariable("questionId") Long questionId) {
+        QuestionResponse question = questionService.getOneQuestion(id, questionId);
         return ResponseEntity.ok(question);
     }
 

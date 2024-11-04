@@ -17,7 +17,7 @@ public interface QuestionService {
 
     Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user, Boolean type);
 
-    QuestionListResponse getOneQuestion(Long id, Long questionId);
+    QuestionResponse getOneQuestion(Long id, Long questionId);
 
     QuestionResponse updateQuestion(Long id, Long questionId, QuestionRequest questionRequest, User user);
 

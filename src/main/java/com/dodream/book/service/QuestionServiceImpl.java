@@ -90,7 +90,7 @@ public class QuestionServiceImpl implements QuestionService {
     // 문제 개별 조회
     @Override
     @Transactional(readOnly = true)
-    public QuestionListResponse getOneQuestion(Long id, Long questionId) {
+    public QuestionResponse getOneQuestion(Long id, Long questionId) {
         // 문제집 확인
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
@@ -99,9 +99,11 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.findById(questionId)
             .orElseThrow(() -> new BaseException(ErrorCode.QUESTION_NOT_FOUND));
 
-        return QuestionListResponse.builder()
+        return QuestionResponse
+            .builder()
             .id(question.getId())
             .question(question.getQuestion())
+            .modelAnswer(question.getModelAnswer())
             .createdAt(question.getCreatedAt())
             .build();
     }
