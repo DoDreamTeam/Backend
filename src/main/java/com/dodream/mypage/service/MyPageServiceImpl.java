@@ -30,6 +30,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -50,6 +51,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     // 사용자 정보 가져오기 (userName , profileImage , userBooks )
     @Override
+    @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
@@ -59,6 +61,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     // 사용자의 문제집 목록 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
         // 사용자의 문제집 리스트
         Page<UserBook> userBooksPage = userBookRepository
@@ -136,6 +139,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     // 사용자 프로필 수정
     @Override
+    @Transactional
     public UserInfoResponse updateUserProfile(String newUserName, MultipartFile file)
         throws IOException {
         User loginuser = (User) SecurityContextHolder.getContext().getAuthentication()
@@ -145,36 +149,39 @@ public class MyPageServiceImpl implements MyPageService {
         User user = userRepository.findById(loginUserId)
             .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
-        if (file != null && !file.isEmpty()) {
-            String existingProfileImage = user.getProfileImage();
+        // 기존 이미지, 기존 유저명
+        String existingProfileImage = user.getProfileImage();
+        String currentName = user.getUsername();
 
-            if (!existingProfileImage.isEmpty()) {
-                String deleteFilename = existingProfileImage.split("/")[3]
-                    + "/" + existingProfileImage.split("/")[4];
-                deleteImageFromS3(deleteFilename);
-            }
+        if (!file.isEmpty() && !newUserName.isEmpty()) {                        // 업로드 파일 + 새로운 유저명
+            updateUserNameAndUserProfileImage(newUserName, file, existingProfileImage, user);
+        } else if (file.isEmpty() && !user.getUsername().isEmpty()) {            // 빈 파일 + 새로운 유저명
+            user.updateProfile(newUserName, existingProfileImage);
+        } else if (!file.isEmpty() && newUserName.isEmpty()) {                   // 업로드 파일 + 기존 유저명
+            updateUserNameAndUserProfileImage(currentName, file, existingProfileImage, user);
         }
 
+        return UserInfoResponse.toProfileDTO(user);
+    }
+
+    private void updateUserNameAndUserProfileImage(String newUserName, MultipartFile file,
+        String existingProfileImage, User user) throws IOException {
+        if (!existingProfileImage.isEmpty()) {
+            String deleteFilename = existingProfileImage.split("/")[3]
+                + "/" + existingProfileImage.split("/")[4];
+            deleteImageFromS3(deleteFilename);
+        }
+        String newProfileImage = getUploadFile(file);
+        user.updateProfile(newUserName, newProfileImage);
+    }
+
+    private String getUploadFile(MultipartFile file) throws IOException {
         String uploadImage = upload(file, "profile-image");
-        String newProfileImage = uploadImage.split("/")[0] + "//"
+        return uploadImage.split("/")[0] + "//"
             + uploadImage.split("/")[2] + "/"
             + uploadImage.split("/")[3] + "/"
             + uuidString
             + profileName;
-
-        // 유저네임과 프로필 이미지 수정
-        if (newUserName != null) {
-            user.setUsername(newUserName);
-        }
-
-        // AWS S3 연동
-        if (!uploadImage.isEmpty()) {
-            // Upload new profile image to S3
-            user.setProfileImage(newProfileImage);
-        }
-
-        userRepository.save(user);
-        return UserInfoResponse.toProfileDTO(user);
     }
 
     private void deleteImageFromS3(String fileName) {

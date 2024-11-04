@@ -66,6 +66,11 @@ public class User implements UserDetails {
         this.id = id;
     }
 
+    public void updateProfile(String username, String profileImage) {
+        this.username = username;
+        this.profileImage = profileImage;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
