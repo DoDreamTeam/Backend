@@ -29,4 +29,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // 문제집 제목으로 검색 (공개 문제집만 검색 가능) 최신순으로 정렬
     Page<Book> findAllByTitleContainingAndSecretFalseOrderByCreatedAtDesc(String title, Pageable pageable);
+
+    Page<Book> findByUserIdAndSecretFalseOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    Page<Book> findByUserIdOrderByCreatedAtDesc(Long id, Pageable pageable);
 }

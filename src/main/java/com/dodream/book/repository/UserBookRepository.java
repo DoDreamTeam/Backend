@@ -11,13 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserBookRepository extends JpaRepository<UserBook, Long> {
 
-    // 사용자 문제집 전체 조회
-    Page<UserBook> findByUserIdOrderByBookCreatedAtDesc(Long userId, Pageable pageable);
-
-    // 사용자 문제집 공개만 조회
-    Page<UserBook> findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc
-        (Long userId, Pageable pageable);
-
     // 문제 ID로 삭제
     void deleteByQuestionId(Question question);
 }

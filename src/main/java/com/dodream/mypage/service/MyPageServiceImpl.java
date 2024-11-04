@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.dodream.book.domain.BookResponse;
 import com.dodream.book.entity.Book;
-import com.dodream.book.entity.UserBook;
+import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
@@ -15,12 +15,9 @@ import com.dodream.user.repository.UserRepository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +42,7 @@ public class MyPageServiceImpl implements MyPageService {
     private final AmazonS3 amazonS3;
     private static String profileName;
     private static String uuidString;
+    private final BookRepository bookRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -64,25 +62,21 @@ public class MyPageServiceImpl implements MyPageService {
     @Transactional(readOnly = true)
     public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
         // 사용자의 문제집 리스트
-        Page<UserBook> userBooksPage = userBookRepository
-                .findByUserIdAndBookSecretFalseOrderByBookCreatedAtDesc(userId, pageable);
+        Page<Book> userBooksPage = bookRepository
+            .findByUserIdAndSecretFalseOrderByCreatedAtDesc(userId, pageable);
 
-        // 모든 BookResponse 생성 (중복 제거 로직 제거)
         List<BookResponse> bookResponses = userBooksPage.getContent().stream()
-                .map(userBook -> {
-                    Book book = userBook.getBook();
-                    return BookResponse.builder()
-                            .id(book.getId())
-                            .title(book.getTitle())
-                            .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                            .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
-                            .category(book.getCategory().name())
-                            .createdAt(book.getCreatedAt())
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        // 중복 제거 없이 반환
+            .map(book -> {
+                return BookResponse.builder()
+                    .id(book.getId())
+                    .title(book.getTitle())
+                    .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                    .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+                    .category(book.getCategory().name())
+                    .createdAt(book.getCreatedAt())
+                    .build();
+            })
+            .collect(Collectors.toList());
         return new PageImpl<>(bookResponses, pageable, userBooksPage.getTotalElements());
     }
 

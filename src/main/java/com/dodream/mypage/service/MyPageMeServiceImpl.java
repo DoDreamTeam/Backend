@@ -7,14 +7,12 @@ import com.dodream.book.entity.BookComment;
 import com.dodream.book.entity.BookCommentLike;
 import com.dodream.book.entity.Bookmark;
 import com.dodream.book.entity.UserAnswer;
-import com.dodream.book.entity.UserBook;
 import com.dodream.book.enumtype.Evaluation;
 import com.dodream.book.repository.BookCommentLikeRepository;
 import com.dodream.book.repository.BookCommentRepository;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserAnswerRepository;
-import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.mypage.domain.BookCommentLikeResponse;
@@ -31,7 +29,6 @@ import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,7 +42,6 @@ import org.springframework.stereotype.Service;
 public class MyPageMeServiceImpl implements MyPageMeService {
 
     private final UserRepository userRepository;
-    private final UserBookRepository userBookRepository;
     private final BookmarkRepository bookmarkRepository;
     private final BookRepository bookRepository;
     private final BookCommentRepository bookCommentRepository;
@@ -67,7 +63,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     @Override
     public Page<BookResponse> getUserBooksAll(Pageable pageable) {
         return getBookResponse(
-            userBookRepository.findByUserIdOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(),
+            bookRepository.findByUserIdOrderByCreatedAtDesc(getAuthenticatedUser().getId(),
                 pageable), pageable);
     }
 
@@ -253,20 +249,19 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     }
 
     private Page<BookResponse> getBookResponse(Page<?> page, Pageable pageable) {
-        // 모든 BookResponse 생성 (중복 제거 로직 제거)
+        // 모든 BookResponse 생성
         List<BookResponse> bookResponses = page.getContent().stream()
-                .map(item -> {
-                    Book book;
-                    if (item instanceof UserBook) {
-                        book = ((UserBook) item).getBook();
-                    } else {
-                        book = ((Bookmark) item).getBook();
-                    }
-                    return convertToBookResponse(book);
-                })
-                .collect(Collectors.toList());
+            .map(item -> {
+                Book book;
+                if (item instanceof Bookmark) {
+                    book = ((Bookmark) item).getBook();
+                } else {
+                    book = (Book) item;
+                }
+                return convertToBookResponse(book);
+            })
+            .collect(Collectors.toList());
 
-        // 중복 제거 없이 반환
         return new PageImpl<>(bookResponses, pageable, page.getTotalElements());
     }
 
@@ -284,8 +279,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     private GetUserAnswerResponse mapToResponse(UserAnswer answer) {
         return GetUserAnswerResponse.builder()
             .id(answer.getId())
-                .questionId(answer.getQuestion().getId())
-                .bookId(answer.getQuestion().getBook().getId())
+            .questionId(answer.getQuestion().getId())
+            .bookId(answer.getQuestion().getBook().getId())
             .title(answer.getQuestion().getQuestion())
             .createdAt(answer.getCreatedAt())
             .evaluation(answer.getEvaluation().getEvaluation())
