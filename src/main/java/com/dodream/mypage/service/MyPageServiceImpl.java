@@ -75,9 +75,11 @@ public class MyPageServiceImpl implements MyPageService {
                     .id(book.getId())
                     .title(book.getTitle())
                     .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                    .userId(book.getUser().getId())
                     .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
                     .category(book.getCategory().name())
                     .createdAt(book.getCreatedAt())
+                    .userProfile(book.getUser().getProfileImage())
                     .build();
             })
             .collect(Collectors.toList());
