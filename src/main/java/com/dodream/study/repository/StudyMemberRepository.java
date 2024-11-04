@@ -27,7 +27,7 @@ public interface StudyMemberRepository extends JpaRepository<StudyMember, Long> 
         "JOIN sm.study s " +
         "WHERE sm.user = :user " +
         "AND sm.role IN :roles")
-    Page<StudyResponse> findByUserAndRoleIn(Pageable pageable, User user, List<RoleEnum> roles);
+    Page<StudyResponse> findByUserAndRoleIn(Pageable pageable, @Param("user") User user, @Param("roles") List<RoleEnum> roles);
 
     Optional<StudyMember> findByUserIdAndStudyId(Long userId, Long studyId);
 
