@@ -26,5 +26,5 @@ public interface QueCommentLikeRepository extends JpaRepository<QueCommentLike, 
     Page<QueCommentLike> findByUserIdAndIsDeletedFalseOrderByQuecomment_CreatedAtDesc(Long userId,
         Pageable pageable);
 
-    boolean existsByUserIdAndQuecommentIdAndIsDeletedFalse(Long userId, QueComment queComment);
+    boolean existsByUserIdAndQuecommentAndIsDeletedFalse(Long userId, QueComment queComment);
 }

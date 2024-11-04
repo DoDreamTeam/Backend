@@ -2,6 +2,8 @@ package com.dodream.study.service;
 
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.notifications.enumtype.NotifyType;
+import com.dodream.notifications.service.NotificationService;
 import com.dodream.study.domain.StudyMemberRequest;
 import com.dodream.study.domain.StudyMemberResponse;
 import com.dodream.study.domain.StudyMemberUpdateRequest;
@@ -29,6 +31,7 @@ public class StudyMemberServiceImpl implements StudyMemberService {
 
     private final StudyMemberRepository studyMemberRepository;
     private final StudyRepository studyRepository;
+    private final NotificationService notificationService;
 
     // 스터디 회원 조회 (ROLE_LEADER 만 가능 - ROLE_MEMBER 만 조회되어야 함)
     @Override
@@ -91,6 +94,9 @@ public class StudyMemberServiceImpl implements StudyMemberService {
         StudyMember studyMember = studyMemberRequest.toEntity(user, study);
         StudyMember savedStudyMember = studyMemberRepository.save(studyMember);
 
+        // 가입 신청 알림
+        notifyStudyLeaderOfJoinRequest(study, user);
+
         return StudyMemberResponse.builder()
             .id(savedStudyMember.getId())
             .username(user.getUsername())
@@ -105,7 +111,16 @@ public class StudyMemberServiceImpl implements StudyMemberService {
         StudyMember studyMember = getStudyMember(memberId);
         checkUserRole(studyMember.getStudy().getId(), user);
 
+        // 현재 role이 ROLE_WAITING인지 확인 + update할 role이 ROLE_MEMBER인지 확인
+        boolean isRoleUpdatedToMember = studyMember.getRole() == RoleEnum.ROLE_WAITING
+            && studyMemberUpdateRequest.getRole() == RoleEnum.ROLE_MEMBER;
+
         studyMember.updateStudyMember(studyMemberUpdateRequest.getRole());
+
+        // 가입 승인 알림
+        if (isRoleUpdatedToMember) {
+            notifyRoleChange(studyMember);
+        }
 
         return StudyMemberUpdateResponse.builder()
             .id(studyMember.getId())
@@ -114,11 +129,67 @@ public class StudyMemberServiceImpl implements StudyMemberService {
             .build();
     }
 
+    private void notifyRoleChange(StudyMember studyMember) {
+        String content = studyMember.getUser().getUsername() + "님의 " +
+            studyMember.getStudy().getTitle() + " 의 가입 신청이 완료되었습니다.";
+        String url = "/api/study/" + studyMember.getStudy().getId() + "/members/" + studyMember.getId();
+        notificationService.notifyDoDreamClient(
+            studyMember.getUser(),
+            NotifyType.STUDY_APPROVAL,
+            content,
+            url,
+            studyMember.getUser().getUsername()
+        );
+    }
+
+    // 스터디 방장이 가입 신청 승인
+    private void notifyStudyLeaderOfJoinRequest(Study study, User applicant) {
+        StudyMember leader = studyMemberRepository.findLeaderByStudyId(study.getId())
+            .orElseThrow(() -> new BaseException(ErrorCode.LEADER_NOT_FOUND));
+
+        // 알림 내용 전송
+        String content = applicant.getUsername() + "님이 " + study.getTitle() +
+            " 에 가입 신청을 하였습니다.";
+        String url = "/api/study/" + study.getId() + "/members";
+
+        // 스터디 방장에게 알림 전송
+        notificationService.notifyDoDreamClient(leader.getUser(),
+            NotifyType.STUDY_APPLY, content, url, leader.getUser().getUsername());
+    }
+
     // ROLE이 ROLE_WATING 또는 ROLE_MEMBER인 경우만 삭제 (ROLE_LEADER 삭제 X)
     @Override
+    @Transactional
     public void deleteStudyMember(User user, Long memberId) {
         StudyMember studyMember = getStudyMember(memberId);
         checkUserRole(studyMember.getStudy().getId(), user);
+
+        // ROLE이 ROLE_WAITING or ROLE_MEMBER 일 때 알림 전송
+        if (studyMember.getRole().equals(RoleEnum.ROLE_WAITING)) {
+            String content
+                = studyMember.getUser().getUsername() + "님의 "
+                + studyMember.getStudy().getTitle() + " 가입 신청이 거절되었습니다.";
+            String url = "/api/study/" + studyMember.getStudy().getId() + "/members/" + studyMember.getId();
+            notificationService.notifyDoDreamClient(
+                studyMember.getUser(),
+                NotifyType.STUDY_REFUSAL,
+                content,
+                url,
+                user.getUsername()
+            );
+        } else if (studyMember.getRole().equals(RoleEnum.ROLE_MEMBER)) {
+            String content
+                = studyMember.getUser().getUsername() + "님이 "
+                + studyMember.getStudy().getTitle() + " 에서 탈퇴했습니다.";
+            String url = "/api/study/" + studyMember.getStudy().getId() + "/members/" + studyMember.getId();
+            notificationService.notifyDoDreamClient(
+                studyMember.getUser(),
+                NotifyType.STUDY_MEMBER_WITHDRAW,
+                content,
+                url,
+                user.getUsername()
+            );
+        }
 
         studyMemberRepository.delete(studyMember);
     }
@@ -146,14 +217,32 @@ public class StudyMemberServiceImpl implements StudyMemberService {
         Study study = currentLeader.getStudy();
         study.setUser(newLeader.getUser());
 
-        // study의 user_id를 newLeaderId로 변경
+        // 기존 study의 user_id를 newLeaderId로 변경 (기존 방장 id -> 새로운 방장 id)
         studyRepository.save(study);
+
+        // 알림 전송
+        notifyNewLeader(newLeader);
 
         return StudyMemberUpdateResponse.builder()
             .id(newLeader.getId())
             .roleEnum(newLeader.getRole())
             .joinDate(LocalDateTime.now())
             .build();
+    }
+
+    // 새로운 방장 변경
+    private void notifyNewLeader(StudyMember newLeader) {
+        String content = newLeader.getUser().getUsername() + " 님이 "
+            + newLeader.getStudy().getTitle() +
+            " 의 방장이 되었습니다. " ;
+        String url = "/api/study/leader/currentLeaderId/" + newLeader.getStudy().getId();
+        notificationService.notifyDoDreamClient(
+            newLeader.getUser(),
+            NotifyType.LEADER_CHANGE,
+            content,
+            url,
+            newLeader.getUser().getUsername()
+        );
     }
 
     private void checkUserRole(Long studyId, User user) {

@@ -2,6 +2,8 @@ package com.dodream.study.service;
 
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
+import com.dodream.notifications.enumtype.NotifyType;
+import com.dodream.notifications.service.NotificationService;
 import com.dodream.study.domain.QueCommentRequest;
 import com.dodream.study.domain.QueCommentResponse;
 import com.dodream.study.domain.QueCommentUpdateRequest;
@@ -30,8 +32,10 @@ public class QueCommentServiceImpl implements QueCommentService {
     private final QueCommentRepository queCommentRepository;
     private final QueCommentLikeRepository queCommentLikeRepository;
     private final StudyUserAnswerRepository studyUserAnswerRepository;
+    private final NotificationService notificationService;
 
     @Override
+    @Transactional
     public QueCommentResponse addQueComment(Long id, User user, QueCommentRequest queCommentRequest) {
 
         StudyUserAnswer studyAnswer = studyUserAnswerRepository.findById(id)
@@ -48,8 +52,25 @@ public class QueCommentServiceImpl implements QueCommentService {
 
         // 댓글 좋아요 여부
         boolean isLiked = (user != null)
-            && queCommentLikeRepository.existsByUserIdAndQuecommentIdAndIsDeletedFalse(
+            && queCommentLikeRepository.existsByUserIdAndQuecommentAndIsDeletedFalse(
             user.getId(), queComment);
+
+        // 스터디 문제 댓글 알림 - 스터디 방장에게 전송
+        User studyLeader = studyAnswer.getStudy().getUser();
+        String content =
+            savedComment.getUser().getUsername() + "님이 "
+                + studyAnswer.getStudy().getTitle() + "의 "
+                + studyAnswer.getUserAnswer().getQuestion() + "에 "
+                + "댓글을 남겼습니다.";
+        String url = "/api/study/answer/" + studyAnswer.getId() + "/comments";
+
+        notificationService.notifyDoDreamClient(
+            studyLeader,
+            NotifyType.QUESTION_COMMENT,
+            content,
+            url,
+            studyLeader.getUsername()
+        );
 
         return QueCommentResponse.builder()
                 .id(savedComment.getId())
@@ -82,7 +103,7 @@ public class QueCommentServiceImpl implements QueCommentService {
         List<QueCommentResponse> responses = contents.stream()
             .map(queComment -> {
                 boolean isLiked = (user != null)
-                    && queCommentLikeRepository.existsByUserIdAndQuecommentIdAndIsDeletedFalse(
+                    && queCommentLikeRepository.existsByUserIdAndQuecommentAndIsDeletedFalse(
                     user.getId(), queComment);
 
                 return QueCommentResponse.builder()
@@ -101,6 +122,7 @@ public class QueCommentServiceImpl implements QueCommentService {
     }
 
     @Override
+    @Transactional
     public void deleteQueComment(Long commentId, User user) {
         QueComment queComment = queCommentRepository.findById(commentId)
                 .orElseThrow(() -> new BaseException(ErrorCode.QUE_COMMENT_NOT_FOUND));
@@ -112,6 +134,7 @@ public class QueCommentServiceImpl implements QueCommentService {
     }
 
     @Override
+    @Transactional
     public QueCommentUpdateResponse updateQueComment(Long commentId, User user, QueCommentUpdateRequest queCommentUpdateRequest) {
         // 스터디 문제 댓글 정보 조회
         QueComment queComment = queCommentRepository.findById(commentId)
