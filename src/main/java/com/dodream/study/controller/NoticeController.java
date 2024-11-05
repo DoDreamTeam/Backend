@@ -26,12 +26,12 @@ public class NoticeController {
     private final NoticeService noticeService;
 
     // 공지사항 추가
-    @PostMapping("/study/{noticeId}")
+    @PostMapping("/study/{studyId}")
     public ResponseEntity<NoticeResponse> createNotice(
-        @PathVariable Long noticeId,
+        @PathVariable Long studyId,
         @RequestBody NoticeRequest noticeRequest,
         @AuthenticationPrincipal User user) {
-        NoticeResponse noticeResponse = noticeService.createNotice(noticeId, noticeRequest, user);
+        NoticeResponse noticeResponse = noticeService.createNotice(studyId, noticeRequest, user);
         return ResponseEntity.ok(noticeResponse);
     }
 
