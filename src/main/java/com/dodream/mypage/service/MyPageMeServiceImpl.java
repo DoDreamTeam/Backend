@@ -70,7 +70,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     @Override
     public Page<BookResponse> getUserBookmarks(Pageable pageable) {
         return getBookResponse(
-            bookmarkRepository.findByUserIdOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(),
+            bookmarkRepository.findByUserIdAndIsDeletedFalseOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(),
                 pageable), pageable);
     }
 
