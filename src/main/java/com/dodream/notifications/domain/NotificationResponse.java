@@ -14,6 +14,7 @@ public class NotificationResponse {
     private NotifyType notifyType;
     private String toName;
     private String content;
+    private boolean isRead;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -26,6 +27,7 @@ public class NotificationResponse {
             .toName(notification.getToName())
             .content(notification.getContent())
             .createdAt(notification.getCreatedAt())
+            .isRead(notification.isRead())
             .url(notification.getUrl())
             .build();
     }
