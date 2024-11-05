@@ -35,7 +35,7 @@ public class StudyUserAnswer {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id", nullable = false)
+    @JoinColumn(name = "user_answer_id")
     private UserAnswer userAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)
