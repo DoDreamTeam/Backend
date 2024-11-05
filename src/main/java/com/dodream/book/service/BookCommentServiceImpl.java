@@ -101,7 +101,7 @@ public class BookCommentServiceImpl implements BookCommentService {
             savedComment.getUser().getUsername() + "님이 "
                 + book.getTitle() + "에 "
                 + "댓글을 남겼습니다.";
-        String url = "/api/books/" + savedComment.getId() + "/comments";
+        String url = "/api/books/" + savedComment.getBook().getId() + "/comments";
 
         notificationService.notifyDoDreamClient(
             bookCreator,
