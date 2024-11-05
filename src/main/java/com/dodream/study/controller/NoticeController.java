@@ -20,25 +20,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/notice")
+@RequestMapping("/api/study")
 public class NoticeController {
 
     private final NoticeService noticeService;
 
     // 공지사항 추가
-    @PostMapping("/study/{studyId}")
+    @PostMapping("/{id}/notice")
     public ResponseEntity<NoticeResponse> createNotice(
-        @PathVariable Long studyId,
+        @PathVariable("id") Long id,
         @RequestBody NoticeRequest noticeRequest,
         @AuthenticationPrincipal User user) {
-        NoticeResponse noticeResponse = noticeService.createNotice(studyId, noticeRequest, user);
+        NoticeResponse noticeResponse = noticeService.createNotice(id, noticeRequest, user);
         return ResponseEntity.ok(noticeResponse);
     }
 
     // 공지사항 수정
-    @PutMapping("/{noticeId}")
+    @PutMapping("/{id}/notice/{noticeId}")
     public ResponseEntity<UpdateNoticeResponse> updateNotice(
-        @PathVariable Long noticeId, @AuthenticationPrincipal User user,
+        @PathVariable("noticeId") Long noticeId, @AuthenticationPrincipal User user,
         @RequestBody UpdateNoticeRequest updateNoticeRequest) {
         UpdateNoticeResponse updateNoticeResponse
             = noticeService.updateNotice(noticeId, updateNoticeRequest, user);
@@ -46,19 +46,18 @@ public class NoticeController {
     }
 
     // 공지사항 삭제
-    @DeleteMapping("/{noticeId}")
+    @DeleteMapping("/{id}/notice/{noticeId}")
     public ResponseEntity<UpdateNoticeResponse> deleteNotice(
-        @PathVariable Long noticeId, @AuthenticationPrincipal User user) {
-        UpdateNoticeResponse updateNoticeResponse = noticeService.deleteNotice(noticeId, user);
+        @PathVariable("id") Long studyId, @PathVariable("noticeId") Long noticeId, @AuthenticationPrincipal User user) {
+        UpdateNoticeResponse updateNoticeResponse = noticeService.deleteNotice(studyId, noticeId, user);
         return ResponseEntity.ok(updateNoticeResponse);
     }
 
     // 공지사항 조회
-    @GetMapping("/study/{studyId}/notice/{noticeId}")
+    @GetMapping("/{id}/notice/{noticeId}")
     public ResponseEntity<NoticeResponse> getNoticeByStudyIdAndNoticeId(
-        @PathVariable Long studyId, @PathVariable Long noticeId) {
-        NoticeResponse noticeResponse = noticeService.getNoticeByStudyIdAndNoticeId(studyId,
-            noticeId);
+        @PathVariable("id") Long studyId, @PathVariable("noticeId") Long noticeId, @AuthenticationPrincipal User user) {
+        NoticeResponse noticeResponse = noticeService.getNoticeByStudyIdAndNoticeId(studyId, noticeId, user);
         return ResponseEntity.ok(noticeResponse);
     }
 

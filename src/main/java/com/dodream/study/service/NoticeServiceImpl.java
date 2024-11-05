@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 @RequiredArgsConstructor
@@ -38,17 +39,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         // 공지사항이 이미 존재한다면 (soft delete)
         if (existingNotice.isPresent()) {
-            Notice noticeToUpdate = existingNotice.get();
-            noticeToUpdate.setDeleted(false);
-            noticeToUpdate.updateNotice(noticeRequest.getContent());
-
-            return NoticeResponse.builder()
-                .id(noticeToUpdate.getId())
-                .content(noticeToUpdate.getContent())
-                .createdAt(noticeToUpdate.getCreatedAt())
-                .updatedAt(noticeToUpdate.getUpdatedAt())
-                .studyId(study.getId())
-                .build();
+            return updateExistingNotice(existingNotice.get(), noticeRequest);
         }
 
         checkUserRole(studyId, user);
@@ -56,25 +47,39 @@ public class NoticeServiceImpl implements NoticeService {
         Notice notice = noticeRequest.toEntity(study);
         Notice savedNotice = noticeRepository.save(notice);
 
+        return buildNoticeResponse(savedNotice, study.getId());
+    }
+
+    private NoticeResponse updateExistingNotice(Notice noticeToUpdate, NoticeRequest noticeRequest) {
+        noticeToUpdate.setDeleted(false);
+        noticeToUpdate.updateNotice(noticeRequest.getContent());
+
+        return buildNoticeResponse(noticeToUpdate, noticeToUpdate.getStudy().getId());
+    }
+
+    private NoticeResponse buildNoticeResponse(Notice notice, Long studyId) {
         return NoticeResponse.builder()
-            .id(savedNotice.getId())
-            .content(savedNotice.getContent())
-            .createdAt(savedNotice.getCreatedAt())
-            .updatedAt(savedNotice.getUpdatedAt())
-            .studyId(study.getId())
+            .id(notice.getId())
+            .content(notice.getContent())
+            .createdAt(notice.getCreatedAt())
+            .updatedAt(notice.getUpdatedAt())
+            .studyId(studyId)
             .build();
     }
 
     @Override
     @Transactional
-    public UpdateNoticeResponse updateNotice(Long noticeId,
-        UpdateNoticeRequest updateNoticeRequest, User user) {
+    public UpdateNoticeResponse updateNotice(Long noticeId, UpdateNoticeRequest updateNoticeRequest, User user) {
         Notice notice = noticeRepository.findById(noticeId)
             .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
 
         checkUserRole(notice.getStudy().getId(), user);
         notice.updateNotice(updateNoticeRequest.getContent());
 
+        return buildUpdateNoticeResponse(notice);
+    }
+
+    private UpdateNoticeResponse buildUpdateNoticeResponse(Notice notice) {
         return UpdateNoticeResponse.builder()
             .id(notice.getId())
             .content(notice.getContent())
@@ -85,11 +90,12 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     @Transactional
-    public UpdateNoticeResponse deleteNotice(Long noticeId, User user) {
+    public UpdateNoticeResponse deleteNotice(Long studyId, Long noticeId, User user) {
         Notice notice = noticeRepository.findById(noticeId)
             .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
 
-        checkUserRole(notice.getStudy().getId(), user);
+        checkUserRole(studyId, user);
+
         notice.updateNotice("");
         notice.setDeleted(true);
 
@@ -104,7 +110,8 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional(readOnly = true)
 //    @Cacheable(cacheNames = "getNotice")
-    public NoticeResponse getNoticeByStudyIdAndNoticeId(Long studyId, Long noticeId) {
+    public NoticeResponse getNoticeByStudyIdAndNoticeId(Long studyId, Long noticeId, User user) {
+        checkUserRole(studyId, user);
         Notice notice = noticeRepository.findByStudyIdAndNoticeId(studyId, noticeId)
             .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
 
@@ -118,8 +125,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     private void checkUserRole(Long studyId, User user) {
-        Optional<RoleEnum> role
-            = studyMemberRepository.findRoleByStudyIdAndUserId(studyId, user.getId());
+        Optional<RoleEnum> role = studyMemberRepository.findRoleByStudyIdAndUserId(studyId, user.getId());
 
         // 권한이 ROLE_LEADER 일 때 수정, 삭제 가능!
         if (role.isEmpty() || role.get() != RoleEnum.ROLE_LEADER) {
