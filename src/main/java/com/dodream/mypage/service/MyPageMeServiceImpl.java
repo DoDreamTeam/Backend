@@ -240,6 +240,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                 return QueCommentLikeResponse.builder()
                     .commentId(queComment.getId())
                     .comment(queComment.getContent())
+                    .studyAnswerId(queComment.getStudyAnswer().getId())
+                    .studyId(queComment.getStudyAnswer().getStudy().getId())
                     .userId(queComment.getUser() != null ? queComment.getUser().getId() : null)
                     .userName(
                         queComment.getUser() != null ? queComment.getUser().getUsername() : null)
@@ -288,6 +290,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
             .title(answer.getQuestion().getQuestion())
             .createdAt(answer.getCreatedAt())
             .evaluation(answer.getEvaluation().getEvaluation())
+            .userId(answer.getUser().getId())
             .build();
     }
 

@@ -18,4 +18,5 @@ public class QueCommentLikeResponse {
     private String userName; // 사용자 이름
     private LocalDateTime createdAt; // 생성날짜
     private Long studyAnswerId;
+    private Long studyId;
 }

@@ -18,4 +18,5 @@ public class GetUserAnswerResponse {
     private Long bookId;
     private String evaluation;
     private LocalDateTime createdAt;
+    private Long userId;
 }
