@@ -31,6 +31,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
     private final NoticeRepository noticeRepository;
 
     @Override
+    @Transactional
     public NoticeCommentResponse addNoticeComment(Long id, User user,
         NoticeCommentRequest noticeCommentRequest) {
 

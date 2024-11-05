@@ -86,7 +86,7 @@ public class QueCommentServiceImpl implements QueCommentService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "getUserAnswer")
+//    @Cacheable(cacheNames = "getUserAnswer")
     public Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id,
         User user, boolean isSortByLikes) {
 

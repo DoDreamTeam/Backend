@@ -43,7 +43,7 @@ public class StudyServiceImpl implements StudyService {
     // 메인 페이지 스터디 조회 (12개씩) - 비회원 + 회원 포함
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "getStudyList")
+//    @Cacheable(cacheNames = "getStudyList")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
         Page<StudyResponse> studyList;
 
@@ -70,7 +70,7 @@ public class StudyServiceImpl implements StudyService {
     // 검색어 (제목 + 내용 or 작성자) 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "searchStudy")
+//    @Cacheable(cacheNames = "searchStudy")
     public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, User loginedUser, String keyword) {
         try {
             Page<StudyResponse> studyList =
@@ -149,7 +149,7 @@ public class StudyServiceImpl implements StudyService {
     // StudyMemberRepository를 통해 ROLE_MEMBER 또는 ROLE_LEADER에 해당하는 스터디 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "myStudy")
+//    @Cacheable(cacheNames = "myStudy")
     public Page<StudyResponse> getMyStudyList(Pageable pageable, User user) {
         Page<StudyResponse> myStudyList = studyMemberRepository.findByUserAndRoleIn(pageable, user,
             List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER));
@@ -171,7 +171,7 @@ public class StudyServiceImpl implements StudyService {
     // 인기 스터디 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "popularStudy")
+//    @Cacheable(cacheNames = "popularStudy")
     public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
         Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 
@@ -191,7 +191,7 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "study")
+//    @Cacheable(cacheNames = "study")
     public StudyResponse findStudy(Long id, User user) {
         Study study = studyRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));

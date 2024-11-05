@@ -36,7 +36,7 @@ public class StudyMemberServiceImpl implements StudyMemberService {
     // 스터디 회원 조회 (ROLE_LEADER 만 가능 - ROLE_MEMBER 만 조회되어야 함)
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "getStudyMembers")
+//    @Cacheable(cacheNames = "getStudyMembers")
     public Page<StudyMemberResponse> getStudyMembers(Long studyId, User user, Pageable pageable) {
         checkUserRole(studyId, user);
         Page<StudyMember> studyMembers =
