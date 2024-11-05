@@ -62,16 +62,18 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     @Override
     public Page<BookResponse> getUserBooksAll(Pageable pageable) {
         return getBookResponse(
-            bookRepository.findByUserIdOrderByCreatedAtDesc(getAuthenticatedUser().getId(),
-                pageable), pageable);
+            bookRepository.findByUserIdOrderByCreatedAtDesc(getAuthenticatedUser().getId(), pageable),
+            pageable
+        );
     }
 
     // 북마크 한 문제집 목록 가져오기
     @Override
     public Page<BookResponse> getUserBookmarks(Pageable pageable) {
         return getBookResponse(
-            bookmarkRepository.findByUserIdAndIsDeletedFalseOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(),
-                pageable), pageable);
+            bookmarkRepository.findByUserIdAndIsDeletedFalseOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(), pageable),
+            pageable
+        );
     }
 
     // 문제집 공개 비공개 설정
@@ -101,7 +103,6 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     // 사용자의 문제집 댓글 목록 조회
     @Override
     public Page<BookCommentResponse> getUserComment(Pageable pageable) {
-
         User user = getAuthenticatedUser();
 
         Page<BookComment> comments = bookCommentRepository.findByUserIdOrderByCreatedAtDesc(
@@ -119,7 +120,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                 .username(comment.getUser() != null ? comment.getUser().getUsername() : null)
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
-                .build()).collect(Collectors.toList());
+                .build())
+            .collect(Collectors.toList());
         return new PageImpl<>(responses, pageable, comments.getTotalElements());
     }
 
@@ -145,7 +147,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                     .userName(comment.getUser() != null ? comment.getUser().getUsername() : null)
                     .createdAt(comment.getCreatedAt())
                     .build();
-            }).collect(Collectors.toList());
+            })
+            .collect(Collectors.toList());
         return new PageImpl<>(responses, pageable, commentLikes.getTotalElements());
     }
 
@@ -167,10 +170,9 @@ public class MyPageMeServiceImpl implements MyPageMeService {
         return new PageImpl<>(responses, pageable, userAnswers.getTotalElements());
     }
 
-    // 사용자가 푼 문제 목록 (애매해요,모르겠어요)
+    // 사용자가 푼 문제 목록 (애매해요, 모르겠어요)
     @Override
-    public Page<GetUserAnswerResponse> getUserAnswerByEvaluation(String evaluation,
-        Pageable pageable) {
+    public Page<GetUserAnswerResponse> getUserAnswerByEvaluation(String evaluation, Pageable pageable) {
         User user = getAuthenticatedUser();
 
         Evaluation evaluationEnum;
@@ -181,8 +183,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
         }
 
         Page<UserAnswer> userAnswers = userAnswerRepository
-            .findByUserIdAndEvaluationOrderByCreatedAtDesc(
-                user.getId(), evaluationEnum, pageable);
+            .findByUserIdAndEvaluationOrderByCreatedAtDesc(user.getId(), evaluationEnum, pageable);
 
         if (userAnswers.isEmpty()) {
             throw new BaseException(ErrorCode.USER_ANSWER_NOT_FOUND);
@@ -210,7 +211,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
         List<QueCommentResponse> responses = queComment.stream()
             .map(comment -> QueCommentResponse.builder()
                 .id(comment.getId())
-                .studyAnswerId(comment.getStudyAnswer().getId()) // 이부분 push  해야함
+                .studyAnswerId(comment.getStudyAnswer().getId())
                 .comment(comment.getContent())
                 .studyId(comment.getStudyAnswer().getStudy().getId())
                 .userId(comment.getUser() != null ? comment.getUser().getId() : null)
@@ -218,7 +219,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                 .studyTitle(comment.getStudyAnswer().getStudy().getTitle())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
-                .build()).collect(Collectors.toList());
+                .build())
+            .collect(Collectors.toList());
         return new PageImpl<>(responses, pageable, queComment.getTotalElements());
     }
 
@@ -226,8 +228,8 @@ public class MyPageMeServiceImpl implements MyPageMeService {
     @Override
     public Page<QueCommentLikeResponse> getStudyCommentLike(Pageable pageable) {
         User user = getAuthenticatedUser();
-        Page<QueCommentLike> queCommentLikes = queCommentLikeRepository.
-            findByUserIdAndIsDeletedFalseOrderByQuecomment_CreatedAtDesc(
+        Page<QueCommentLike> queCommentLikes = queCommentLikeRepository
+            .findByUserIdAndIsDeletedFalseOrderByQuecomment_CreatedAtDesc(
                 user.getId(), pageable);
 
         if (queCommentLikes.isEmpty()) {
@@ -243,11 +245,11 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                     .studyAnswerId(queComment.getStudyAnswer().getId())
                     .studyId(queComment.getStudyAnswer().getStudy().getId())
                     .userId(queComment.getUser() != null ? queComment.getUser().getId() : null)
-                    .userName(
-                        queComment.getUser() != null ? queComment.getUser().getUsername() : null)
+                    .userName(queComment.getUser() != null ? queComment.getUser().getUsername() : null)
                     .createdAt(queComment.getCreatedAt())
                     .build();
-            }).collect(Collectors.toList());
+            })
+            .collect(Collectors.toList());
         return new PageImpl<>(responses, pageable, queCommentLikes.getTotalElements());
     }
 
@@ -261,14 +263,16 @@ public class MyPageMeServiceImpl implements MyPageMeService {
                 } else {
                     book = (Book) item;
                 }
-                return convertToBookResponse(book);
+                return convertToBookResponse(book, getAuthenticatedUser());
             })
             .collect(Collectors.toList());
 
         return new PageImpl<>(bookResponses, pageable, page.getTotalElements());
     }
 
-    private BookResponse convertToBookResponse(Book book) {
+    private BookResponse convertToBookResponse(Book book, User user) {
+        boolean isBookmarked = (user != null) && bookmarkRepository.existsByUserIdAndBookIdAndIsDeletedFalse(user.getId(), book.getId());
+
         return BookResponse.builder()
             .id(book.getId())
             .title(book.getTitle())
@@ -279,6 +283,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
             .category(book.getCategory().name())
             .createdAt(book.getCreatedAt())
             .secret(book.isSecret())
+            .isBookmarked(isBookmarked)
             .build();
     }
 
