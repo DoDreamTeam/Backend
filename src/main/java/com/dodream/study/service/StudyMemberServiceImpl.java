@@ -51,6 +51,7 @@ public class StudyMemberServiceImpl implements StudyMemberService {
         Page<StudyMember> studyMembers) {
         return studyMembers.stream()
             .map(studyMember -> StudyMemberResponse.builder()
+                .id(studyMember.getId())
                 .username(studyMember.getUser().getUsername())
                 .joinDate(studyMember.getJoinDate())
                 .profileImage(studyMember.getUser().getProfileImage())
