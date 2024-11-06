@@ -3,7 +3,6 @@ package com.dodream.study.service;
 import com.dodream.common.enumtype.Category;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
-import com.dodream.study.domain.StudyMemberResponse;
 import com.dodream.study.domain.StudyRequest;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.domain.StudyUpdateRequest;
@@ -14,6 +13,7 @@ import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.study.repository.StudyMemberRepository;
 import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
+import com.dodream.util.CustomPageImpl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +43,8 @@ public class StudyServiceImpl implements StudyService {
     // 메인 페이지 스터디 조회 (12개씩) - 비회원 + 회원 포함
     @Override
     @Transactional(readOnly = true)
-//    @Cacheable(cacheNames = "getStudyList")
+    @Cacheable(value = "studyList", key = "#loginedUser != null ? #loginedUser.id + '_' + "
+        + "#category : 'user_' + #category", unless = "#result.isEmpty()")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
         Page<StudyResponse> studyList;
 
@@ -64,13 +65,15 @@ public class StudyServiceImpl implements StudyService {
             );
         }
 
-        return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
+        return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
     }
 
     // 검색어 (제목 + 내용 or 작성자) 조회
     @Override
     @Transactional(readOnly = true)
-//    @Cacheable(cacheNames = "searchStudy")
+    @Cacheable(value = "studySearch",
+        key = "#keyword + '_' + (#loginedUser != null ? #loginedUser.id : 'guest')",
+        unless = "#result.isEmpty()")
     public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, User loginedUser, String keyword) {
         try {
             Page<StudyResponse> studyList =
@@ -83,7 +86,7 @@ public class StudyServiceImpl implements StudyService {
                 );
             }
 
-            return new PageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
+            return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.STUDY_SEARCH_NOT_FOUND);
         }
@@ -149,7 +152,7 @@ public class StudyServiceImpl implements StudyService {
     // StudyMemberRepository를 통해 ROLE_MEMBER 또는 ROLE_LEADER에 해당하는 스터디 조회
     @Override
     @Transactional(readOnly = true)
-//    @Cacheable(cacheNames = "myStudy")
+    @Cacheable(value = "myStudyList", key = "#user.id", unless = "#result.isEmpty()")
     public Page<StudyResponse> getMyStudyList(Pageable pageable, User user) {
         Page<StudyResponse> myStudyList = studyMemberRepository.findByUserAndRoleIn(pageable, user,
             List.of(RoleEnum.ROLE_MEMBER, RoleEnum.ROLE_LEADER));
@@ -165,13 +168,13 @@ public class StudyServiceImpl implements StudyService {
                 .build())
             .toList();
 
-        return new PageImpl<>(studyResponse, pageable, myStudyList.getTotalElements());
+        return new CustomPageImpl<>(studyResponse, pageable, myStudyList.getTotalElements());
     }
 
     // 인기 스터디 조회
     @Override
     @Transactional(readOnly = true)
-//    @Cacheable(cacheNames = "popularStudy")
+    @Cacheable(value = "popularStudyList")
     public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
         Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 
@@ -186,12 +189,11 @@ public class StudyServiceImpl implements StudyService {
                 .build())
             .toList();
 
-        return new PageImpl<>(studyResponse, pageable, studyList.getTotalElements());
+        return new CustomPageImpl<>(studyResponse, pageable, studyList.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
-//    @Cacheable(cacheNames = "study")
     public StudyResponse findStudy(Long id, User user) {
         Study study = studyRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
