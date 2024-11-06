@@ -208,6 +208,7 @@ public class StudyServiceImpl implements StudyService {
             .title(study.getTitle())
             .username(study.getUser() != null ? study.getUser().getUsername() : null)
             .profileImage(study.getUser() != null ? study.getUser().getProfileImage() : null)
+            .description((study.getDescription()))
             .build();
     }
 
