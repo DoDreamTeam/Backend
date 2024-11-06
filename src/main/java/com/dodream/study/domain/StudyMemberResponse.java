@@ -15,6 +15,7 @@ public class StudyMemberResponse {
 
     private Long id;
     private String username;
+    private Long userId;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)

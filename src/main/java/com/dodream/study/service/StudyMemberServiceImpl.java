@@ -54,6 +54,7 @@ public class StudyMemberServiceImpl implements StudyMemberService {
                 .username(studyMember.getUser().getUsername())
                 .joinDate(studyMember.getJoinDate())
                 .profileImage(studyMember.getUser().getProfileImage())
+                .userId(studyMember.getUser().getId())
                 .build())
             .toList();
     }
