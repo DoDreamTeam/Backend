@@ -16,6 +16,7 @@ import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -198,38 +199,39 @@ public class StudyMemberServiceImpl implements StudyMemberService {
 
     @Override
     @Transactional
-    public StudyMemberUpdateResponse transferLeader(User user, Long currentLeaderId,
-        Long newLeaderId) {
-        StudyMember currentLeader = getStudyMember(currentLeaderId);
-        if (!currentLeader.getRole().equals(RoleEnum.ROLE_LEADER)) {
-            throw new BaseException(ErrorCode.INVALID_CURRENT_LEADER);
+    public StudyMemberUpdateResponse transferLeader(User user, Long newLeaderId) {
+        StudyMember studyMember = getStudyMember(newLeaderId);        // newLeader도 같은 스터디 멤버이므로
+        Optional<StudyMember> optionalCurrentLeader = studyMemberRepository.findLeaderByStudyId(studyMember.getStudy().getId());
+        StudyMember currentLeader = optionalCurrentLeader.get();
+
+        if (!Objects.equals(currentLeader.getUser().getId(), user.getId())) {
+            // 리더 권한 여부 확인
+            throw new BaseException(ErrorCode.ACCESS_DENIED);
+        } else {
+            StudyMember newLeader = getStudyMember(newLeaderId);
+            if (!newLeader.getRole().equals(RoleEnum.ROLE_MEMBER)) {
+                throw new BaseException(ErrorCode.INVALID_NEW_LEADER);
+            }
+
+            // 기존 리더는 멤버로, 특정 멤버는 리더로 권한 변경
+            currentLeader.updateStudyMember(RoleEnum.ROLE_MEMBER);
+            newLeader.updateStudyMember(RoleEnum.ROLE_LEADER);
+
+            Study study = currentLeader.getStudy();
+            study.setUser(newLeader.getUser());
+
+            // 기존 study의 user_id를 newLeaderId로 변경 (기존 방장 id -> 새로운 방장 id)
+            studyRepository.save(study);
+
+            // 알림 전송
+            notifyNewLeader(newLeader);
+
+            return StudyMemberUpdateResponse.builder()
+                .id(newLeader.getId())
+                .roleEnum(newLeader.getRole())
+                .joinDate(LocalDateTime.now())
+                .build();
         }
-
-        // 리더 권한 여부 확인
-        checkUserRole(currentLeader.getStudy().getId(), user);
-        StudyMember newLeader = getStudyMember(newLeaderId);
-        if (!newLeader.getRole().equals(RoleEnum.ROLE_MEMBER)) {
-            throw new BaseException(ErrorCode.INVALID_NEW_LEADER);
-        }
-
-        // 기존 리더는 멤버로, 특정 멤버는 리더로 권한 변경
-        currentLeader.updateStudyMember(RoleEnum.ROLE_MEMBER);
-        newLeader.updateStudyMember(RoleEnum.ROLE_LEADER);
-
-        Study study = currentLeader.getStudy();
-        study.setUser(newLeader.getUser());
-
-        // 기존 study의 user_id를 newLeaderId로 변경 (기존 방장 id -> 새로운 방장 id)
-        studyRepository.save(study);
-
-        // 알림 전송
-        notifyNewLeader(newLeader);
-
-        return StudyMemberUpdateResponse.builder()
-            .id(newLeader.getId())
-            .roleEnum(newLeader.getRole())
-            .joinDate(LocalDateTime.now())
-            .build();
     }
 
     // 새로운 방장 변경

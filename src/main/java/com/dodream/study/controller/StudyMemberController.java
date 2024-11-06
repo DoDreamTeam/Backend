@@ -80,13 +80,12 @@ public class StudyMemberController {
 
     // 스터디 방장 변경 (기존 사용자 권한의 ROLE_LEADER를 ROLE_MEMBER 로 변경)
     // 변경된 방장의 권한을 ROLE_MEMBER에서 ROLE_LEADER로 변경
-    @PatchMapping("/leader/{currentLeaderId}/{newLeaderId}")
+    @PatchMapping("/leader/{newLeaderId}")
     public ResponseEntity<StudyMemberUpdateResponse> updateMemberLeader(
         @AuthenticationPrincipal User user,
-        @PathVariable("currentLeaderId") Long currentLeaderId,
         @PathVariable("newLeaderId") Long newLeaderId) {
         StudyMemberUpdateResponse studyMemberUpdateResponse =
-            studyMemberService.transferLeader(user, currentLeaderId, newLeaderId);
+            studyMemberService.transferLeader(user, newLeaderId);
         return ResponseEntity.ok(studyMemberUpdateResponse);
     }
 

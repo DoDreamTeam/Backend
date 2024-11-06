@@ -14,5 +14,5 @@ public interface StudyMemberService {
     StudyMemberResponse addStudyMember(User user, StudyMemberRequest studyMemberRequest);
     StudyMemberUpdateResponse updateStudyMember(User user, Long memberId, StudyMemberUpdateRequest studyMemberUpdateRequest);
     void deleteStudyMember(User user, Long memberId);
-    StudyMemberUpdateResponse transferLeader(User user, Long currentLeaderId, Long newLeaderId);
+    StudyMemberUpdateResponse transferLeader(User user, Long newLeaderId);
 }
