@@ -16,4 +16,6 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
     @Query("SELECT n FROM Notice n WHERE n.study.id = :studyId AND n.isDeleted = true AND n.content = ''")
     Optional<Notice> findDeletedEmptyContentNoticeByStudyId(@Param("studyId") Long studyId);
 
+    Optional<Notice> findByStudyId(Long studyId);
+
 }

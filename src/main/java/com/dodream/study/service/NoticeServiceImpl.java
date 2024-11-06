@@ -110,9 +110,9 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional(readOnly = true)
 //    @Cacheable(cacheNames = "getNotice")
-    public NoticeResponse getNoticeByStudyIdAndNoticeId(Long studyId, Long noticeId, User user) {
+    public NoticeResponse getNoticeByStudyId(Long studyId, User user) {
         checkUserRole(studyId, user);
-        Notice notice = noticeRepository.findByStudyIdAndNoticeId(studyId, noticeId)
+        Notice notice = noticeRepository.findByStudyId(studyId)
             .orElseThrow(() -> new BaseException(ErrorCode.NOTICE_NOT_FOUND));
 
         return NoticeResponse.builder()

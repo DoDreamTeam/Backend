@@ -54,10 +54,10 @@ public class NoticeController {
     }
 
     // 공지사항 조회
-    @GetMapping("/{id}/notice/{noticeId}")
+    @GetMapping("/{id}/notice")
     public ResponseEntity<NoticeResponse> getNoticeByStudyIdAndNoticeId(
-        @PathVariable("id") Long studyId, @PathVariable("noticeId") Long noticeId, @AuthenticationPrincipal User user) {
-        NoticeResponse noticeResponse = noticeService.getNoticeByStudyIdAndNoticeId(studyId, noticeId, user);
+        @PathVariable("id") Long studyId, @AuthenticationPrincipal User user) {
+        NoticeResponse noticeResponse = noticeService.getNoticeByStudyId(studyId, user);
         return ResponseEntity.ok(noticeResponse);
     }
 

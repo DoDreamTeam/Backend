@@ -176,7 +176,7 @@ class NoticeServiceTest {
         // then (행위에 대한 결과 검증)
         when(noticeRepository.findByStudyIdAndNoticeId(study.getId(), notice.getId())).thenReturn(Optional.of(notice));
 
-        NoticeResponse response = noticeService.getNoticeByStudyIdAndNoticeId(study.getId(), notice.getId(), user);
+        NoticeResponse response = noticeService.getNoticeByStudyId(study.getId(), user);
 
         assertThat(response.getContent()).isEqualTo("테스트 공지사항");
         verify(noticeRepository, times(1)).findByStudyIdAndNoticeId(study.getId(), notice.getId());
@@ -190,7 +190,7 @@ class NoticeServiceTest {
         when(noticeRepository.findByStudyIdAndNoticeId(study.getId(), notice.getId())).thenReturn(Optional.empty());
 
         BaseException exception = assertThrows(BaseException.class, () -> {
-            noticeService.getNoticeByStudyIdAndNoticeId(study.getId(), notice.getId(), user);
+            noticeService.getNoticeByStudyId(study.getId(), user);
         });
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOTICE_NOT_FOUND);
