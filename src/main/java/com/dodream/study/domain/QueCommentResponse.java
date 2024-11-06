@@ -21,6 +21,7 @@ public class QueCommentResponse {
     private Long likeCount;
     private String profileImage;
     private boolean isLiked;
+    private Long userId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)

@@ -90,7 +90,7 @@ public class QueCommentServiceImpl implements QueCommentService {
     public Page<QueCommentResponse> getQueCommentList(Pageable pageable, Long id,
         User user, boolean isSortByLikes) {
 
-        // 공지사항 ID 가 존재하지 않는 경우 예외 처리
+        // 스터디 문제 댓글 Id 가 존재하지 않으면 예외처리
         if (!studyUserAnswerRepository.existsById(id)) {
             throw new BaseException(ErrorCode.STUDY_USER_ANSWER_NOT_FOUND);
         }
@@ -115,6 +115,7 @@ public class QueCommentServiceImpl implements QueCommentService {
                     .profileImage(queComment.getUser().getProfileImage())
                     .createdAt(queComment.getCreatedAt())
                     .isLiked(isLiked)
+                    .userId(queComment.getUser().getId())
                     .build();
             })
             .toList();
