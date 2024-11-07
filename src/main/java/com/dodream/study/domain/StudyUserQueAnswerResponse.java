@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class StudyUserQueAnswerResponse {
 
+    private Long id;
     private Long questionId;
     private String question;
     private Long userId;

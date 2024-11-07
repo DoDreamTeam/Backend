@@ -41,7 +41,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에 추가된 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
+        + "sua.id, q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
@@ -53,7 +53,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에서 내가 푼 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
+        + "sua.id, q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
@@ -65,7 +65,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
     // 스터디방에서 내가 풀지 않은 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
+        + "sua.id, q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
@@ -76,7 +76,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         @Param("user") User user);
 
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
-        + "q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, "
+        + "sua.id, q.id, q.question, ua.user.id, q.modelAnswer, ua.user.username, "
         + "ua.user.profileImage, ua.evaluation, ua.createdAt) " +
         "FROM StudyUserAnswer sua " +
         "JOIN sua.userAnswer ua " +
