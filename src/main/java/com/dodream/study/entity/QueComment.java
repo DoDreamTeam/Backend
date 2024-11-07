@@ -2,6 +2,7 @@ package com.dodream.study.entity;
 
 import com.dodream.study.entity.StudyUserAnswer;
 import com.dodream.user.entity.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -11,8 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,6 +55,9 @@ public class QueComment {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt; // 댓글 수정 날짜
+
+    @OneToMany(mappedBy = "quecomment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QueCommentLike> likes;
 
     public void updateContent(String content) {
         this.content = content;

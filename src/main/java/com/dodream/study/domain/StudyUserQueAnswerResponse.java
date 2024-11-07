@@ -20,6 +20,7 @@ public class StudyUserQueAnswerResponse {
 
     private Long questionId;
     private String question;
+    private Long userId;
     private String modelAnswer;
     private String username;
     private String profileImage;
