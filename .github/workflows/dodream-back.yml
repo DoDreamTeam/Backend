@@ -95,6 +95,10 @@ jobs:
 
             EOF
             
+            echo -e "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> .env
+            echo -e "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> .env
+            echo -e "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> .env
+            
             git_output=$(sudo git pull origin dev 2>&1)
             docker compose up -d --build
 
