@@ -74,7 +74,7 @@ public class BookServiceImpl implements BookService {
         }
 
         if (bookPage.isEmpty()) {
-            throw new BaseException(ErrorCode.BOOK_CATEGORY_NOT_FOUND);
+            return Page.empty();
         }
         return convertToBookResponsePage(bookPage, user);
     }
