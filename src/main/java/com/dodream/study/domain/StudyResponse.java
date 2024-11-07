@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor
 public class StudyResponse {
     private Long id;
+    private Long userId;
     private String title;               // 2024년 정처기 실기 2회 대비
     private String username;            // test
     private String profileImage;        // 프로필 이미지
@@ -43,6 +44,7 @@ public class StudyResponse {
 
     public StudyResponse(Study study) {
         this.id = study.getId();
+        this.userId = study.getUser().getId();
         this.title = study.getTitle();
         this.username = study.getUser().getUsername();
         this.profileImage = study.getUser().getProfileImage();
