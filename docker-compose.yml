@@ -1,0 +1,20 @@
+version: '3'
+services:
+  back:
+    build:
+      context: .
+    container_name: dodream-back-container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    networks:
+      - dodream-net
+    depends_on:
+      - mysql
+    restart: always
+networks:
+  dodream-net:
+    driver: bridge
