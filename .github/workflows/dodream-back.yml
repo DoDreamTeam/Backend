@@ -22,9 +22,9 @@ jobs:
                 name: backend
               datasource:
                 driver-class-name: com.mysql.cj.jdbc.Driver
-                url: ${{ secrets.MYSQL_URL }}
-                username: ${{ secrets.MYSQL_USERNAME }}
-                password: ${{ secrets.MYSQL_PASSWORD }}
+                url: ${{ secrets.SPRING_DATASOURCE_URL }}
+                username: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+                password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
               jpa:
                 open-in-view: false
                 hibernate:
