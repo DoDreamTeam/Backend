@@ -35,10 +35,11 @@ public class QuestionController {
     @GetMapping("/{id}/questions")
     public ResponseEntity<Page<QuestionListResponse>> getAllQuestions(
         @PageableDefault(page = 0, size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-        @PathVariable("id") Long bookId
+        @PathVariable("id") Long bookId,
+        @AuthenticationPrincipal User user
     ) {
         // 최신순으로만 조회
-        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, bookId);
+        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, bookId, user);
         return ResponseEntity.ok(questionList);
     }
 

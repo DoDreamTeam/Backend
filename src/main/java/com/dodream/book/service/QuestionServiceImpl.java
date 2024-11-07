@@ -43,24 +43,42 @@ public class QuestionServiceImpl implements QuestionService {
     // 문제 전체 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long id) {
+    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long bookId, User user) {
         // 최신순으로 문제 조회
-        Page<Question> questions = questionRepository.findByBookIdOrderByCreatedAtDesc(pageable,
-            id);
+        Page<Question> questions = questionRepository.findByBookIdOrderByCreatedAtDesc(pageable, bookId);
 
-        // QuestionListResponse 생성
+        // 사용자가 푼 문제 ID 목록 수집
+        Set<Long> answeredQuestionIds = new HashSet<>();
+
+        // 로그인한 사용자가 평가한 문제에 대한 정보를 포함
         List<QuestionListResponse> questionResponses = questions.getContent().stream()
             .map(question -> {
                 EvaluationResponse evaluationResponse = null;
+
+                if (user != null) {
+                    // 사용자가 푼 문제에 대한 평가 정보를 가져옵니다.
+                    Optional<UserAnswer> userAnswer = userAnswerRepository.findByUserAndQuestion(user, question);
+                    if (userAnswer.isPresent()) {
+                        // 사용자가 해당 문제에 대해 평가한 정보가 있으면 포함
+                        evaluationResponse = new EvaluationResponse(
+                            userAnswer.get().getEvaluation().getEvaluation(), // 평가 내용
+                            userAnswer.get().getUser().getId(), // 평가한 사용자 ID
+                            userAnswer.get().getCreatedAt() // 평가한 날짜
+                        );
+                    }
+                }
+
+                // QuestionListResponse 객체 생성하여 반환
                 return QuestionListResponse.builder()
                     .id(question.getId())
                     .question(question.getQuestion())
                     .createdAt(question.getCreatedAt())
-                    .evaluation(evaluationResponse)
+                    .evaluation(evaluationResponse) // 평가 정보 포함
                     .build();
             })
             .collect(Collectors.toList());
 
+        // Page 객체 반환 (페이징 처리)
         return new PageImpl<>(questionResponses, pageable, questions.getTotalElements());
     }
 
@@ -73,25 +91,13 @@ public class QuestionServiceImpl implements QuestionService {
             .map(userAnswer -> userAnswer.getQuestion().getId())
             .toList();
 
-        // answeredQuestionIds 값 확인
-        System.out.println("Answered Question IDs: " + answeredQuestionIds);
-
         // 2. 문제 조회 (최신순으로 전체 조회 - Pageable 없이)
         List<Question> allQuestions = questionRepository.findByBookIdOrderByCreatedAtDesc(bookId);
-
-        // 전체 문제 목록 출력
-        System.out.println("Total Questions Retrieved: " + allQuestions.size());
-        System.out.println("All Questions: " + allQuestions.stream()
-            .map(question -> question.getId())
-            .collect(Collectors.toList()));  // 모든 문제의 ID를 출력하여 확인
 
         // 3. 내가 푼 문제를 제외한 목록 생성
         List<Question> filteredQuestions = allQuestions.stream()
             .filter(question -> !answeredQuestionIds.contains(question.getId()))
             .collect(Collectors.toList());
-
-        // 필터링된 문제 확인
-        System.out.println("Filtered Questions: " + filteredQuestions.size());
 
         // 4. 페이지 처리 (필터링된 문제에 대해서만 페이징 처리)
         int start = (int) pageable.getOffset();
@@ -125,10 +131,6 @@ public class QuestionServiceImpl implements QuestionService {
         // 필터링된 문제들의 총 개수와 페이징 정보를 이용해서 PageImpl 반환
         return new PageImpl<>(questionResponses, pageable, filteredQuestions.size());
     }
-
-
-
-
 
     // 문제 개별 조회
     @Override

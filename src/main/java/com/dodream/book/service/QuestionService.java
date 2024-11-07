@@ -15,7 +15,7 @@ public interface QuestionService {
 
     void deleteQuestion(Long id, Long questionId, User user);
 
-    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id);
+    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user);
 
     Page<QuestionListResponse> getQuestionsExceptMy(Pageable pageable, Long bookId, User user);
 
