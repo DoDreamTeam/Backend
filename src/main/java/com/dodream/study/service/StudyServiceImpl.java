@@ -65,7 +65,9 @@ public class StudyServiceImpl implements StudyService {
             );
         }
 
-        return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
+        List<StudyResponse> studyResponses = getStudyResponses(studyList);
+
+        return new CustomPageImpl<>(studyResponses, pageable, studyList.getTotalElements());
     }
 
     // 검색어 (제목 + 내용 or 작성자) 조회
@@ -86,7 +88,9 @@ public class StudyServiceImpl implements StudyService {
                 );
             }
 
-            return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
+            List<StudyResponse> studyResponses = getStudyResponses(studyList);
+
+            return new CustomPageImpl<>(studyResponses, pageable, studyList.getTotalElements());
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.STUDY_SEARCH_NOT_FOUND);
         }
@@ -160,6 +164,7 @@ public class StudyServiceImpl implements StudyService {
         List<StudyResponse> studyResponse = myStudyList.stream()
             .map(study -> StudyResponse.builder()
                 .id(study.getId())
+                .userId(study.getUserId())
                 .title(study.getTitle())
                 .category(study.getCategory())
                 .username(study.getUsername())
@@ -178,9 +183,16 @@ public class StudyServiceImpl implements StudyService {
     public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
         Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 
-        List<StudyResponse> studyResponse = studyList.stream()
+        List<StudyResponse> studyResponse = getStudyResponses(studyList);
+
+        return new CustomPageImpl<>(studyResponse, pageable, studyList.getTotalElements());
+    }
+
+    private static List<StudyResponse> getStudyResponses(Page<StudyResponse> studyList) {
+        return studyList.stream()
             .map(study -> StudyResponse.builder()
                 .id(study.getId())
+                .userId(study.getUserId())
                 .title(study.getTitle())
                 .username(study.getUsername())
                 .category(study.getCategory())
@@ -188,8 +200,6 @@ public class StudyServiceImpl implements StudyService {
                 .profileImage(study.getProfileImage())
                 .build())
             .toList();
-
-        return new CustomPageImpl<>(studyResponse, pageable, studyList.getTotalElements());
     }
 
     @Override
