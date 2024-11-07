@@ -65,9 +65,7 @@ public class StudyServiceImpl implements StudyService {
             );
         }
 
-        List<StudyResponse> studyResponses = getStudyResponses(studyList);
-
-        return new CustomPageImpl<>(studyResponses, pageable, studyList.getTotalElements());
+        return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
     }
 
     // 검색어 (제목 + 내용 or 작성자) 조회
@@ -88,9 +86,7 @@ public class StudyServiceImpl implements StudyService {
                 );
             }
 
-            List<StudyResponse> studyResponses = getStudyResponses(studyList);
-
-            return new CustomPageImpl<>(studyResponses, pageable, studyList.getTotalElements());
+            return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
         } catch (IllegalArgumentException e) {
             throw new BaseException(ErrorCode.STUDY_SEARCH_NOT_FOUND);
         }
@@ -180,26 +176,17 @@ public class StudyServiceImpl implements StudyService {
     @Override
     @Transactional(readOnly = true)
 //    @Cacheable(value = "popularStudyList")
-    public Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount) {
+    public Page<StudyResponse> getPopularStudyList(Pageable pageable, User loginedUser, Long userCount) {
         Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
 
-        List<StudyResponse> studyResponse = getStudyResponses(studyList);
+        // 로그인한 사용자가 있을 경우 role 조회 및 설정
+        if (loginedUser != null) {
+            studyList.getContent().forEach(study ->
+                study.setStatus(getStatusStudyMember(study.getId(), loginedUser.getId()))
+            );
+        }
 
-        return new CustomPageImpl<>(studyResponse, pageable, studyList.getTotalElements());
-    }
-
-    private static List<StudyResponse> getStudyResponses(Page<StudyResponse> studyList) {
-        return studyList.stream()
-            .map(study -> StudyResponse.builder()
-                .id(study.getId())
-                .userId(study.getUserId())
-                .title(study.getTitle())
-                .username(study.getUsername())
-                .category(study.getCategory())
-                .userCount(study.getUserCount())
-                .profileImage(study.getProfileImage())
-                .build())
-            .toList();
+        return new CustomPageImpl<>(studyList.getContent(), pageable, studyList.getTotalElements());
     }
 
     @Override
