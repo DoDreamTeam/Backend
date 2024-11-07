@@ -79,6 +79,9 @@ public class Study {
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudyMember> studyMembers;
 
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudyUserAnswer> studyUserAnswers;
+
     public void updateStudy(String title, String description) {
         this.title = title;
         this.description = description;
