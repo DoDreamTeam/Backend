@@ -25,9 +25,9 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
     // 전체 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "studyDetails",
-        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
-        unless = "#result.isEmpty()")
+//    @Cacheable(value = "studyDetails",
+//        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
+//        unless = "#result.isEmpty()")
     public Page<StudyUserQueAnswerResponse> getStudyDetails(Pageable pageable, Long studyId, User user) {
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
@@ -39,9 +39,9 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
     // 내가 푼 문제 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "myStudyDetails",
-        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
-        unless = "#result.isEmpty()")
+//    @Cacheable(value = "myStudyDetails",
+//        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
+//        unless = "#result.isEmpty()")
     public Page<StudyUserQueAnswerResponse> getStudyMyDetails(Pageable pageable, Long studyId,
         User user) {
         Study study = studyRepository.findById(studyId)
@@ -54,9 +54,9 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
     // 내가 풀지 않은 문제 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "otherStudyDetails",
-        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
-        unless = "#result.isEmpty()")
+//    @Cacheable(value = "otherStudyDetails",
+//        key = "#studyId + '_' + #user.id + '_' + #pageable.pageNumber",
+//        unless = "#result.isEmpty()")
     public Page<StudyUserQueAnswerResponse> getStudyOtherDetails(Pageable pageable, Long studyId,
         User user) {
         Study study = studyRepository.findById(studyId)
@@ -69,9 +69,9 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
     // 특정 검색어로 문제 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "searchStudyUserAnswer",
-        key = "#studyId + '_' + #user.id + '_' + #keyword + '_' + #pageable.pageNumber",
-        unless = "#result.isEmpty()")
+//    @Cacheable(value = "searchStudyUserAnswer",
+//        key = "#studyId + '_' + #user.id + '_' + #keyword + '_' + #pageable.pageNumber",
+//        unless = "#result.isEmpty()")
     public Page<StudyUserQueAnswerResponse> getSearchStudyUserAnswer(Pageable pageable, Long studyId,
         User user, String keyword) {
         Study study = studyRepository.findById(studyId)
