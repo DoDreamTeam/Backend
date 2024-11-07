@@ -93,8 +93,9 @@ jobs:
                   token-uri: https://nid.naver.com/oauth2.0/token
                   user-info-request-uri: https://openapi.naver.com/v1/nid/me
 
-            git_output=$(sudo git pull origin dev 2>&1)
+            EOF
             
+            git_output=$(sudo git pull origin dev 2>&1)
             docker compose up -d --build
 
       - name: slack-notification
