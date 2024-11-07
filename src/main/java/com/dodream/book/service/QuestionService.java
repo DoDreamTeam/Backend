@@ -15,7 +15,9 @@ public interface QuestionService {
 
     void deleteQuestion(Long id, Long questionId, User user);
 
-    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user, Boolean type);
+    Page<QuestionListResponse> getQuestions(Pageable pageable, Long id);
+
+    Page<QuestionListResponse> getQuestionsExceptMy(Pageable pageable, Long bookId, User user);
 
     QuestionResponse getOneQuestion(Long id, Long questionId);
 
@@ -24,4 +26,5 @@ public interface QuestionService {
     AddToMyBooksResponse addQuestionToBooks(Long id, Long questionId, AddToMyBooksRequest request, User user);
 
     Page<QuestionListResponse> searchQuestions(Long bookId, String keyword, Pageable pageable);
+
 }
