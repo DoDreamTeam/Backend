@@ -70,4 +70,9 @@ public class Book {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks;
+
+    public void updateBook(String title, Category category) {
+        this.title = title;
+        this.category = category;
+    }
 }

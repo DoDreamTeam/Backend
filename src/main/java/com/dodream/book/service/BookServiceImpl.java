@@ -143,10 +143,11 @@ public class BookServiceImpl implements BookService {
             .build();
     }
 
-    // 문제집 제목 수정
+    // 문제집 제목/카테고리 수정
     @Override
     @Transactional
     public BookUpdateResponse updateBook(User user, Long id, BookUpdateRequest request) {
+        // Book 조회
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
 
@@ -155,15 +156,24 @@ public class BookServiceImpl implements BookService {
             throw new BaseException(ErrorCode.ACCESS_DENIED);
         }
 
-        if (request.getTitle() != null) {
+        // title이 전달되었으면 수정
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
             book.setTitle(request.getTitle());
         }
-        if (request.getCategory() != null) {
-            book.setCategory(Category.valueOf(request.getCategory()));
+
+        // category가 전달되었으면 수정
+        if (request.getCategory() != null && !request.getCategory().trim().isEmpty()) {
+            // Category String을 Category Enum으로 변환
+            Category category;
+            try {
+                category = Category.valueOf(request.getCategory()); // String -> Category Enum 변환
+            } catch (IllegalArgumentException e) {
+                throw new BaseException(ErrorCode.INVALID_EVALUATION); // 유효하지 않은 카테고리 처리
+            }
+            book.setCategory(category);
         }
 
-        bookRepository.save(book);
-
+        // 수정된 정보로 BookUpdateResponse 반환
         return BookUpdateResponse
             .builder()
             .id(book.getId())
@@ -171,6 +181,7 @@ public class BookServiceImpl implements BookService {
             .category(book.getCategory().name())
             .build();
     }
+
 
     // 문제집 삭제
     @Override

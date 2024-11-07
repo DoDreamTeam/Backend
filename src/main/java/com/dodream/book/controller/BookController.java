@@ -58,7 +58,7 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    // 문제집 제목 수정
+    // 문제집 제목/카테고리 수정
     @PatchMapping("/{id}")
     public ResponseEntity<BookUpdateResponse> updateBook(@AuthenticationPrincipal User user, @PathVariable("id") Long id,
         @RequestBody BookUpdateRequest bookUpdateRequest) {
