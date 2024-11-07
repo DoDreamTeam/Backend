@@ -97,6 +97,7 @@ public class NoticeCommentServiceImpl implements NoticeCommentService {
                     .noticeId(notiComment.getNotice().getId())
                     .createdAt(notiComment.getCreatedAt())
                     .isLiked(isLiked)
+                    .userId(notiComment.getUser().getId())
                     .build();
             })
             .toList();
