@@ -43,49 +43,92 @@ public class QuestionServiceImpl implements QuestionService {
     // 문제 전체 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long id, User user, Boolean type) {
-        // 문제 조회
-        Page<Question> questions = questionRepository.findByBookIdOrderByCreatedAtDesc(pageable, id);
-
-        // 사용자가 푼 문제 ID 목록
-        Set<Long> answeredQuestionIds = new HashSet<>();
-
-        if (user != null && type != null && type) {
-            // 사용자가 푼 문제 ID 목록 수집
-            answeredQuestionIds.addAll(userAnswerRepository.findByUserIdAndQuestionIdIn(
-                    user.getId(),
-                    questions.getContent().stream().map(Question::getId).collect(Collectors.toList()))
-                .stream().map(answer -> answer.getQuestion().getId()).collect(Collectors.toSet()));
-        }
+    public Page<QuestionListResponse> getQuestions(Pageable pageable, Long id) {
+        // 최신순으로 문제 조회
+        Page<Question> questions = questionRepository.findByBookIdOrderByCreatedAtDesc(pageable,
+            id);
 
         // QuestionListResponse 생성
         List<QuestionListResponse> questionResponses = questions.getContent().stream()
-            .filter(question -> (type == null || !type || !answeredQuestionIds.contains(question.getId()))) // 푼 문제 제외
             .map(question -> {
                 EvaluationResponse evaluationResponse = null;
-
-                if (user != null) {
-                    Optional<UserAnswer> userAnswer = userAnswerRepository.findByUserAndQuestion(user, question);
-                    if (userAnswer.isPresent()) {
-                        evaluationResponse = new EvaluationResponse(
-                            userAnswer.get().getEvaluation().getEvaluation(),
-                            userAnswer.get().getUser().getId(),
-                            userAnswer.get().getCreatedAt()
-                        );
-                    }
-                }
-
                 return QuestionListResponse.builder()
                     .id(question.getId())
                     .question(question.getQuestion())
                     .createdAt(question.getCreatedAt())
-                    .evaluation(evaluationResponse) // 평가 정보 설정
+                    .evaluation(evaluationResponse)
                     .build();
             })
             .collect(Collectors.toList());
 
         return new PageImpl<>(questionResponses, pageable, questions.getTotalElements());
     }
+
+    // 내가 푼 문제 제외하고 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<QuestionListResponse> getQuestionsExceptMy(Pageable pageable, Long bookId, User user) {
+        // 1. 사용자가 푼 문제 목록을 가져옵니다.
+        List<Long> answeredQuestionIds = userAnswerRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
+            .map(userAnswer -> userAnswer.getQuestion().getId())
+            .toList();
+
+        // answeredQuestionIds 값 확인
+        System.out.println("Answered Question IDs: " + answeredQuestionIds);
+
+        // 2. 문제 조회 (최신순으로 전체 조회 - Pageable 없이)
+        List<Question> allQuestions = questionRepository.findByBookIdOrderByCreatedAtDesc(bookId);
+
+        // 전체 문제 목록 출력
+        System.out.println("Total Questions Retrieved: " + allQuestions.size());
+        System.out.println("All Questions: " + allQuestions.stream()
+            .map(question -> question.getId())
+            .collect(Collectors.toList()));  // 모든 문제의 ID를 출력하여 확인
+
+        // 3. 내가 푼 문제를 제외한 목록 생성
+        List<Question> filteredQuestions = allQuestions.stream()
+            .filter(question -> !answeredQuestionIds.contains(question.getId()))
+            .collect(Collectors.toList());
+
+        // 필터링된 문제 확인
+        System.out.println("Filtered Questions: " + filteredQuestions.size());
+
+        // 4. 페이지 처리 (필터링된 문제에 대해서만 페이징 처리)
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredQuestions.size());
+        List<Question> pagedQuestions = filteredQuestions.subList(start, end);
+
+        // 5. 필터링된 문제에서 해당 페이지에 맞는 문제를 가져옴 (Page 객체 반환을 위해)
+        List<QuestionListResponse> questionResponses = pagedQuestions.stream()
+            .map(question -> {
+                EvaluationResponse evaluationResponse = null;
+
+                // 로그인한 유저의 평가 정보가 있으면 포함
+                Optional<UserAnswer> userAnswer = userAnswerRepository.findByUserAndQuestion(user, question);
+                if (userAnswer.isPresent()) {
+                    evaluationResponse = new EvaluationResponse(
+                        userAnswer.get().getEvaluation().getEvaluation(),
+                        userAnswer.get().getUser().getId(),
+                        userAnswer.get().getCreatedAt()
+                    );
+                }
+
+                return QuestionListResponse.builder()
+                    .id(question.getId())
+                    .question(question.getQuestion())
+                    .createdAt(question.getCreatedAt())
+                    .evaluation(evaluationResponse)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        // 필터링된 문제들의 총 개수와 페이징 정보를 이용해서 PageImpl 반환
+        return new PageImpl<>(questionResponses, pageable, filteredQuestions.size());
+    }
+
+
+
+
 
     // 문제 개별 조회
     @Override
@@ -268,4 +311,5 @@ public class QuestionServiceImpl implements QuestionService {
             .createdAt(question.getCreatedAt())
             .build());
     }
+
 }

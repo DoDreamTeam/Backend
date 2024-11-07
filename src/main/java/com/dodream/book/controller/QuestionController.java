@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,15 +31,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class QuestionController {
     private final QuestionService questionService;
 
-    // 문제 전체 조회 (최신순/내가 푼 문제 제외 조회)
+    // 문제 전체 조회 (최신순 조회)
     @GetMapping("/{id}/questions")
     public ResponseEntity<Page<QuestionListResponse>> getAllQuestions(
         @PageableDefault(page = 0, size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-        @PathVariable("id") Long bookId,
-        @RequestParam(value = "type", required = false) Boolean type,
-        @AuthenticationPrincipal User user // 사용자 인증 정보 주입
+        @PathVariable("id") Long bookId
     ) {
-        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, bookId, user, type);
+        // 최신순으로만 조회
+        Page<QuestionListResponse> questionList = questionService.getQuestions(pageable, bookId);
+        return ResponseEntity.ok(questionList);
+    }
+
+
+    // 내가 푼 문제 제외 조회하기
+    @GetMapping("/{id}/questions/my")
+    public ResponseEntity<Page<QuestionListResponse>> getMyQuestions(
+        @PageableDefault(page = 0, size = 5, sort = "createdAt", direction = Direction.DESC) Pageable pageable,
+        @PathVariable("id") Long bookId,
+        @AuthenticationPrincipal User user
+    ) {
+        Page<QuestionListResponse> questionList = questionService.getQuestionsExceptMy(pageable, bookId, user);
         return ResponseEntity.ok(questionList);
     }
 
