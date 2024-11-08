@@ -21,20 +21,20 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     /* 스터디 카테고리별로 검색 */
     @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.user.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt, "
-        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id)) "
+        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id and sm.role IN :roles)) "
         + "FROM Study s "
         + "WHERE (:category IS NULL OR s.category = :category) ")
-    Page<StudyResponse> findByStudyCategory(Pageable pageable, @Param("category") Category category);
+    Page<StudyResponse> findByStudyCategory(Pageable pageable, @Param("category") Category category, @Param("roles") List<String> roles);
 
     /* 스터디 키워드(제목 + 내용 or 사용자) 로 검색 */
     @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.user.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt,"
-        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id)) "
+        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id and sm.role IN :roles)) "
         + "FROM Study s "
         + "WHERE LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) "
         + "OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')) "
         + "OR LOWER(s.user.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<StudyResponse> findStudiesByTitleDescriptionOrUsername(Pageable pageable, @Param("keyword") String keyword);
+    Page<StudyResponse> findStudiesByTitleDescriptionOrUsername(Pageable pageable, @Param("keyword") String keyword, @Param("roles") List<String> roles);
 
     /* 스터디 전체 조회 */
     @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.user.id, s.title, s.user.username, s.user.profileImage, "
@@ -45,7 +45,7 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     /* 인기 스터디 조회 */
     @Query("SELECT new com.dodream.study.domain.StudyResponse(s.id, s.user.id, s.title, s.user.username, s.user.profileImage, "
         + "s.description, s.category, null, s.updatedAt, s.createdAt as update, "
-        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id) as count ) FROM Study s "
+        + "(SELECT COUNT(sm) FROM StudyMember sm WHERE sm.study.id = s.id and sm.role IN :roles) as count ) FROM Study s "
         + "ORDER BY count DESC, update DESC ")
-    Page<StudyResponse> findAllStudyWithMemberCount(Pageable pageable);
+    Page<StudyResponse> findAllStudyWithMemberCount(Pageable pageable, @Param("roles") List<String> roles);
 }
