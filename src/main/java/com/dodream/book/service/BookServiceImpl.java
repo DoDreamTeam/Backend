@@ -91,6 +91,7 @@ public class BookServiceImpl implements BookService {
 
     // 문제집 개별 조회
     @Override
+    @Transactional(readOnly = true)
     public BookResponse getBook(Long id, User user) {
         Book book = bookRepository.findById(id)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
