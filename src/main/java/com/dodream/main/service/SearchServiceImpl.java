@@ -7,6 +7,7 @@ import com.dodream.main.domain.SearchResponse;
 import com.dodream.main.repository.MainRepository;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.entity.Study;
+import com.dodream.user.entity.User;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +37,21 @@ public class SearchServiceImpl implements SearchService {
 
         // 문제집 결과 추가
         bookPage.getContent().forEach(book -> {
+            // 문제집 작성자 정보
+            User bookUser = book.getUser();
+
+            boolean isBookmarked = (bookUser != null) && bookmarkRepository.existsByUserIdAndBookIdAndIsDeletedFalse(bookUser.getId(), book.getId());
+
             BookResponse bookResponse = BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
+                .userId(book.getUser() != null ? book.getUser().getId() : null)
                 .username(book.getUser() != null ? book.getUser().getUsername() : null)
+                .userProfile(book.getUser() != null ? book.getUser().getProfileImage() : null)
                 .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
                 .category(book.getCategory().name())
                 .createdAt(book.getCreatedAt())
+                .isBookmarked(isBookmarked) // 북마크 여부 추가
                 .build();
             combinedResults.add(new SearchResponse(bookResponse));
         });
