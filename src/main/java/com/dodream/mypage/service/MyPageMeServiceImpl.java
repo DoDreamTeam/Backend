@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 사용자 정보 가져오기 (userName , profileImage , userBooks )
     @Override
+    @Transactional(readOnly = true)
     public UserInfoResponse getUserProfile() {
         User user = getAuthenticatedUser();
         User foundUser = userRepository.findById(user.getId())
@@ -60,6 +62,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 문제집 목록 가져오기
     @Override
+    @Transactional(readOnly = true)
     public Page<BookResponse> getUserBooksAll(Pageable pageable) {
         return getBookResponse(
             bookRepository.findByUserIdOrderByCreatedAtDesc(getAuthenticatedUser().getId(), pageable),
@@ -69,6 +72,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 북마크 한 문제집 목록 가져오기
     @Override
+    @Transactional(readOnly = true)
     public Page<BookResponse> getUserBookmarks(Pageable pageable) {
         return getBookResponse(
             bookmarkRepository.findByUserIdAndIsDeletedFalseOrderByBookCreatedAtDesc(getAuthenticatedUser().getId(), pageable),
@@ -78,6 +82,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 문제집 공개 비공개 설정
     @Override
+    @Transactional
     public BookUpdateResponse updateSecret(Long bookId) {
         Book book = bookRepository.findById(bookId)
             .orElseThrow(() -> new BaseException(ErrorCode.BOOK_NOT_FOUND));
@@ -102,6 +107,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 사용자의 문제집 댓글 목록 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<BookCommentResponse> getUserComment(Pageable pageable) {
         User user = getAuthenticatedUser();
 
@@ -127,6 +133,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 사용자의 문제집 댓글 좋아요 목록
     @Override
+    @Transactional(readOnly = true)
     public Page<BookCommentLikeResponse> getUserCommentLike(Pageable pageable) {
         User user = getAuthenticatedUser();
         Page<BookCommentLike> commentLikes = bookCommentLikeRepository
@@ -154,6 +161,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 사용자가 푼 문제 목록 (전체)
     @Override
+    @Transactional(readOnly = true)
     public Page<GetUserAnswerResponse> getUserAnswer(Pageable pageable) {
         User user = getAuthenticatedUser();
         Page<UserAnswer> userAnswers = userAnswerRepository.findByUserIdOrderByCreatedAtDesc(
@@ -172,6 +180,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 사용자가 푼 문제 목록 (애매해요, 모르겠어요)
     @Override
+    @Transactional(readOnly = true)
     public Page<GetUserAnswerResponse> getUserAnswerByEvaluation(String evaluation, Pageable pageable) {
         User user = getAuthenticatedUser();
 
@@ -198,6 +207,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 스터디 댓글 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<QueCommentResponse> getStudyComment(Pageable pageable) {
         User user = getAuthenticatedUser();
 
@@ -226,6 +236,7 @@ public class MyPageMeServiceImpl implements MyPageMeService {
 
     // 스터디 댓글 좋아요 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<QueCommentLikeResponse> getStudyCommentLike(Pageable pageable) {
         User user = getAuthenticatedUser();
         Page<QueCommentLike> queCommentLikes = queCommentLikeRepository
