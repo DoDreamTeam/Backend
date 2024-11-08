@@ -7,8 +7,10 @@ import com.dodream.main.domain.SearchResponse;
 import com.dodream.main.repository.MainRepository;
 import com.dodream.study.domain.StudyResponse;
 import com.dodream.study.entity.Study;
+import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.user.entity.User;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,7 +32,8 @@ public class SearchServiceImpl implements SearchService {
         Page<Book> bookPage = mainRepository.findBooksByTitle(keyword, pageable);
 
         // 스터디 검색
-        Page<Study> studyPage = mainRepository.findStudiesByTitle(keyword, pageable);
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
+        Page<Study> studyPage = mainRepository.findStudiesByTitle(keyword, pageable, roles);
 
         // 결과를 결합
         List<SearchResponse> combinedResults = new ArrayList<>();
