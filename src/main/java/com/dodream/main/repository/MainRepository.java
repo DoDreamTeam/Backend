@@ -16,12 +16,14 @@ public interface MainRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.title LIKE %:keyword% AND b.secret = false")
     Page<Book> findBooksByTitle(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT s, " +
-        "(SELECT COUNT(sm) FROM StudyMember sm "
-        + "WHERE sm.study.id = s.id AND sm.role IN :roles) " +
-        "AS memberCount " +
-        "FROM Study s " +
-        "WHERE s.title LIKE %:keyword%")
+    @Query("SELECT s FROM Study s WHERE s.title LIKE %:keyword%")
     Page<Study> findStudiesByTitle(@Param("keyword") String keyword,
-        Pageable pageable, @Param("roles") List<String> roles);
+        Pageable pageable);
+
+    @Query("SELECT COUNT(sm) " +
+        "FROM StudyMember sm " +
+        "WHERE sm.study.id = :studyId " +
+        "AND sm.role IN :roles")
+    Long countStudyMembersByRole(@Param("studyId") Long studyId,
+        @Param("roles") List<RoleEnum> roles);
 }

@@ -32,8 +32,7 @@ public class SearchServiceImpl implements SearchService {
         Page<Book> bookPage = mainRepository.findBooksByTitle(keyword, pageable);
 
         // 스터디 검색
-        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
-        Page<Study> studyPage = mainRepository.findStudiesByTitle(keyword, pageable, roles);
+        Page<Study> studyPage = mainRepository.findStudiesByTitle(keyword, pageable);
 
         // 결과를 결합
         List<SearchResponse> combinedResults = new ArrayList<>();
@@ -61,7 +60,21 @@ public class SearchServiceImpl implements SearchService {
 
         // 스터디 결과 추가
         studyPage.getContent().forEach(study -> {
-            StudyResponse studyResponse = new StudyResponse(study);
+            // 멤버 권한 구분
+            List<RoleEnum> rolesToCount = Arrays.asList(RoleEnum.ROLE_LEADER, RoleEnum.ROLE_MEMBER);
+            Long userCount = mainRepository.countStudyMembersByRole(study.getId(), rolesToCount);
+
+            // 스터디 작성자 정보
+            StudyResponse studyResponse = StudyResponse.builder()
+                .id(study.getId())
+                .title(study.getTitle())
+                .userId(study.getUser() != null ? study.getUser().getId() : null)
+                .username(study.getUser() != null ? study.getUser().getUsername() : null)
+                .profileImage(study.getUser() != null ? study.getUser().getProfileImage() : null)
+                .userCount(userCount)
+                .category(study.getCategory())
+                .createdAt(study.getCreatedAt())
+                .build();
             combinedResults.add(new SearchResponse(studyResponse));
         });
 
