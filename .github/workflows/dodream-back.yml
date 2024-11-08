@@ -29,6 +29,8 @@ jobs:
                 open-in-view: false
                 hibernate:
                   ddl-auto: none
+                  jdbc:
+                    time_zone: Asia/Seoul
                 properties:
                   hibernate:
                     show_sql: true
