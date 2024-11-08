@@ -43,6 +43,7 @@ public class UserAnswer {
     private String answer;
 
     @Column(nullable = false)
+    @Builder.Default
     private Evaluation evaluation = Evaluation.EVALUATION_BEFORE;
 
     @ManyToOne(fetch = FetchType.LAZY)
