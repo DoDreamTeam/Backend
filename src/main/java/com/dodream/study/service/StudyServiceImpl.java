@@ -15,6 +15,7 @@ import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
 import com.dodream.util.CustomPageImpl;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +47,13 @@ public class StudyServiceImpl implements StudyService {
     @Cacheable(value = "studyList", key = "#loginedUser != null ? #loginedUser.id + '_' + "
         + "#category : 'user_' + #category", unless = "#result.isEmpty()")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Page<StudyResponse> studyList;
 
         if (category != null) {
             // 카테고리별 조회
             try {
-                studyList = studyRepository.findByStudyCategory(pageable, Category.valueOf(category));
+                studyList = studyRepository.findByStudyCategory(pageable, Category.valueOf(category), roles);
             } catch (IllegalArgumentException e) {
                 throw new BaseException(ErrorCode.STUDY_CATEGORY_ERROR);
             }
@@ -76,8 +78,9 @@ public class StudyServiceImpl implements StudyService {
         unless = "#result.isEmpty()")
     public Page<StudyResponse> searchStudiesByKeyword(Pageable pageable, User loginedUser, String keyword) {
         try {
+            List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
             Page<StudyResponse> studyList =
-                studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+                studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles);
 
             // 로그인한 사용자가 있을 경우 role 조회 및 설정
             if (loginedUser != null) {
@@ -177,7 +180,8 @@ public class StudyServiceImpl implements StudyService {
     @Transactional(readOnly = true)
     @Cacheable(value = "popularStudyList")
     public Page<StudyResponse> getPopularStudyList(Pageable pageable, User loginedUser, Long userCount) {
-        Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable);
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
+        Page<StudyResponse> studyList = studyRepository.findAllStudyWithMemberCount(pageable, roles);
 
         // 로그인한 사용자가 있을 경우 role 조회 및 설정
         if (loginedUser != null) {
