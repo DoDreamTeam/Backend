@@ -10,6 +10,7 @@ import com.dodream.study.entity.StudyUserAnswer;
 import com.dodream.study.repository.StudyUserAnswerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class StudyUserAnswerServiceImpl implements StudyUserAnswerService {
     private final UserAnswerRepository userAnswerRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public StudyUserAnswerResponse getStudyUserAnswer(Long id) {
         StudyUserAnswer studyUserAnswer = studyUserAnswerRepository.findById(id)
             .orElseThrow(() -> new BaseException(
