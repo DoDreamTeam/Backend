@@ -218,8 +218,8 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
-    public boolean existStudy(Long id, User user) {
-        return studyMemberRepository.existsByStudyIdAndUserAndRoleIsNot(id, user, RoleEnum.ROLE_WAITING);
+    public String existStudy(Long id, User user) {
+        return studyMemberRepository.findRoleByStudyIdAndUser(id, user).orElse(null);
     }
 
     private void checkUserRole(Long study, User user) {

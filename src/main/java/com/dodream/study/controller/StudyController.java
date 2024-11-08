@@ -96,7 +96,7 @@ public class StudyController {
 
     // 스터디 참여 여부
     @GetMapping("/participate/{id}")
-    public ResponseEntity<Boolean> getStudyParticipate(@PathVariable("id") Long id,
+    public ResponseEntity<String> getStudyParticipate(@PathVariable("id") Long id,
         @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(studyService.existStudy(id, user));
     }

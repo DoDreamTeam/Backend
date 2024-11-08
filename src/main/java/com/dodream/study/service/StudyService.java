@@ -19,7 +19,7 @@ public interface StudyService {
     Page<StudyResponse> getMyStudyList(Pageable pageable, User user);
     Page<StudyResponse> getPopularStudyList(Pageable pageable, User user, Long userCount);
     StudyResponse findStudy(Long id, User user);
-    boolean existStudy(Long id, User user);
+    String existStudy(Long id, User user);
 
 //    Page<StudyResponse> getMyStudy(User user, Pageable pageable, Long id);
 }
