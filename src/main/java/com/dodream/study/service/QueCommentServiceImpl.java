@@ -58,8 +58,8 @@ public class QueCommentServiceImpl implements QueCommentService {
         // 스터디 문제 댓글 알림 - 스터디 방장에게 전송
         User studyLeader = studyAnswer.getStudy().getUser();
         String content =
-            savedComment.getUser().getUsername() + "님이 "
-                + studyAnswer.getStudy().getTitle() + "의 "
+            savedComment.getUser().getUsername() + "님이 " + "\""
+                + studyAnswer.getStudy().getTitle() + "\"" + "의 "
                 + studyAnswer.getUserAnswer().getQuestion().getQuestion() + "에 "
                 + "댓글을 남겼습니다.";
         String url = "/api/study/answer/" + studyAnswer.getId() + "/comments";
