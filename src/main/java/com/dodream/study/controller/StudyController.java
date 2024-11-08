@@ -94,6 +94,14 @@ public class StudyController {
         return ResponseEntity.ok(study);
     }
 
+    // 스터디 참여 여부
+    @GetMapping("/participate/{id}")
+    public ResponseEntity<Boolean> getStudyParticipate(@PathVariable("id") Long id,
+        @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studyService.existStudy(id, user));
+    }
+
+
     // 스터디 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<StudyResponse> deleteStudy(@AuthenticationPrincipal User user,
