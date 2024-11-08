@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -214,6 +215,11 @@ public class StudyServiceImpl implements StudyService {
             .profileImage(study.getUser() != null ? study.getUser().getProfileImage() : null)
             .description((study.getDescription()))
             .build();
+    }
+
+    @Override
+    public boolean existStudy(Long id, User user) {
+        return studyMemberRepository.existsByStudyIdAndUserAndRoleIsNot(id, user, RoleEnum.ROLE_WAITING);
     }
 
     private void checkUserRole(Long study, User user) {
