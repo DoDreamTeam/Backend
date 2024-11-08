@@ -177,7 +177,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotificationsByUserId(Long userId) {
-        List<Notifications> notifications = notificationRepository.findByUserId(userId);
+        List<Notifications> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return notifications.stream().map(NotificationResponse::fromEntity).toList();
     }
 
