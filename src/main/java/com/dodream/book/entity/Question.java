@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -65,5 +66,10 @@ public class Question {
     public void updateQuestion (String question, String modelAnswer) {
         this.question = question;
         this.modelAnswer = modelAnswer;
+    }
+
+    @Override
+    public String toString() {
+        return question;  // question 필드 값만 반환하도록 설정
     }
 }

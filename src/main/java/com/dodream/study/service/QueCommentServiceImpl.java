@@ -60,7 +60,7 @@ public class QueCommentServiceImpl implements QueCommentService {
         String content =
             savedComment.getUser().getUsername() + "님이 "
                 + studyAnswer.getStudy().getTitle() + "의 "
-                + studyAnswer.getUserAnswer().getQuestion() + "에 "
+                + studyAnswer.getUserAnswer().getQuestion().getQuestion() + "에 "
                 + "댓글을 남겼습니다.";
         String url = "/api/study/answer/" + studyAnswer.getId() + "/comments";
 
