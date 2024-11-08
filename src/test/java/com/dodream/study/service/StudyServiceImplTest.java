@@ -23,6 +23,7 @@ import com.dodream.study.enumtype.RoleEnum;
 import com.dodream.study.repository.StudyMemberRepository;
 import com.dodream.study.repository.StudyRepository;
 import com.dodream.user.entity.User;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -176,12 +177,13 @@ class StudyServiceImplTest {
     public void testSearchStudyKeyword() {
         // given (사전 준비)
         String keyword = "Test";
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Pageable pageable = PageRequest.of(0, 12);  // 첫 번째 페이지, 10개의 스터디를 조회
         List<StudyResponse> studyResponseList = List.of(new StudyResponse(testStudy));
         Page<StudyResponse> studyPage = new PageImpl<>(studyResponseList,
             pageable, studyResponseList.size());
 
-        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword))
+        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles))
             .thenReturn(studyPage);
 
         // when (테스트 진행할 행위)
@@ -190,7 +192,7 @@ class StudyServiceImplTest {
         // then (행위에 대한 결과 검증)
         assertEquals(1, result.getTotalElements());
         assertEquals("Test Study", result.getContent().get(0).getTitle());
-        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles);
     }
 
     @DisplayName("매칭되는 검색어가 없는 경우 (스터디가 없는 경우)")
@@ -198,10 +200,11 @@ class StudyServiceImplTest {
     public void testSearchStudyKeywordWhenNoMatches() {
         // given (사전 준비)
         String keyword = "Java";
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Pageable pageable = PageRequest.of(0, 12);
         Page<StudyResponse> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword))
+        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles))
             .thenReturn(emptyPage);
 
         // when (테스트 진행할 행위)
@@ -209,7 +212,7 @@ class StudyServiceImplTest {
 
         // then (행위에 대한 결과 검증)
         assertTrue(result.getContent().isEmpty());
-        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles);
     }
 
     @DisplayName("스터디 검색어 찾는 과정에서 예외 발생")
@@ -217,9 +220,10 @@ class StudyServiceImplTest {
     public void testSearchStudyKeywordOccurException() {
         // given (사전 준비)
         String keyword = "유효하지 않은 키워드...";
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Pageable pageable = PageRequest.of(0, 12);
 
-        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword))
+        when(studyRepository.findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles))
             .thenThrow(IllegalArgumentException.class);
 
         // when (테스트 진행할 행위) + then (행위에 대한 결과 검증)
@@ -228,7 +232,7 @@ class StudyServiceImplTest {
         );
 
         assertEquals(ErrorCode.STUDY_SEARCH_NOT_FOUND, exception.getErrorCode());
-        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword);
+        verify(studyRepository).findStudiesByTitleDescriptionOrUsername(pageable, keyword, roles);
     }
 
     @DisplayName("스터디 카테고리별 조회")
@@ -237,9 +241,10 @@ class StudyServiceImplTest {
         // given (사전 준비)
         Pageable pageable = PageRequest.of(0, 12);
         String validCategory = "CATEGORY_CS"; // 유효한 카테고리
+        List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Page<StudyResponse> studyPage = new PageImpl<>(List.of(new StudyResponse(testStudy)));
 
-        when(studyRepository.findByStudyCategory(any(Pageable.class), eq(Category.CATEGORY_CS)))
+        when(studyRepository.findByStudyCategory(any(Pageable.class), eq(Category.CATEGORY_CS), roles))
             .thenReturn(studyPage);
 
         // when (테스트 진행할 행위)
@@ -249,7 +254,7 @@ class StudyServiceImplTest {
         // then (행위에 대한 결과 검증)
         assertEquals(1, result.getContent().size());
         assertEquals("Test Study", result.getContent().get(0).getTitle());
-        verify(studyRepository).findByStudyCategory(any(Pageable.class), eq(Category.CATEGORY_CS));
+        verify(studyRepository).findByStudyCategory(any(Pageable.class), eq(Category.CATEGORY_CS), roles);
     }
 
     @DisplayName("알 수 없는 스터디 카테고리 조회")
