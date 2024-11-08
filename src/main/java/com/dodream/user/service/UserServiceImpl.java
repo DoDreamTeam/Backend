@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -49,12 +50,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String login(User user, HttpServletResponse res) {
+        userRepository.save(user);
         Map<String, String> tokenMap = tokenUtils.generateToken(user);
 
         // DB에 기록(refresh)
         user.setRefreshToken(tokenMap.get("refreshToken"));
-        userRepository.save(user);
 
         // HEADER에 추가(refresh)
         tokenUtils.setRefreshTokenCookie(res, tokenMap.get("refreshToken"));
@@ -80,7 +82,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, String> refreshToken(HttpServletRequest request) {
         String refreshToken = getRefreshTokenFromCookies(request);
-        System.out.println(refreshToken);
         log.info("리프레시 토큰: {}", refreshToken);
 
         // 만약 토큰이 유효하지 않으면 null 반환
