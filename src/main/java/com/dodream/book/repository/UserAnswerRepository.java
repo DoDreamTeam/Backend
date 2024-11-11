@@ -46,7 +46,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "LEFT JOIN ua.user u " +
-        "WHERE sua.study.id = :studyId")
+        "WHERE sua.study.id = :studyId ORDER BY sua.createdAt DESC ")
     Page<StudyUserQueAnswerResponse> findStudyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId);
 
@@ -57,7 +57,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "LEFT JOIN ua.user u " +
-        "WHERE sua.study.id = :studyId AND ua.user = :user")
+        "WHERE sua.study.id = :studyId AND ua.user = :user ORDER BY sua.createdAt DESC")
     Page<StudyUserQueAnswerResponse> findStudyMyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
         @Param("user") User user);
@@ -69,7 +69,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "LEFT JOIN ua.user u " +
-        "WHERE sua.study.id = :studyId AND ua.user != :user")
+        "WHERE sua.study.id = :studyId AND ua.user != :user ORDER BY sua.createdAt DESC")
     Page<StudyUserQueAnswerResponse> findStudyOtherUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
         @Param("user") User user);
@@ -81,7 +81,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "WHERE sua.study.id = :studyId " +
-         "AND (q.question LIKE %:keyword% OR q.modelAnswer LIKE %:keyword%)")
+         "AND (q.question LIKE %:keyword% OR q.modelAnswer LIKE %:keyword%) ORDER BY sua.createdAt DESC")
     Page<StudyUserQueAnswerResponse> searchStudyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
         @Param("keyword") String keyword);
