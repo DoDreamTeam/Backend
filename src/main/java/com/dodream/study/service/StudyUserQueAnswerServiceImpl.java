@@ -33,7 +33,7 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
-        Page<StudyUserQueAnswerResponse> studyUserAnswers = userAnswerRepository.findStudyUserAnswers(pageable, study.getId(), user);
+        Page<StudyUserQueAnswerResponse> studyUserAnswers = userAnswerRepository.findStudyUserAnswers(pageable, study.getId());
         return new PageImpl<>(studyUserAnswers.getContent(), pageable, studyUserAnswers.getTotalElements());
     }
 
@@ -78,7 +78,7 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
-        Page<StudyUserQueAnswerResponse> searchResults = userAnswerRepository.searchStudyUserAnswers(pageable, study.getId(), user, keyword);
+        Page<StudyUserQueAnswerResponse> searchResults = userAnswerRepository.searchStudyUserAnswers(pageable, study.getId(), keyword);
         return new PageImpl<>(searchResults.getContent(), pageable, searchResults.getTotalElements());
     }
 }

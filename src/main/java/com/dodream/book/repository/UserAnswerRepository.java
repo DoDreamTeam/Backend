@@ -46,10 +46,9 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "LEFT JOIN ua.user u " +
-        "WHERE sua.study.id = :studyId AND ua.user IN :user")
+        "WHERE sua.study.id = :studyId")
     Page<StudyUserQueAnswerResponse> findStudyUserAnswers(Pageable pageable,
-        @Param("studyId") Long studyId,
-        @Param("user") User user);
+        @Param("studyId") Long studyId);
 
     // 스터디방에서 내가 푼 문제 조회
     @Query("SELECT new com.dodream.study.domain.StudyUserQueAnswerResponse("
@@ -82,11 +81,9 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "WHERE sua.study.id = :studyId " +
-        "AND (q.question LIKE %:keyword% OR q.modelAnswer LIKE %:keyword%) " +
-        "AND ua.user = :user")
+         "AND (q.question LIKE %:keyword% OR q.modelAnswer LIKE %:keyword%)")
     Page<StudyUserQueAnswerResponse> searchStudyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
-        @Param("user") User user,
         @Param("keyword") String keyword);
 
 }
