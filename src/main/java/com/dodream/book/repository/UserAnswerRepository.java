@@ -46,7 +46,7 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
         "JOIN sua.userAnswer ua " +
         "JOIN ua.question q " +
         "LEFT JOIN ua.user u " +
-        "WHERE sua.study.id = :studyId OR ua.user = :user")
+        "WHERE sua.study.id = :studyId AND ua.user IN :user")
     Page<StudyUserQueAnswerResponse> findStudyUserAnswers(Pageable pageable,
         @Param("studyId") Long studyId,
         @Param("user") User user);
