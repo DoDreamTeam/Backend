@@ -11,6 +11,7 @@ import com.dodream.util.CustomPageImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
         Page<StudyUserQueAnswerResponse> studyUserAnswers = userAnswerRepository.findStudyUserAnswers(pageable, study.getId(), user);
-        return new CustomPageImpl<>(studyUserAnswers.getContent(), pageable, studyUserAnswers.getTotalElements());
+        return new PageImpl<>(studyUserAnswers.getContent(), pageable, studyUserAnswers.getTotalElements());
     }
 
     // 내가 푼 문제 조회
@@ -48,7 +49,7 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
         Page<StudyUserQueAnswerResponse> myStudyUserAnswers = userAnswerRepository.findStudyMyUserAnswers(pageable, study.getId(), user);
-        return new CustomPageImpl<>(myStudyUserAnswers.getContent(), pageable, myStudyUserAnswers.getTotalElements());
+        return new PageImpl<>(myStudyUserAnswers.getContent(), pageable, myStudyUserAnswers.getTotalElements());
     }
 
     // 내가 풀지 않은 문제 조회
@@ -63,21 +64,21 @@ public class StudyUserQueAnswerServiceImpl implements StudyUserQueAnswerService 
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
         Page<StudyUserQueAnswerResponse> otherStudyUserAnswers = userAnswerRepository.findStudyOtherUserAnswers(pageable, study.getId(), user);
-        return new CustomPageImpl<>(otherStudyUserAnswers.getContent(), pageable, otherStudyUserAnswers.getTotalElements());
+        return new PageImpl<>(otherStudyUserAnswers.getContent(), pageable, otherStudyUserAnswers.getTotalElements());
     }
 
     // 특정 검색어로 문제 조회
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "searchStudyUserAnswer",
-        key = "#studyId + '_' + #user.id + '_' + #keyword + '_' + #pageable.pageNumber",
-        unless = "#result.isEmpty()")
+//    @Cacheable(value = "searchStudyUserAnswer",
+//        key = "#studyId + '_' + #user.id + '_' + #keyword + '_' + #pageable.pageNumber",
+//        unless = "#result.isEmpty()")
     public Page<StudyUserQueAnswerResponse> getSearchStudyUserAnswer(Pageable pageable, Long studyId,
         User user, String keyword) {
         Study study = studyRepository.findById(studyId)
             .orElseThrow(() -> new BaseException(ErrorCode.STUDY_NOT_FOUND));
 
         Page<StudyUserQueAnswerResponse> searchResults = userAnswerRepository.searchStudyUserAnswers(pageable, study.getId(), user, keyword);
-        return new CustomPageImpl<>(searchResults.getContent(), pageable, searchResults.getTotalElements());
+        return new PageImpl<>(searchResults.getContent(), pageable, searchResults.getTotalElements());
     }
 }
