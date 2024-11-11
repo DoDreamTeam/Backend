@@ -32,7 +32,7 @@ public class UserAnswerServiceImpl implements UserAnswerService{
 
     // 문제 풀기
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public UserAnswerResponse solveQuestion(Long bookId, Long questionId, User user, UserAnswerRequest userAnswerRequest) {
         // 문제 확인
         Question question = questionRepository.findById(questionId)
@@ -68,7 +68,7 @@ public class UserAnswerServiceImpl implements UserAnswerService{
 
     // 문제 평가하기
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public UserAnswerResponse evaluateAnswer(Long answerId, String evaluationRequest) {
         // 답안 확인
         UserAnswer userAnswer = userAnswerRepository.findById(answerId)
