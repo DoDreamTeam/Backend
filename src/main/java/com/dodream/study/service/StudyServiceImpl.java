@@ -218,6 +218,7 @@ public class StudyServiceImpl implements StudyService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String existStudy(Long id, User user) {
         return studyMemberRepository.findRoleByStudyIdAndUser(id, user).orElse(null);
     }
