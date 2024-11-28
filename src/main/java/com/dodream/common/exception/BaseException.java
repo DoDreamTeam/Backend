@@ -40,6 +40,7 @@ public class BaseException extends RuntimeException {
     public static final BaseException FILE_DELETE_FAILED = new BaseException(ErrorCode.FILE_DELETE_FAILED);
     public static final BaseException LEADER_NOT_FOUND = new BaseException(ErrorCode.LEADER_NOT_FOUND);
     public static final BaseException NOTIFICATION_NOT_FOUND = new BaseException(ErrorCode.NOTIFICATION_NOT_FOUND);
+    public static final BaseException AUTHENTICATION_FAILED = new BaseException(ErrorCode.AUTHENTICATION_FAILED);
 
     private final ErrorCode errorCode;
 

@@ -19,6 +19,9 @@ public enum ErrorCode {
     ALREADY_STUDY_MEMBER(HttpStatus.BAD_REQUEST, "ALREADY_STUDY_MEMBER", "이미 해당 스터디 멤버입니다."),
     FILE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "FILE_DELETE_FAILED", "파일 삭제에 실패했습니다."),
 
+    /* 401 */
+    AUTHENTICATION_FAILED(HttpStatus.BAD_REQUEST, "AUTHENTICATION_FAILED", "인증에 실패했습니다"),
+
     /* 403 */
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "접근 권한이 없습니다."),
 
