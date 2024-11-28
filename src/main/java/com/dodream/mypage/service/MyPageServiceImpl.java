@@ -8,13 +8,13 @@ import com.dodream.book.entity.UserAnswer;
 import com.dodream.book.repository.BookRepository;
 import com.dodream.book.repository.BookmarkRepository;
 import com.dodream.book.repository.UserAnswerRepository;
-import com.dodream.book.repository.UserBookRepository;
 import com.dodream.common.exception.BaseException;
 import com.dodream.common.exception.ErrorCode;
 import com.dodream.mypage.domain.GetUserAnswerResponse;
 import com.dodream.mypage.domain.UserInfoResponse;
 import com.dodream.user.entity.User;
 import com.dodream.user.repository.UserRepository;
+import com.dodream.util.AwsS3Info;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -39,21 +40,21 @@ import org.springframework.web.multipart.MultipartFile;
 public class MyPageServiceImpl implements MyPageService {
 
     private final UserRepository userRepository;
-    private final UserBookRepository userBookRepository;
     private final BookmarkRepository bookmarkRepository;
 
     private final AmazonS3 amazonS3;
-    private static String profileName;
-    private static String uuidString;
     private final BookRepository bookRepository;
     private final UserAnswerRepository userAnswerRepository;
+
+    private static final AwsS3Info awsS3Info = new AwsS3Info();
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // 사용자 정보 가져오기 (userName , profileImage , userBooks )
+    // 사용자 정보 가져오기 (userName , profileImage , userBooks)
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "getUserInfo", key = "#userId")
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
@@ -65,25 +66,25 @@ public class MyPageServiceImpl implements MyPageService {
     @Override
     @Transactional(readOnly = true)
     public Page<BookResponse> getUserBooks(Long userId, Pageable pageable) {
-        // 사용자의 문제집 리스트
-        Page<Book> userBooksPage = bookRepository
-            .findByUserIdAndSecretFalseOrderByCreatedAtDesc(userId, pageable);
+        Page<Book> userBooksPage = bookRepository.findByUserIdAndSecretFalseOrderByCreatedAtDesc(userId, pageable);
 
         List<BookResponse> bookResponses = userBooksPage.getContent().stream()
-            .map(book -> {
-                return BookResponse.builder()
-                    .id(book.getId())
-                    .title(book.getTitle())
-                    .username(book.getUser() != null ? book.getUser().getUsername() : null)
-                    .userId(book.getUser().getId())
-                    .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
-                    .category(book.getCategory().name())
-                    .createdAt(book.getCreatedAt())
-                    .userProfile(book.getUser().getProfileImage())
-                    .build();
-            })
+            .map(this::convertToBookResponse)
             .collect(Collectors.toList());
         return new PageImpl<>(bookResponses, pageable, userBooksPage.getTotalElements());
+    }
+
+    private BookResponse convertToBookResponse(Book book) {
+        return BookResponse.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .username(book.getUser() != null ? book.getUser().getUsername() : null)
+            .userId(book.getUser().getId())
+            .bookmarkCount(bookmarkRepository.countByBookAndIsDeletedFalse(book))
+            .category(book.getCategory().name())
+            .createdAt(book.getCreatedAt())
+            .userProfile(book.getUser().getProfileImage())
+            .build();
     }
 
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
@@ -95,10 +96,24 @@ public class MyPageServiceImpl implements MyPageService {
     private String uploadFile(File uploadFile, String dirName) {
         String fileName = dirName + "/" + UUID.randomUUID() + uploadFile.getName();
         String uploadImageUrl = putS3(uploadFile, fileName);
-        uuidString = fileName.split("/")[1].substring(0, 36);   // uuid 길이는 고정
-        profileName = uploadFile.getName();                             // 한글 파일 url로 불러올 시 변경되는 이슈 처리
+        String uuidString = fileName.split("/")[1].substring(0, 36);   // uuid 길이는 고정
+        String profileName = uploadFile.getName();
+
+        awsS3Info.setUuidString(uuidString);
+        awsS3Info.setProfileName(profileName);
+
         removeNewFile(uploadFile);  // 로컬에 생성된 File 삭제 (MultipartFile -> File 전환 하며 로컬에 파일 생성됨)
         return uploadImageUrl;      // 업로드된 파일의 S3 URL 주소 반환
+    }
+
+    private String getUploadFile(MultipartFile file) throws IOException {
+        String uploadImage = upload(file, "profile-image");
+
+        return uploadImage.split("/")[0] + "//"
+            + uploadImage.split("/")[2] + "/"
+            + uploadImage.split("/")[3] + "/"
+            + awsS3Info.getUuidString()
+            + awsS3Info.getProfileName();
     }
 
     private void removeNewFile(File targetFile) {
@@ -111,6 +126,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     private String putS3(File uploadFile, String fileName) {
         amazonS3.putObject(new PutObjectRequest(bucket, fileName, uploadFile));
+        log.info("S3에 파일 업로드 완료: Bucket={}, FileName={}", bucket, fileName);
         return amazonS3.getUrl(bucket, fileName).toString();
     }
 
@@ -142,8 +158,7 @@ public class MyPageServiceImpl implements MyPageService {
     @Transactional
     public UserInfoResponse updateUserProfile(String newUserName, MultipartFile file)
         throws IOException {
-        User loginuser = (User) SecurityContextHolder.getContext().getAuthentication()
-            .getPrincipal();
+        User loginuser = getAuthenticatedUser();
         Long loginUserId = loginuser.getId();
 
         User user = userRepository.findById(loginUserId)
@@ -164,22 +179,35 @@ public class MyPageServiceImpl implements MyPageService {
         return UserInfoResponse.toProfileDTO(user);
     }
 
+    private User getAuthenticatedUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+        throw new BaseException(ErrorCode.AUTHENTICATION_FAILED);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<GetUserAnswerResponse> getUserIdAnswers(Long userId) {
+        // 사용자 답변 조회
         List<UserAnswer> userAnswers = userAnswerRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
+        // 비어 있는 경우 예외 처리
         if (userAnswers.isEmpty()) {
             throw new BaseException(ErrorCode.USER_ANSWER_NOT_FOUND);
         }
 
+        // 변환 및 반환
         return userAnswers.stream()
-            .map(userAnswer -> {
-                return GetUserAnswerResponse.builder()
-                    .createdAt(userAnswer.getCreatedAt())
-                    .build();
-            })
+            .map(this::convertToGetUserAnswerResponse)
             .collect(Collectors.toList());
+    }
+
+    private GetUserAnswerResponse convertToGetUserAnswerResponse(UserAnswer userAnswer) {
+        return GetUserAnswerResponse.builder()
+            .createdAt(userAnswer.getCreatedAt())
+            .build();
     }
 
     private void updateUserNameAndUserProfileImage(String newUserName, MultipartFile file,
@@ -191,15 +219,6 @@ public class MyPageServiceImpl implements MyPageService {
         }
         String newProfileImage = getUploadFile(file);
         user.updateProfile(newUserName, newProfileImage);
-    }
-
-    private String getUploadFile(MultipartFile file) throws IOException {
-        String uploadImage = upload(file, "profile-image");
-        return uploadImage.split("/")[0] + "//"
-            + uploadImage.split("/")[2] + "/"
-            + uploadImage.split("/")[3] + "/"
-            + uuidString
-            + profileName;
     }
 
     private void deleteImageFromS3(String fileName) {
