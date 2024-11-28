@@ -132,7 +132,7 @@ class BookmarkRepositoryTest {
         bookmarkRepository.save(bookmark2);
 
         // when
-        var bookmarksPage = bookmarkRepository.findByUserIdOrderByBookCreatedAtDesc(user.getId(), PageRequest.of(0, 10));
+        var bookmarksPage = bookmarkRepository.findByUserIdAndIsDeletedFalseOrderByBookCreatedAtDesc(user.getId(), PageRequest.of(0, 10));
 
         // then
         assertThat(bookmarksPage.getContent()).hasSize(2);

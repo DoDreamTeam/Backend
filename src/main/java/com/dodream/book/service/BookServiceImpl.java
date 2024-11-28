@@ -51,6 +51,11 @@ public class BookServiceImpl implements BookService {
         } else {
             bookPage = bookRepository.findAllBySecretFalseOrderByCreatedAtDesc(pageable);
         }
+
+        if (bookPage == null) {
+            bookPage = Page.empty();
+        }
+
         return convertToBookResponsePage(bookPage, user);
     }
 
@@ -73,9 +78,10 @@ public class BookServiceImpl implements BookService {
             bookPage = bookRepository.findAllByCategoryAndSecretFalseOrderByCreatedAtDesc(categoryEnum, pageable);
         }
 
-        if (bookPage.isEmpty()) {
-            return Page.empty();
+        if (bookPage == null) {
+            bookPage = Page.empty();
         }
+
         return convertToBookResponsePage(bookPage, user);
     }
 
