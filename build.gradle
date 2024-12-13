@@ -69,6 +69,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
+    // spring batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // scheduler
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
 }
 
 tasks.named('test') {
