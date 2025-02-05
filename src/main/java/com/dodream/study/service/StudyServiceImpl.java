@@ -45,8 +45,6 @@ public class StudyServiceImpl implements StudyService {
     // 메인 페이지 스터디 조회 (12개씩) - 비회원 + 회원 포함
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "studyList", key = "#loginedUser != null ? #loginedUser.id + '_' + "
-        + "#category : 'user_' + #category", unless = "#result.isEmpty()")
     public Page<StudyResponse> getStudyList(User loginedUser, Pageable pageable, String category) {
         List<String> roles = Arrays.asList(RoleEnum.ROLE_MEMBER.getRole(), RoleEnum.ROLE_LEADER.getRole());
         Page<StudyResponse> studyList;
