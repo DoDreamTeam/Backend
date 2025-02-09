@@ -216,6 +216,7 @@ public class StudyServiceImpl implements StudyService {
             .category(study.getCategory())
             .updatedAt(study.getUpdatedAt())
             .createdAt(study.getCreatedAt())
+            .userCount(study.getStudyMembers().stream().count())
             .build();
     }
 
