@@ -111,6 +111,7 @@ public class StudyServiceImpl implements StudyService {
 
         return StudyResponse.builder()
             .id(savedStudy.getId())
+            .userId(savedStudy.getUser().getId())
             .title(savedStudy.getTitle())
             .username(user.getUsername())
             .description(savedStudy.getDescription())
@@ -212,6 +213,9 @@ public class StudyServiceImpl implements StudyService {
             .username(study.getUser() != null ? study.getUser().getUsername() : null)
             .profileImage(study.getUser() != null ? study.getUser().getProfileImage() : null)
             .description((study.getDescription()))
+            .category(study.getCategory())
+            .updatedAt(study.getUpdatedAt())
+            .createdAt(study.getCreatedAt())
             .build();
     }
 
