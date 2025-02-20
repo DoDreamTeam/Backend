@@ -35,7 +35,7 @@ public class RedisConfig {
                 new StringRedisSerializer()))
             .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
                 new GenericJackson2JsonRedisSerializer()))
-            .entryTtl(Duration.ofSeconds(3L));
+            .entryTtl(Duration.ofMinutes(5L));
 
         return RedisCacheManager
             .RedisCacheManagerBuilder
